@@ -60,10 +60,14 @@ class RecipeModal extends HTMLElement {
   disconnectedCallback() {
     document.removeEventListener('keydown', this.handleKeydown);
     document.body.style.overflow = '';
+    // Safety net: if the element is torn down while open (e.g. a theme-editor
+    // section re-render), don't leave the video playing in the background.
+    this.video?.pause();
   }
 
   open() {
     this.previouslyFocused = document.activeElement;
+    this.pressedContent = false;
     this.modal.hidden = false;
     document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', this.handleKeydown);

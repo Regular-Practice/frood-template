@@ -53,11 +53,17 @@
       {%- assign recipe_video = recipe.video.value -%}
       {%- if recipe_video != blank -%}
         <div class="recipe-modal-video">
+          {%- comment -%}
+            No `autoplay` and preload:'none' — the video is hidden until the
+            modal opens, at which point recipe-modal.js calls play(). This keeps
+            hidden cards from fetching video bytes on page load and guarantees
+            the video only ever plays while the modal is open.
+          {%- endcomment -%}
           {% render 'video',
             media: recipe_video,
             controls: true,
             chrome: 'minimal',
-            autoplay: true,
+            preload: 'none',
             loop: true,
             playsinline: true,
             label: recipe.name
@@ -164,23 +170,32 @@
     gap: var(--spacing-xs);
   }
 
+  /* Mobile (base): the WHOLE dialog scrolls. The video fills the width and is
+     height-capped so it fits the viewport with the info card peeking below.
+     overflow-x is clipped because `overflow-y: auto` alone promotes overflow-x
+     to `auto` too (per spec), letting a sub-pixel-wide video trigger a stray
+     horizontal scroll. scrollbar-gutter reserves space on BOTH edges so the
+     vertical scrollbar can't unbalance the left/right padding. Desktop overrides
+     to a centred, non-scrolling two-column layout (single media query below). */
   .recipe-modal {
     position: fixed;
     inset: 0;
     z-index: 999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-m);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-gutter: stable both-edges;
+    -webkit-overflow-scrolling: touch;
     background-color: var(--color-overlay);
   }
 
-  /* Frosted backdrop on a separate layer BEHIND the video. Keeping
-     backdrop-filter off the video's ancestors avoids a GPU compositing bug
-     that renders <video> solid black when an ancestor is backdrop-filtered. */
+  /* Frosted backdrop on its own layer, pinned to the viewport (position:fixed,
+     not absolute) so it keeps covering the screen while the dialog scrolls
+     rather than scrolling away with the content. Kept off the video's ancestors
+     to avoid a GPU compositing bug that renders <video> solid black when an
+     ancestor is backdrop-filtered. */
   .recipe-modal::before {
     content: '';
-    position: absolute;
+    position: fixed;
     inset: 0;
     z-index: 0;
     backdrop-filter: blur(var(--blur));
@@ -191,12 +206,13 @@
     display: none;
   }
 
-  /* Icon-only close — no background, matching the drawer close buttons:
-     muted at rest, full text colour on hover. */
+  /* Icon-only close — no background, matching the drawer close buttons: muted
+     at rest, full text colour on hover. Fixed to the viewport corner so it
+     stays reachable while the dialog scrolls. */
   .recipe-modal-close {
-    position: absolute;
-    top: var(--spacing-m);
-    right: var(--spacing-m);
+    position: fixed;
+    top: var(--spacing-s);
+    right: var(--spacing-s);
     z-index: 2;
     display: flex;
     align-items: center;
@@ -210,71 +226,43 @@
     color: var(--color-text);
   }
 
-  /* Mobile: video then info cards, stacked, whole modal body scrolls. */
   .recipe-modal-inner {
     position: relative;
     z-index: 1;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
     gap: var(--spacing-s);
-    width: 100%;
-    max-height: 100%;
-    overflow-y: auto;
+    padding: var(--spacing-xs) var(--spacing-xs) var(--spacing-m);
   }
 
-  /* Desktop: video left (height-driven), 348px info column right, top-aligned. */
-  @media (min-width: 900px) {
-    .recipe-modal-inner {
-      flex-direction: row;
-      align-items: flex-start;
-      justify-content: center;
-      width: auto;
-      max-width: 100%;
-      overflow: visible;
-    }
-  }
-
-  /* Video frame — rounded clip with controls overlaid (no beige frame; the v2
-     design sits the controls directly on the video). */
+  /* Video frame — clipped, controls overlaid (no beige frame; the v2 design
+     sits the controls directly on the video). Full-bleed on mobile. */
   .recipe-modal-video {
     flex: 0 0 auto;
     display: flex;
-    align-self: center;
-    border-radius: var(--rad-s);
+    align-self: stretch;
     overflow: hidden;
+    border-radius: var(--rad-s);
   }
 
-  /* Mobile: shrink-wrap the video within (100% wide, 60vh tall) preserving its
-     own aspect — no pillarbox/letterbox — leaving room for the cards below. */
+  /* Mobile: the video fills the column width and is capped at 88svh so it always
+     fits the viewport (svh, not vh, stays correct under the mobile browser bar)
+     while leaving just the top edge of the info card peeking below. object-fit:
+     cover keeps it flush to the card's edges — matching the Figma full-frame
+     treatment — at the cost of a small top/bottom crop. */
   .recipe-modal-video media-controller {
-    display: inline-block;
-    max-width: 100%;
+    display: block;
+    width: 100%;
+    height: 88vh;
+    height: 88svh;
     line-height: 0;
   }
 
   .recipe-modal-video media-controller video[slot="media"] {
     display: block;
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: 60vh;
-    object-fit: contain;
-  }
-
-  /* Desktop: height-driven so the frame matches the video's true aspect ratio
-     (no dependency on a metafield aspect_ratio, no letterbox strip). */
-  @media (min-width: 900px) {
-    .recipe-modal-video {
-      align-self: flex-start;
-    }
-
-    .recipe-modal-video media-controller video[slot="media"] {
-      width: auto;
-      height: 85vh;
-      max-width: 100%;
-      max-height: 85vh;
-    }
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .recipe-modal-info {
@@ -282,10 +270,53 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-s);
-    width: 100%;
   }
 
+  /* Desktop: centred, non-scrolling two columns — video left (height-driven, so
+     the frame matches the video's true aspect with no letterbox; rounded), the
+     348px info column right, both top-aligned. */
   @media (min-width: 900px) {
+    .recipe-modal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-m);
+      overflow: hidden;
+      scrollbar-gutter: auto;
+    }
+
+    .recipe-modal-close {
+      top: var(--spacing-m);
+      right: var(--spacing-m);
+    }
+
+    .recipe-modal-inner {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      max-width: 100%;
+      padding: 0;
+    }
+
+    .recipe-modal-video {
+      align-self: flex-start;
+    }
+
+    .recipe-modal-video media-controller {
+      display: inline-block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+    }
+
+    .recipe-modal-video media-controller video[slot="media"] {
+      width: auto;
+      height: 85vh;
+      max-width: 100%;
+      max-height: 85vh;
+      object-fit: contain;
+    }
+
     .recipe-modal-info {
       width: 348px;
     }

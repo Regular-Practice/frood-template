@@ -79,11 +79,12 @@
     {{ video_el }}
     {%- if chrome == 'minimal' -%}
       <media-control-bar>
-        <media-play-button class="recipe-control-pill">
+        {%- comment -%} notooltip: the pill labels already say PLAY / MUTE, so media-chrome's hover tooltip is redundant. {%- endcomment -%}
+        <media-play-button class="recipe-control-pill" notooltip>
           <span slot="play">{{ 'recipes.modal.play' | t }}</span>
           <span slot="pause">{{ 'recipes.modal.pause' | t }}</span>
         </media-play-button>
-        <media-mute-button class="recipe-control-pill">
+        <media-mute-button class="recipe-control-pill" notooltip>
           <span slot="high">{{ 'recipes.modal.mute' | t }}</span>
           <span slot="medium">{{ 'recipes.modal.mute' | t }}</span>
           <span slot="low">{{ 'recipes.modal.mute' | t }}</span>
@@ -174,6 +175,8 @@
   .frood-video.minimal .recipe-control-time {
     margin-left: auto;
     --media-control-background: transparent;
+    /* The time readout isn't a control — kill its hover highlight. */
+    --media-control-hover-background: transparent;
     --media-primary-color: #fff;
     --media-control-padding: var(--spacing-xxs);
   }
