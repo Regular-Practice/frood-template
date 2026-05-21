@@ -16,6 +16,14 @@
         "show_quantity": true
       }
     },
+    "recipe_recommendations": {
+      "type": "recipe-recommendations",
+      "settings": {
+        "eyebrow": "Try it with",
+        "heading": "Recipes built around this pack.",
+        "color_scheme": "scheme-1"
+      }
+    },
     "product_recommendations_76MMMN": {
       "type": "product-recommendations",
       "name": "Product recommendations",
@@ -39,6 +47,7 @@
   },
   "order": [
     "main",
+    "recipe_recommendations",
     "product_recommendations_76MMMN",
     "product_recommendations_e4XLkN"
   ]

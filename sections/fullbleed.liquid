@@ -1,14 +1,33 @@
 {%- comment -%}
-  Frood Full-bleed — large image at viewport height (100vh or 75vh).
-  Optional outer margins (padding m around the section) and an optional caption card
-  sitting inside the image with xxs offset from the image edges.
+  Frood Full-bleed — large media (image or video) at viewport height (100vh
+  or 75vh). Optional outer margins (padding m around the section) and an
+  optional caption card sitting inside the media at bottom-left.
+
+  Two media modes:
+    - Fixed-height (default): the section is 100/75vh and the media fills it
+      via object-fit: cover (crops to frame).
+    - Keep ratio: the section sizes to the media's natural ratio — media is
+      100% wide, height auto, no cropping. The height select is ignored.
+
+  Video is preferred over image when both are set.
 {%- endcomment -%}
 
 <section
-  class="fullbleed-section color-{{ section.settings.color_scheme }} height-{{ section.settings.height }}{% if section.settings.margins %} has-margins{% endif %}"
+  class="fullbleed-section color-{{ section.settings.color_scheme }} height-{{ section.settings.height }}{% if section.settings.margins %} has-margins{% endif %}{% if section.settings.keep_ratio %} keep-ratio{% endif %}"
 >
   <div class="fullbleed-frame">
-    {%- if section.settings.image != blank -%}
+    {%- if section.settings.video != blank -%}
+      {{
+        section.settings.video
+        | video_tag:
+          autoplay: true,
+          loop: true,
+          muted: true,
+          controls: false,
+          playsinline: true,
+          class: 'fullbleed-media'
+      }}
+    {%- elsif section.settings.image != blank -%}
       {{
         section.settings.image
         | image_url: width: 2400
@@ -18,10 +37,10 @@
           sizes: '100vw',
           width: section.settings.image.width,
           height: section.settings.image.height,
-          class: 'fullbleed-image'
+          class: 'fullbleed-media'
       }}
     {%- else -%}
-      <div class="fullbleed-image placeholder" aria-hidden="true"></div>
+      <div class="fullbleed-media placeholder" aria-hidden="true"></div>
     {%- endif -%}
 
     {%- if section.settings.caption_heading != blank or section.settings.caption_body != blank -%}
@@ -43,8 +62,9 @@
     background-color: var(--color-bg);
   }
 
-  .fullbleed-section.height-100 { height: 100vh; }
-  .fullbleed-section.height-75 { height: 75vh; }
+  /* Fixed-height modes — the height select determines section height. */
+  .fullbleed-section.height-100:not(.keep-ratio) { height: 100vh; }
+  .fullbleed-section.height-75:not(.keep-ratio) { height: 75vh; }
 
   .fullbleed-section.has-margins {
     padding: var(--spacing-xs);
@@ -76,7 +96,9 @@
     z-index: 1;
   }
 
-  .fullbleed-image {
+  /* Media (image / video / placeholder) — in fixed-height mode it fills the
+     frame via object-fit: cover. */
+  .fullbleed-media {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -85,8 +107,39 @@
     z-index: 0;
   }
 
-  .fullbleed-image.placeholder {
+  .fullbleed-media.placeholder {
     background: var(--color-bg-dark);
+  }
+
+  /* Keep-ratio mode — the section/frame size to the media's natural ratio.
+     Width is 100% of the container; height is auto so the image/video keeps
+     its aspect ratio (no crop). The height select is ignored. */
+  .fullbleed-section.keep-ratio,
+  .fullbleed-section.keep-ratio .fullbleed-frame {
+    height: auto;
+  }
+
+  /* Drop the frame's xxs inner padding — in fixed-height mode the media is
+     position:absolute and ignores the padding, but in keep-ratio mode the
+     media is position:static and respects it, leaving a visible 8px gap
+     around the media that shows the section bg through. */
+  .fullbleed-section.keep-ratio .fullbleed-frame {
+    padding: 0;
+  }
+
+  .fullbleed-section.keep-ratio .fullbleed-media {
+    position: static;
+    width: 100%;
+    height: auto;
+    object-fit: initial;
+  }
+
+  /* Caption needs to be absolutely anchored in keep-ratio mode (the frame is
+     no longer 100% height, so flex alignment doesn't keep it bottom-left). */
+  .fullbleed-section.keep-ratio .fullbleed-caption {
+    position: absolute;
+    bottom: var(--spacing-xxs);
+    left: var(--spacing-xxs);
   }
 
   .fullbleed-caption {
@@ -123,14 +176,28 @@
       "label": "Image"
     },
     {
+      "type": "video",
+      "id": "video",
+      "label": "Video",
+      "info": "Optional. When set, takes precedence over the image."
+    },
+    {
       "type": "select",
       "id": "height",
       "label": "Height",
+      "info": "Ignored when \"Keep ratio\" is on.",
       "options": [
         { "value": "100", "label": "Full viewport (100vh)" },
         { "value": "75", "label": "Three-quarters viewport (75vh)" }
       ],
       "default": "100"
+    },
+    {
+      "type": "checkbox",
+      "id": "keep_ratio",
+      "label": "Keep ratio",
+      "info": "When on, the section sizes to the media's natural aspect ratio (width 100%, height auto). When off, the section uses the height above and the media crops to fill via object-fit: cover.",
+      "default": false
     },
     {
       "type": "checkbox",

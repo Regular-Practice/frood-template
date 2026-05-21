@@ -1,6 +1,10 @@
 {% comment %}
   Reusable quantity input with decrease/increase buttons.
   Params: value, name, min, max, data_key
+
+  SVG markup is inlined so `fill="currentColor"` picks up the parent's
+  text color. Source SVGs kept at assets/remove-medium.svg and
+  assets/add-medium.svg for reference.
 {% endcomment %}
 
 {%- assign qs_value = value | default: 1 -%}
@@ -10,7 +14,11 @@
 
 <quantity-selector {% if data_key %} data-key="{{ data_key }}"{% endif %}>
   <div class="quantity-selector">
-    <button type="button" data-action="decrease" aria-label="{{ 'products.product.decrease_quantity' | t }}">&#8722;</button>
+    <button type="button" data-action="decrease" aria-label="{{ 'products.product.decrease_quantity' | t }}">
+      <svg width="12" height="2" viewBox="0 0 12 2" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <path d="M0 1.75V0H12V1.75H0Z" fill="currentColor"/>
+      </svg>
+    </button>
     <input
       type="number"
       name="{{ qs_name }}"
@@ -20,6 +28,10 @@
       {% if data_key %}data-key="{{ data_key }}"{% endif %}
       aria-label="{{ 'products.product.quantity' | t }}"
     >
-    <button type="button" data-action="increase" aria-label="{{ 'products.product.increase_quantity' | t }}">+</button>
+    <button type="button" data-action="increase" aria-label="{{ 'products.product.increase_quantity' | t }}">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <path d="M5.14286 6.85714H0V5.14286H5.14286V0H6.85714V5.14286H12V6.85714H6.85714V12H5.14286V6.85714Z" fill="currentColor"/>
+      </svg>
+    </button>
   </div>
 </quantity-selector>

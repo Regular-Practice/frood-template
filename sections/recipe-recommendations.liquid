@@ -1,0 +1,113 @@
+{%- comment -%}
+  Recipe recommendations — per-product variant of the Recipes index.
+  Reuses the same design (section-lockup header + recipe-card grid) as
+  sections/main-recipes.liquid, but loops only the recipes referenced from
+  the product's `custom.recipes` metafield (a list of `recipes` metaobject
+  entries — see admin → Metafields → Recipes on the product).
+
+  Renders nothing if the product has no recipes attached, so this section
+  can sit safely on the product template for every product.
+
+  Snippet ownership note: `recipe-card` is still owned by main-recipes.liquid;
+  this section just reuses it.
+{%- endcomment -%}
+
+{%- assign recipes = product.metafields.custom.recipes.value -%}
+
+{%- if recipes != blank and recipes.size > 0 -%}
+  <script type="module" src="{{ 'media-chrome.js' | asset_url }}"></script>
+  <script type="module" src="{{ 'recipe-modal.js' | asset_url }}"></script>
+
+  <section class="recipe-recommendations color-{{ section.settings.color_scheme }}">
+    <header class="recipe-recommendations-header section-lockup">
+      {%- if section.settings.eyebrow != blank -%}
+        <h2 class="text-h1">{{ section.settings.eyebrow }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+      {%- endif -%}
+    </header>
+
+    <div class="recipe-recommendations-grid">
+      {%- for recipe in recipes -%}
+        {% render 'recipe-card', recipe: recipe %}
+      {%- endfor -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{% stylesheet %}
+  .recipe-recommendations {
+    padding: var(--spacing-xs);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+
+  @media (min-width: 900px) {
+    .recipe-recommendations {
+      padding: var(--spacing-m);
+    }
+  }
+
+  .recipe-recommendations-header {
+    margin-bottom: var(--spacing-l);
+  }
+
+  .recipe-recommendations-header h3 {
+    max-width: 36ch;
+  }
+
+  /* Mirror the main Recipes index grid: 1 col → 2 cols (≥600px) → 3 cols (≥900px) */
+  .recipe-recommendations-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xs);
+  }
+
+  @media (min-width: 600px) {
+    .recipe-recommendations-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .recipe-recommendations-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Recipe recommendations",
+  "tag": "section",
+  "class": "recipe-recommendations-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "default": "Try it with"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break.",
+      "default": "Recipes built around this pack."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Recipe recommendations"
+    }
+  ]
+}
+{% endschema %}
