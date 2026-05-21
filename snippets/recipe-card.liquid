@@ -7,8 +7,9 @@
 
   Expects: recipe (metaobject) with handles:
     name, image, duration, description, video   (rendered today)
-    made_with (product reference)               (optional — lights up the
-                                                 "Made with" card when present)
+    products (list of product references)       (optional — lights up the
+                                                 "Made with" card, one row per
+                                                 product, when present)
 {%- endcomment -%}
 
 <recipe-modal class="recipe-card">
@@ -94,30 +95,43 @@
         </div>
 
         {%- comment -%}
-          "Made with" product card — dormant until the recipes metaobject gains a
-          product-reference field (expected handle: `made_with`). When present it
-          renders the linked product's thumbnail, title and a VIEW link. No other
-          code change needed to switch it on.
+          "Made with" product card — lights up when the recipes metaobject has a
+          `products` field (a LIST of product references). Loops every linked
+          product, rendering each one's thumbnail, title and a VIEW link, in the
+          order curated on the recipe. Empty or absent → the card is omitted.
         {%- endcomment -%}
-        {%- assign made_with = recipe.made_with.value -%}
-        {%- if made_with != blank -%}
+        {%- assign made_with_products = recipe.products.value -%}
+        {%- if made_with_products != blank -%}
           <div class="recipe-madewith-card">
             <p class="text-body recipe-madewith-label">{{ 'recipes.modal.made_with' | t }}</p>
-            <a class="recipe-madewith-product" href="{{ made_with.url }}">
-              <span class="recipe-madewith-image">
-                {%- if made_with.featured_image != blank -%}
-                  {{
-                    made_with.featured_image
-                    | image_url: width: 176
-                    | image_tag: loading: 'lazy', width: 88, height: 88, alt: made_with.title
-                  }}
-                {%- endif -%}
-              </span>
-              <span class="recipe-madewith-text">
-                <span class="text-ui recipe-madewith-name">{{ made_with.title }}</span>
-                <span class="text-h1 inline-link recipe-madewith-view">{{ 'recipes.modal.view' | t }}</span>
-              </span>
-            </a>
+            {%- for product in made_with_products -%}
+              <a class="recipe-madewith-product" href="{{ product.url }}">
+                <span class="recipe-madewith-image">
+                  {%- comment -%}
+                    First media's preview image — when the product leads with a
+                    video this is its poster frame, so the thumbnail still shows
+                    something. (featured_image is image-only and would be blank
+                    for a video-first product.)
+                  {%- endcomment -%}
+                  {%- assign made_with_thumb = product.featured_media.preview_image -%}
+                  {%- if made_with_thumb != blank -%}
+                    {{
+                      made_with_thumb
+                      | image_url: width: 800
+                      | image_tag:
+                        loading: 'lazy',
+                        width: made_with_thumb.width,
+                        height: made_with_thumb.height,
+                        alt: product.title
+                    }}
+                  {%- endif -%}
+                </span>
+                <span class="recipe-madewith-text">
+                  <span class="text-ui recipe-madewith-name">{{ product.title }}</span>
+                  <span class="text-h1 recipe-madewith-view">{{ 'recipes.modal.view' | t }}</span>
+                </span>
+              </a>
+            {%- endfor -%}
           </div>
         {%- endif -%}
       </div>
@@ -357,14 +371,14 @@
 
   .recipe-madewith-product {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     gap: var(--spacing-xxs);
   }
 
   .recipe-madewith-image {
-    flex: 0 0 88px;
-    width: 88px;
-    height: 88px;
+    width: 100%;
+    aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -380,6 +394,8 @@
   .recipe-madewith-text {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: var(--spacing-xxs);
+    text-align: left;
   }
 {% endstylesheet %}
