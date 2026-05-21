@@ -2,77 +2,54 @@
   Renders a product card for collection grids and featured collections.
   Expects: product (product object)
 
-  Media-type detection happens once at the top so the article body AND the
-  conditional <script> tags can both reference the same variables. This is the
-  whole point of Fix 1 — we only load product-card-stage.js (three.js, ~150KB)
-  for cards with a 3D model, and product-card-hover-video.js for cards with a
-  video. Pages with no GLB products skip three.js entirely.
+  The thumbnail is driven entirely by the FIRST media item (product.media.first),
+  honouring the merchant's media order:
+
+    - video  → the video's preview_image is the still; a <product-card-hover-video>
+               overlay plays the mp4 on hover.
+    - image  → that image is the still; if the SECOND media is also an image it
+               cross-fades in on hover.
+    - other  → fall back to product.featured_image, else a placeholder.
+
+  hover_video_src is resolved once here so the body and the conditional <script>
+  tag can both reference it — we only load product-card-hover-video.js for cards
+  whose first media is a playable video.
+
+  (3D / GLB model support was removed for now; assets/product-card-stage.js and
+  the three.js import map are left in place so it can be re-wired later.)
 {%- endcomment -%}
 
-{%- assign primary_model = nil -%}
-{%- assign hover_video = nil -%}
-{%- assign video_src = nil -%}
-{%- for media in product.media -%}
-  {%- if primary_model == nil and media.media_type == 'model' -%}
-    {%- assign primary_model = media -%}
-  {%- endif -%}
-  {%- if hover_video == nil and media.media_type == 'video' -%}
-    {%- assign hover_video = media -%}
-  {%- endif -%}
-  {%- if primary_model and hover_video -%}{%- break -%}{%- endif -%}
-{%- endfor -%}
-
-{%- if hover_video -%}
-  {%- assign video_src = hover_video.sources | where: 'format', 'mp4' | sort: 'width' | first -%}
+{%- assign first_media = product.media.first -%}
+{%- assign hover_video_src = nil -%}
+{%- if first_media.media_type == 'video' -%}
+  {%- assign hover_video_src = first_media.sources | where: 'format', 'mp4' | sort: 'width' | first -%}
 {%- endif -%}
 
 <article class="product-card">
   <div class="product-card-image aspect-{{ settings.product_card_aspect_ratio }}">
     <a href="{{ product.url }}" class="product-card-image-link" tabindex="-1" aria-hidden="true">
-      {%- if primary_model -%}
-        {%- assign glb = primary_model.sources | where: 'format', 'glb' | first -%}
-        {%- assign model_poster = primary_model.preview_image | default: product.featured_image -%}
-        <product-card-model class="product-card-model" data-model="{{ glb.url }}">
-          <canvas class="product-card-model-canvas"></canvas>
-          {%- comment -%}
-            Static poster shown until the live three.js render's first frame —
-            and kept visible if WebGL is unavailable, the GLB fails to load, or
-            the context is lost. Also covers total JS failure (e.g. a broken
-            import map): the script never runs, so this image just stays.
-          {%- endcomment -%}
-          {%- if model_poster -%}
-            {{
-              model_poster
-              | image_url: width: 1200
-              | image_tag:
-                loading: 'lazy',
-                sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw',
-                width: model_poster.width,
-                height: model_poster.height,
-                class: 'product-card-model-fallback'
-            }}
-          {%- endif -%}
-        </product-card-model>
-      {%- elsif product.featured_image -%}
-        {{
-          product.featured_image
-          | image_url: width: 1200
-          | image_tag:
-            loading: 'lazy',
-            sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw',
-            width: product.featured_image.width,
-            height: product.featured_image.height
-        }}
+      {%- if first_media.media_type == 'video' -%}
+        {%- assign video_poster = first_media.preview_image | default: product.featured_image -%}
+        {%- if video_poster -%}
+          {{
+            video_poster
+            | image_url: width: 1200
+            | image_tag:
+              loading: 'lazy',
+              sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw',
+              width: video_poster.width,
+              height: video_poster.height
+          }}
+        {%- endif -%}
 
-        {%- if video_src -%}
+        {%- if hover_video_src -%}
           {%- comment -%}
-            Hover overlay. The <img> above is the always-visible still
-            (lazy-loaded, srcset). This <video> sits over it at opacity:0 and
-            fades in only on .product-card:hover (CSS). JS handles data-src→src
-            promotion after an 80ms hover-intent debounce, play, and reset-to-0
-            on leave. preload="none" + data-src means zero MP4 bytes per card
-            on initial page load — only fetched when the user actually settles
-            on a card.
+            Hover overlay. The poster <img> above is the always-visible still.
+            This <video> sits over it at opacity:0 and fades in only on
+            .product-card:hover (CSS). JS handles data-src→src promotion after an
+            80ms hover-intent debounce, play, and reset-to-0 on leave.
+            preload="none" + data-src means zero MP4 bytes per card on initial
+            page load — only fetched when the user actually settles on a card.
           {%- endcomment -%}
           <product-card-hover-video class="product-card-hover-video">
             <video
@@ -83,10 +60,27 @@
               tabindex="-1"
               aria-hidden="true"
             >
-              <source data-src="{{ video_src.url }}" type="video/mp4">
+              <source data-src="{{ hover_video_src.url }}" type="video/mp4">
             </video>
           </product-card-hover-video>
-        {%- elsif product.media.size > 1 and product.media[1].media_type == 'image' -%}
+        {%- endif -%}
+      {%- elsif first_media.media_type == 'image' -%}
+        {{
+          first_media
+          | image_url: width: 1200
+          | image_tag:
+            loading: 'lazy',
+            sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw',
+            width: first_media.width,
+            height: first_media.height
+        }}
+
+        {%- comment -%}
+          Hover still — the SECOND media item, but only when it's an image.
+          A non-image second item (video/model) gets no hover treatment; the
+          card just shows the static first image.
+        {%- endcomment -%}
+        {%- if product.media.size > 1 and product.media[1].media_type == 'image' -%}
           {{
             product.media[1]
             | image_url: width: 1200
@@ -98,6 +92,20 @@
               class: 'product-card-image-hover'
           }}
         {%- endif -%}
+      {%- elsif product.featured_image -%}
+        {%- comment -%}
+          First media is something we don't render on the card (model, external
+          video, …). Fall back to the product's featured image.
+        {%- endcomment -%}
+        {{
+          product.featured_image
+          | image_url: width: 1200
+          | image_tag:
+            loading: 'lazy',
+            sizes: '(min-width: 1200px) 25vw, (min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw',
+            width: product.featured_image.width,
+            height: product.featured_image.height
+        }}
       {%- else -%}
         <div class="product-card-placeholder"></div>
       {%- endif -%}
@@ -170,15 +178,11 @@
 </article>
 
 {%- comment -%}
-  Conditional script loading (Fix 1). 3D-model render and hover-video are
-  mutually exclusive on a single card, so emit at most one script. Pages with
-  no 3D products skip three.js entirely (~150KB); pages with no hover videos
-  skip product-card-hover-video.js. Browser dedupes the fetch when multiple
-  cards on the same page emit the same script tag.
+  Conditional script loading. Only cards whose first media is a playable video
+  load product-card-hover-video.js — pages with no hover videos skip it. The
+  browser dedupes the fetch when multiple cards emit the same script tag.
 {%- endcomment -%}
-{%- if primary_model -%}
-  <script type="module" src="{{ 'product-card-stage.js' | asset_url }}"></script>
-{%- elsif video_src -%}
+{%- if hover_video_src -%}
   <script type="module" src="{{ 'product-card-hover-video.js' | asset_url }}"></script>
 {%- endif -%}
 
@@ -216,39 +220,6 @@
     position: relative;
     overflow: hidden;
     border-radius: var(--rad-s);
-  }
-
-  /* 3D model render (GLB) — custom three.js, fills the card aspect box.
-     The bg-dark sits on the model wrapper (not .product-card-image) so it only
-     appears behind the GLB's transparent corners — video/image cards stay clean.
-     product-card-stage.js hides the poster once the live render's first frame
-     lands, and re-shows it on any failure. */
-  .product-card-model {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: 100%;
-    background-color: var(--color-bg-dark);
-  }
-
-  .product-card-model-canvas,
-  .product-card-model-fallback {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  .product-card-model-fallback {
-    object-fit: cover;
-  }
-
-  /* product-card-stage.js hides the poster via the `hidden` attribute once the
-     live render starts. The author `display: block` above outranks the UA
-     `[hidden] { display: none }`, so the attribute needs an explicit rule. */
-  .product-card-model-fallback[hidden] {
-    display: none;
   }
 
   .product-card-placeholder {
