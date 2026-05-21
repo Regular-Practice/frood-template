@@ -9,3 +9,9 @@ Thumbs.db
 
 # Shopify CLI local config
 .shopify/
+
+# Local store schema dump (metafield/metaobject definitions — dev-only)
+.claude/meta-dump/
+
+# Local secrets (Shopify Admin API token, etc.)
+.env.local

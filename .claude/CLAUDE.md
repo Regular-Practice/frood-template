@@ -20,6 +20,8 @@ templates/       JSON templates + gift_card.liquid
     accessibility.md             WCAG, keyboard, ARIA, focus
     decisions.md                 Rationale for architectural choices
     sections.md                  Per-section detail (homepage + bundle builder)
+  scripts/
+    dump-metas.sh                Dump live store metafield/metaobject schema (see "Store Schema")
 ```
 
 ## Before Building Anything
@@ -410,6 +412,20 @@ Custom sections built for Frood. **Full per-section detail — layout, breakpoin
 - **`text-image-split.liquid`** — section-lockup left, 1–2 image/video media right; stacks <900px.
 - **`feature-card.liquid`** — centered card (max 1134px) promoting a `news` metaobject entry + richtext heading. Metaobject type is locked at the schema level.
 - **`bundle-builder.liquid`** — interactive "build your box" (v3, box-first). The shopper fills ONE fixed box of 4 packs by mixing flavours, then adds the whole box to the native cart as a SINGLE line item at a flat price. No discount tiers, no multi-box draft (that was the old pouch-first v2). `<bundle-builder>` (ordered pack-list state + localStorage, steppers, add-to-cart) and `<bundle-stage>` (pure 2D PNG-compositing depth-stack visualiser — **no three.js**) are standalone, communicating only via `bundle:updated` on `document`. Flavours are curated per box product via its `custom.included_flavours` metafield (a list of `flavour` metaobjects, each with `name`/`notes`/`image`) — reordering the list reorders the cards; the box is a single product chosen in section settings, added with the chosen flavours as a line-item property. On "Add to cart" the draft POSTs to `/cart/add.js` (`sections: ['cart-drawer']`), clears, and fires `cart:item-added` + a success toast — same contract as `product-form.js` (drawer does **not** auto-open). Box-layer renders (`box-back`/`box-front`) are image-picker settings falling back to committed placeholder assets; box capacity is locked at 4. Dev calibration overlay via `?bundle-calibrate`.
+
+## Store Schema
+
+The live store's metafield + metaobject **definitions** (the shape of its custom data, not theme code) can be dumped to JSON with `.claude/scripts/dump-metas.sh`. Read a dumped file to learn the exact namespace/key/type before wiring a section to a metafield or metaobject — don't guess.
+
+**Setup is already done in this checkout:** `.env.local` at the repo root holds `SHOPIFY_STORE` + `SHOPIFY_ADMIN_TOKEN` (gitignored). Just run it:
+
+```
+.claude/scripts/dump-metas.sh
+```
+
+Output lands in `.claude/meta-dump/` (gitignored) — one `metafields-<OWNER>.json` per owner type plus `metaobject-definitions.json`. Re-run any time the store schema changes. The script's header comment documents flags, credential resolution order, and the per-store app/scope setup if `.env.local` ever needs recreating. A missing API scope warns for that one owner type and keeps going.
+
+> **Note:** the live store currently defines only the `custom.pouch_texture` product metafield and the `news` / `recipes` / `instruction_tab` / `category` metaobjects. The `custom.included_flavours` metafield and `flavour` metaobject referenced by the bundle-builder above do **not** exist in the store yet — create them before that section can read real data.
 
 ## What NOT to Do
 
