@@ -1,5 +1,5 @@
 {%- comment -%}
-  Frood News index — vertical stack of news cards. No section header (intentional).
+  Frood News index — section-lockup header above a vertical stack of news cards.
   Loops through every entry of the `news` metaobject definition.
 
   Note: the metaobject type handle is referenced as `shop.metaobjects.news`.
@@ -8,6 +8,16 @@
 {%- endcomment -%}
 
 <section class="news-index color-{{ section.settings.color_scheme }}">
+  <header class="news-index-header section-lockup">
+    {%- if section.settings.eyebrow != blank -%}
+      <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+    {%- endif -%}
+
+    {%- if section.settings.heading != blank -%}
+      <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+    {%- endif -%}
+  </header>
+
   {%- comment -%}
     Filter out entries flagged as past events — those are owned by the
     Event Slider section. `unless` catches both `false` AND unset (null) values,
@@ -37,16 +47,36 @@
 </section>
 
 {% stylesheet %}
+  /* Padding system mirrors .recipes-index: tall top inset on mobile (l) that
+     steps up to xl from tablet (≥600px); inline + bottom padding scale
+     separately from xs (mobile) to m (desktop). */
   .news-index {
-    padding: var(--spacing-xs);
+    padding-top: var(--spacing-l);
+    padding-inline: var(--spacing-xs);
+    padding-bottom: var(--spacing-xs);
     color: var(--color-text);
     background-color: var(--color-bg);
   }
 
+  @media (min-width: 600px) {
+    .news-index {
+      padding-top: var(--spacing-xl);
+    }
+  }
+
   @media (min-width: 900px) {
     .news-index {
-      padding: var(--spacing-m);
+      padding-inline: var(--spacing-m);
+      padding-bottom: var(--spacing-m);
     }
+  }
+
+  .news-index-header {
+    margin-bottom: var(--spacing-l);
+  }
+
+  .news-index-header h3 {
+    max-width: 36ch;
   }
 
   /* News cards stack vertically — one card per row at every breakpoint.
@@ -87,6 +117,19 @@
   "tag": "section",
   "class": "news-index-section",
   "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "default": "News"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break.",
+      "default": "What we're up to."
+    },
     {
       "type": "color_scheme",
       "id": "color_scheme",

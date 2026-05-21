@@ -27,25 +27,11 @@
       {%- endfor -%}
     </div>
 
-    {%- for block in section.blocks -%}
-      {%- if block.type == 'newsletter' -%}
-        <div class="footer-newsletter" {{ block.shopify_attributes }}>
-          <div class="footer-newsletter-text">
-            {%- if block.settings.heading != blank -%}
-              <h2 class="footer-newsletter-heading text-h1">{{ block.settings.heading }}</h2>
-            {%- endif -%}
-            {%- if block.settings.body != blank -%}
-              <p class="footer-newsletter-body text-body">{{ block.settings.body | newline_to_br }}</p>
-            {%- endif -%}
-          </div>
-          {% render 'newsletter-form' %}
-        </div>
-      {%- endif -%}
-    {%- endfor -%}
   </div>
 </footer>
 
 {% stylesheet %}
+  /* Mobile + tablet (<900px): tight xs padding. Desktop+ steps up to m. */
   .footer {
     background-color: var(--color-bg);
     color: var(--color-text);
@@ -53,17 +39,16 @@
     display: flex;
     /* Mobile + tablet: reversed column so the icon brand block sits at the bottom */
     flex-direction: column-reverse;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--spacing-l);
   }
 
-  /* On wider viewports: brand left, links + newsletter right, with space between.
-     Section padding also bumps from xs to m at this breakpoint. */
+  /* On wider viewports: brand left, links + newsletter right, with space between. */
   @media (min-width: 900px) {
     .footer {
+      padding: var(--spacing-m);
       flex-direction: row;
       justify-content: space-between;
-      align-items: flex-end;
       gap: var(--spacing-m);
     }
   }
@@ -106,13 +91,34 @@
     margin: 0;
   }
 
-  /* Right block (links + newsletter stacked) */
+  /* Right block (links column). Mobile + tablet: full row width so the grid
+     can stretch across. Desktop (≥900px): capped at 500px so the link grid
+     sits compact against the right edge. */
   .footer-right {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-l);
     flex: 1;
-    max-width: 640px;
+    width: 100%;
+  }
+
+  /* Tablet (600–899px): footer-right takes the full row width and the link
+     grid lays out horizontally as a single row of columns (one column per
+     link_list block) instead of the default 2×2 wrap. */
+  @media (min-width: 600px) and (max-width: 899px) {
+    .footer-right {
+      width: 100%;
+    }
+
+    .footer-links {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .footer-right {
+      max-width: 500px;
+    }
   }
 
   /* Links grid (2 columns) */
@@ -150,23 +156,6 @@
     text-decoration: underline;
   }
 
-  /* Newsletter (below links grid) */
-  .footer-newsletter {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-s);
-  }
-
-  .footer-newsletter-text {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xxs);
-  }
-
-  .footer-newsletter-heading,
-  .footer-newsletter-body {
-    margin: 0;
-  }
 {% endstylesheet %}
 
 {% schema %}
@@ -197,25 +186,6 @@
           "label": "Menu"
         }
       ]
-    },
-    {
-      "type": "newsletter",
-      "name": "Newsletter",
-      "limit": 1,
-      "settings": [
-        {
-          "type": "text",
-          "id": "heading",
-          "label": "Heading",
-          "default": "Newsletter"
-        },
-        {
-          "type": "textarea",
-          "id": "body",
-          "label": "Body copy",
-          "default": "Be the first to hear about new ingredients, recipes, and limited drops."
-        }
-      ]
     }
   ],
   "presets": [
@@ -227,9 +197,6 @@
         },
         {
           "type": "link_list"
-        },
-        {
-          "type": "newsletter"
         }
       ]
     }

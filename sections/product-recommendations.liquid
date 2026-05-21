@@ -2,11 +2,23 @@
   class="product-recommendations color-{{ section.settings.color_scheme }}"
   data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.products_to_show }}&intent=related"
 >
+  {%- capture lockup_header -%}
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+      <header class="product-recommendations-header section-lockup">
+        {%- if section.settings.eyebrow != blank -%}
+          <h2 class="text-h1">{{ section.settings.eyebrow }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.heading != blank -%}
+          <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+  {%- endcapture -%}
+
   {%- if recommendations.performed? -%}
     {%- if recommendations.products_count > 0 -%}
-      {%- if section.settings.heading != blank -%}
-        <h2 class="product-recommendations-heading text-cap">{{ section.settings.heading }}</h2>
-      {%- endif -%}
+      {{ lockup_header }}
 
       <div class="product-recommendations-grid grid grid-{{ section.settings.grid_columns }}">
         {%- for product in recommendations.products -%}
@@ -16,9 +28,7 @@
     {%- endif -%}
   {%- else -%}
     {%- comment -%} Skeleton placeholders shown until JS fetches recommendations {%- endcomment -%}
-    {%- if section.settings.heading != blank -%}
-      <h2 class="product-recommendations-heading text-cap">{{ section.settings.heading }}</h2>
-    {%- endif -%}
+    {{ lockup_header }}
 
     <div class="product-recommendations-grid grid grid-{{ section.settings.grid_columns }}">
       {%- for i in (1..section.settings.products_to_show) -%}
@@ -33,14 +43,18 @@
 {% stylesheet %}
   .product-recommendations {
     display: block;
-    padding: var(--spacing-l) var(--spacing-base);
+    padding: var(--spacing-m);
     color: var(--color-text);
     background-color: var(--color-bg);
     overflow: hidden;
   }
 
-  .product-recommendations-heading {
-    margin-bottom: var(--spacing-base);
+  .product-recommendations-header {
+    margin-bottom: var(--spacing-l);
+  }
+
+  .product-recommendations-header h3 {
+    max-width: 36ch;
   }
 
   .product-recommendations-grid {
@@ -88,8 +102,15 @@
   "settings": [
     {
       "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "default": "More to try"
+    },
+    {
+      "type": "textarea",
       "id": "heading",
-      "label": "Heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break.",
       "default": "You may also like"
     },
     {

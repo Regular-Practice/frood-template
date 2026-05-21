@@ -1,0 +1,116 @@
+{%- comment -%}
+  Newsletter banner — full-bleed accent-yellow strip that sits above the footer
+  (in the footer group), carrying an eyebrow + heading lockup and the newsletter
+  signup pill. Inverts the default pill colours so the dark capsule reads on the
+  bright accent background:
+    – pill bg → --color-text     (was: --color-accent-light)
+    – pill text → --color-accent (was: --color-text)
+    – submit bg → --color-accent (was: --color-text)
+    – submit text → --color-text (was: --color-accent-light)
+  The newsletter-form snippet is reused verbatim; only colours are overridden
+  via .newsletter-banner descendant selectors.
+{%- endcomment -%}
+
+<section class="newsletter-banner color-{{ section.settings.color_scheme }}">
+  <div class="newsletter-banner-inner">
+    {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+      <header class="newsletter-banner-header section-lockup">
+        {%- if section.settings.eyebrow != blank -%}
+          <h2 class="text-h1">{{ section.settings.eyebrow }}</h2>
+        {%- endif -%}
+
+        {%- if section.settings.heading != blank -%}
+          <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+
+    {% render 'newsletter-form' %}
+  </div>
+</section>
+
+{% stylesheet %}
+  /* Mobile + tablet (<900px): tight xs padding. Desktop+ steps up to m. */
+  .newsletter-banner {
+    background-color: var(--color-accent);
+    color: var(--color-text);
+    padding: var(--spacing-xs);
+  }
+
+  @media (min-width: 900px) {
+    .newsletter-banner {
+      padding: var(--spacing-m);
+    }
+  }
+
+  .newsletter-banner-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-l);
+    max-width: 500px;
+  }
+
+  .newsletter-banner-header h3 {
+    max-width: 36ch;
+  }
+
+  /* Invert the pill on the yellow banner: dark capsule, accent-yellow text. */
+  .newsletter-banner .newsletter-pill,
+  .newsletter-banner .newsletter-pill:hover,
+  .newsletter-banner .newsletter-pill:focus-within {
+    background-color: var(--color-text);
+  }
+
+  .newsletter-banner .newsletter-input,
+  .newsletter-banner .newsletter-input::placeholder {
+    color: var(--color-accent);
+  }
+
+  /* Keyboard focus indicator — outline the pill in --color-bg (warm off-white)
+     so it's visible against both the yellow banner AND the dark pill. Replaces
+     the global outline that was suppressed earlier. */
+  .newsletter-banner .newsletter-pill:focus-within {
+    outline: 2px solid var(--color-bg);
+    outline-offset: 2px;
+  }
+
+  /* Submit button — accent yellow with dark text. */
+  .newsletter-banner .newsletter-submit {
+    background-color: var(--color-accent);
+    color: var(--color-text);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Newsletter banner",
+  "tag": "section",
+  "class": "newsletter-banner-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "default": "Newsletter"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break.",
+      "default": "Be the first to hear about new ingredients, recipes, and limited drops."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter banner"
+    }
+  ]
+}
+{% endschema %}

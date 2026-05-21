@@ -32,12 +32,14 @@ h6 {
   font-weight: normal;
 }
 
-/* Ordered lists: strip the UA's vertical margins and left padding so an <ol>
-   sits flush in any container, then space items apart with xxxs. */
+/* Ordered lists: strip the UA's vertical margins, replace the UA's deep
+   left padding (typically ~40px) with a small xxs indent so markers sit a
+   hair off the container's left edge rather than butting against it, then
+   space items apart with xxxs. */
 ol {
   margin-block-start: 0;
   margin-block-end: 0;
-  padding-inline-start: 0;
+  padding-inline-start: var(--spacing-xxs);
 }
 
 /* Restore the font's natural leading inside list items. The global
@@ -108,6 +110,42 @@ figcaption {
 
 summary {
   list-style: none;
+}
+
+/* When the parent <details> is open, add a gap between the summary
+   (clickable header) and the panel content below it. Collapsed accordions
+   keep the summary flush with the box edge so the closed boxes read tight. */
+details[open] > summary {
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Animate <details> open/close. ::details-content is the pseudo-element
+   browsers create to wrap everything after <summary> — animating its
+   block-size from 0 → auto gives a smooth height collapse/expand. The
+   interpolate-size: allow-keywords on :root is what makes `auto` an
+   interpolatable target (without it, browsers can't transition to/from
+   `auto`).
+   Browser support: Chrome / Edge 131+, Safari 18.4+. Firefox falls back to
+   a snap toggle (no animation) — the accordion still opens and closes,
+   it just doesn't tween. */
+:root {
+  interpolate-size: allow-keywords;
+}
+
+details::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition: block-size 0.3s ease;
+}
+
+details[open]::details-content {
+  block-size: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  details::details-content {
+    transition: none;
+  }
 }
 summary::marker {
   content: "";
@@ -386,6 +424,19 @@ body {
   margin-top: 2em;
 }
 
+/* Inside .typeset, an <ol>'s left edge should sit flush with the surrounding
+   paragraph text (no extra indent beyond the typeset's left edge). The
+   global ol rule (§1) gives ordered lists a small xxs indent so markers
+   don't butt against arbitrary containers, but inside a prose wrapper the
+   list should align with the body copy above and below it.
+   list-style-position: inside places the marker as part of the line box, so
+   removing padding-inline-start doesn't push the marker outside the box and
+   clip it — marker + item text both start at the typeset's left edge. */
+.typeset ol {
+  padding-inline-start: 0;
+  list-style-position: inside;
+}
+
 /* Any <a> inside a richtext-bearing wrapper (.typeset for long-form prose,
    .text-body for short captions / merchant richtext fields) is auto-underlined
    so merchant-entered links in rich text always read as links. */
@@ -579,14 +630,25 @@ body {
   margin-top: var(--spacing-xs);
 }
 
-/* Newsletter pill — single bg-dark capsule with email input + inline submit. */
+/* Newsletter pill — pale-yellow capsule (accent-light) with email input and a
+   dark inline submit button. Wider left padding so the email text gets more
+   breathing room than the right side (which is hugged by the submit button).
+   Background fades to the brighter `--color-accent` on hover or when focus
+   is inside the pill; the transition runs in both directions for a clean
+   fade in/out. */
 .newsletter-pill {
   display: flex;
   align-items: center;
   gap: var(--spacing-xxs);
-  background-color: var(--color-bg-dark);
-  padding: var(--spacing-xxs);
+  background-color: var(--color-accent-light);
+  padding: var(--spacing-xxxs);
+  padding-left: var(--spacing-s);
   border-radius: var(--rad-s);
+  transition: background-color var(--transition-fast);
+}
+
+.newsletter-pill:hover {
+  background-color: var(--color-accent);
 }
 
 .newsletter-input {
@@ -600,15 +662,31 @@ body {
 }
 
 .newsletter-input::placeholder {
-  color: var(--color-text-accent);
+  color: var(--color-text);
   opacity: 1;
 }
 
+/* Text inputs trigger `:focus-visible` on click (not just keyboard) per spec,
+   so the global 2px outline draws a harsh rectangle. Suppress it on the input
+   AND on the pill wrapper, and use the pill's own background colour as the
+   focus cue instead — it shifts from accent-light (pale yellow) to accent
+   (bright yellow) when focus is anywhere inside. Keyboard users still get a
+   clear visual change without any rectangular outline. */
+.newsletter-input:focus-visible {
+  outline: 0;
+}
+
+.newsletter-pill:focus-within {
+  outline: 0;
+  background-color: var(--color-accent);
+}
+
 .newsletter-submit {
-  background: transparent;
+  background-color: var(--color-text);
+  color: var(--color-accent-light);
   border: 0;
-  padding: 0;
-  color: var(--color-text);
+  padding: var(--spacing-xs);
+  border-radius: var(--rad-s);
   cursor: pointer;
 }
 

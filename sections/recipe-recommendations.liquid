@@ -39,15 +39,9 @@
 
 {% stylesheet %}
   .recipe-recommendations {
-    padding: var(--spacing-xs);
+    padding: var(--spacing-m);
     color: var(--color-text);
     background-color: var(--color-bg);
-  }
-
-  @media (min-width: 900px) {
-    .recipe-recommendations {
-      padding: var(--spacing-m);
-    }
   }
 
   .recipe-recommendations-header {
@@ -58,20 +52,23 @@
     max-width: 36ch;
   }
 
-  /* Mirror the main Recipes index grid: 1 col → 2 cols (≥600px) → 3 cols (≥900px) */
+  /* Grid mirrors main-recipes.liquid:
+     – mobile + tablet (<900px): 1 column
+     – desktop (≥900px): 2 columns
+     – large (≥1500px): 3 columns */
   .recipe-recommendations-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--spacing-xs);
   }
 
-  @media (min-width: 600px) {
+  @media (min-width: 900px) {
     .recipe-recommendations-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  @media (min-width: 900px) {
+  @media (min-width: 1500px) {
     .recipe-recommendations-grid {
       grid-template-columns: repeat(3, 1fr);
     }

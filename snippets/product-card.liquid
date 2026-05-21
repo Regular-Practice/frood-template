@@ -163,7 +163,7 @@
   <a href="{{ product.url }}" class="product-card-info">
     <h3 class="product-card-title text-ui">{{ product.title }}</h3>
 
-    {% comment %} <div class="product-card-meta text-ui">
+    <div class="product-card-meta text-ui">
       {% render 'product-price', product: product %}
 
       {%- assign current_variant = product.selected_or_first_available_variant -%}
@@ -173,7 +173,7 @@
           {{- current_variant.weight | round -}}{{- current_variant.weight_unit -}}
         </span>
       {%- endif -%}
-    </div> {% endcomment %}
+    </div>
   </a>
 </article>
 

@@ -1,49 +1,46 @@
 {%- comment -%}
-  Recipe Card — owned by sections/main-recipes.liquid.
+  Placeholder Recipe Card — owned by sections/main-recipes.liquid.
+  Clicking the "Watch →" button opens the inline <recipe-modal> with the
+  recipe video. recipe-modal.js binds the modal to the `.recipe-card-link`
+  trigger — moving that class from the whole card to just the "Watch" button
+  means only that button opens the dialog.
 
-  Clicking a card opens an inline <recipe-modal>: a two-column dialog with the
-  recipe video on the left (portrait, bespoke media-chrome `chrome: 'minimal'`
-  controls) and info card(s) on the right. Stacks video-over-cards below 900px.
-
-  Expects: recipe (metaobject) with handles:
-    name, image, duration, description, video   (rendered today)
-    products (list of product references)       (optional — lights up the
-                                                 "Made with" card, one row per
-                                                 product, when present)
+  Expects: recipe (metaobject) with handles: name, image, description, video.
 {%- endcomment -%}
 
 <recipe-modal class="recipe-card">
-  <button type="button" class="recipe-card-link" aria-haspopup="dialog">
-    <div class="recipe-card-image">
-      {%- if recipe.image != blank -%}
-        {{
-          recipe.image
-          | image_url: width: 1200
-          | image_tag:
-            loading: 'lazy',
-            sizes: '(min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw',
-            width: recipe.image.width,
-            height: recipe.image.height
-        }}
-      {%- else -%}
-        <div class="recipe-card-placeholder" aria-hidden="true"></div>
-      {%- endif -%}
-    </div>
+  <div class="recipe-card-image">
+    {%- if recipe.image != blank -%}
+      {{
+        recipe.image
+        | image_url: width: 1200
+        | image_tag:
+          loading: 'lazy',
+          sizes: '(min-width: 900px) 33vw, (min-width: 600px) 50vw, 100vw',
+          width: recipe.image.width,
+          height: recipe.image.height
+      }}
+    {%- else -%}
+      <div class="recipe-card-placeholder" aria-hidden="true"></div>
+    {%- endif -%}
+  </div>
 
-    <div class="recipe-card-info">
-      <div class="recipe-card-title-row">
-        <h3 class="text-ui recipe-card-name">{{ recipe.name }}</h3>
-        {%- if recipe.duration != blank -%}
-          <p class="text-h1 recipe-card-duration">{{ recipe.duration }}</p>
-        {%- endif -%}
+  <div class="recipe-card-info">
+    <h3 class="text-ui recipe-card-name">{{ recipe.name }}</h3>
+
+    {%- if recipe.description != blank -%}
+      <div class="text-body recipe-card-description">
+        {{ recipe.description | metafield_tag }}
       </div>
-      {%- if recipe.description != blank -%}
-        <div class="text-body recipe-card-description">
-          {{ recipe.description | metafield_tag }}
-        </div>
-      {%- endif -%}
-    </div>
-  </button>
+    {%- endif -%}
+
+    <button type="button" class="recipe-card-link text-h1" aria-haspopup="dialog">
+      <span>{{ 'recipes.card.watch' | t }}</span>
+      <svg class="recipe-card-watch-icon" width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <path d="M10 12L8.6 10.55L12.15 7H0V5H12.15L8.6 1.45L10 0L16 6L10 12Z" fill="currentColor"/>
+      </svg>
+    </button>
+  </div>
 
   <div class="recipe-modal" role="dialog" aria-modal="true" aria-label="{{ recipe.name | escape }}" hidden>
     <button type="button" class="recipe-modal-close" aria-label="{{ 'recipes.modal.close' | t }}">
@@ -140,8 +137,10 @@
 </recipe-modal>
 
 {% stylesheet %}
-  .recipe-card-link {
-    width: 100%;
+  /* The card is the flex row (image left, info right). The old wrapping
+     <button class="recipe-card-link"> is gone — only the "Watch →" button
+     at the bottom now triggers the modal. */
+  .recipe-card {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -177,20 +176,22 @@
     gap: var(--spacing-xs);
   }
 
-  .recipe-card-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: var(--spacing-xs);
+  /* Watch → trigger: .text-h1 typography (small uppercase) + inline arrow.
+     Self-aligns to the left of the info column, sits below the description. */
+  .recipe-card-link {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+    cursor: pointer;
   }
 
-  /* Mobile (base): the WHOLE dialog scrolls. The video fills the width and is
-     height-capped so it fits the viewport with the info card peeking below.
-     overflow-x is clipped because `overflow-y: auto` alone promotes overflow-x
-     to `auto` too (per spec), letting a sub-pixel-wide video trigger a stray
-     horizontal scroll. scrollbar-gutter reserves space on BOTH edges so the
-     vertical scrollbar can't unbalance the left/right padding. Desktop overrides
-     to a centred, non-scrolling two-column layout (single media query below). */
+  .recipe-card-watch-icon {
+    width: 1em;
+    height: auto;
+    display: block;
+  }
+
   .recipe-modal {
     position: fixed;
     inset: 0;

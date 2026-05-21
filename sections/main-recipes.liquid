@@ -40,15 +40,26 @@
 </section>
 
 {% stylesheet %}
+  /* Mobile uses spacing-l on top (xl is too much air on a small screen);
+     tablet+ steps up to xl. Inline + bottom paddings scale separately. */
   .recipes-index {
-    padding: var(--spacing-xs);
+    padding-top: var(--spacing-l);
+    padding-inline: var(--spacing-xs);
+    padding-bottom: var(--spacing-xs);
     color: var(--color-text);
     background-color: var(--color-bg);
   }
 
+  @media (min-width: 600px) {
+    .recipes-index {
+      padding-top: var(--spacing-xl);
+    }
+  }
+
   @media (min-width: 900px) {
     .recipes-index {
-      padding: var(--spacing-m);
+      padding-inline: var(--spacing-m);
+      padding-bottom: var(--spacing-m);
     }
   }
 
@@ -67,16 +78,15 @@
     gap: var(--spacing-xs);
   }
 
-  /* Tablet+: 2 columns */
-  @media (min-width: 600px) {
+  /* Mobile + tablet (<900px): 1 column — cards take the full row width.
+     Desktop (≥900px): 2 columns. Large (≥1500px): 3 columns. */
+  @media (min-width: 900px) {
     .recipes-index-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  /* Desktop+: 3 columns (intentionally tighter than the 4-up product grid —
-     recipe cards carry more body copy and want a bit more horizontal space) */
-  @media (min-width: 900px) {
+  @media (min-width: 1500px) {
     .recipes-index-grid {
       grid-template-columns: repeat(3, 1fr);
     }

@@ -194,7 +194,7 @@
   },
   "newsletter": {
     "email_placeholder": "Your email address",
-    "submit": "Subscribe",
+    "submit": "submit",
     "success": "Thanks for subscribing!",
     "error": "Something went wrong. Please try again."
   },

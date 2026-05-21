@@ -73,6 +73,7 @@
     pointer-events: none;
   }
 
+
   .header-mobile-menu,
   .header-mobile-toggle,
   .header-mobile-panel,
@@ -89,7 +90,10 @@
   }
 
 
-  /* Mobile menu disclosure — "Menu" summary + dropdown panel */
+  /* Mobile menu disclosure — "Menu" summary + dropdown panel.
+     position: relative so the panel below positions itself against this
+     disclosure (which is just the menu pill's height), not against .header
+     (which is taller due to the cart's margin-top extending the flex row). */
   .header-mobile-menu {
     flex: 1;
     min-width: 0;
@@ -107,7 +111,7 @@
     -webkit-backdrop-filter: blur(var(--blur));
     border: 1px solid var(--color-border);
     border-radius: var(--rad-s);
-    padding: var(--spacing-xxs) var(--spacing-xxs) 7px;
+    padding: var(--spacing-xxs);
     text-align: left;
     color: var(--color-text);
     transition: background-color var(--transition-fast);
@@ -129,22 +133,46 @@
     -webkit-backdrop-filter: none;
   }
 
-  /* Dropdown panel — vertical stack below the toggle */
+  /* Dropdown panel — ONE pill container holding all nav-links as plain rows.
+     Positions against .header-mobile-menu (just the menu pill's height) so
+     the gap is exactly xxxs. Width is set explicitly to span the full viewport
+     minus .header's xxs padding on each side; left: 0 starts the panel at the
+     .header-mobile-menu's left edge (which is already at .header padding-left). */
   .header-mobile-panel {
     position: absolute;
     top: calc(100% + var(--spacing-xxxs));
     left: 0;
-    right: 0;
+    width: calc(100vw - var(--spacing-xxs) * 2);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xxxs);
+    /* Same bento card styling as .nav-link / .header-mobile-toggle */
+    background-color: var(--color-nav);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--color-border);
+    border-radius: var(--rad-s);
+    padding: var(--spacing-xxs);
   }
 
-  /* Inside the dropdown, nav-links go full width and ignore the bento grid-column */
+  /* Inside the dropdown, links are bare rows — no individual pill chrome. The
+     outer .header-mobile-panel is the only pill. */
   .header-mobile-panel .nav-link {
     grid-column: auto;
     display: block;
     width: 100%;
+    background-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 0;
+    border-radius: 0;
+    padding: var(--spacing-xxs);
+  }
+
+  .header-mobile-panel .nav-link:hover {
+    background-color: var(--color-accent);
+    color: var(--color-text);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   /* Hide the mobile disclosure at tablet+ */
@@ -185,7 +213,9 @@
     -webkit-backdrop-filter: blur(var(--blur));
     border: 1px solid var(--color-border);
     border-radius: var(--rad-s);
-    padding: var(--spacing-xxs) var(--spacing-xxs) 7px;
+    /* xxs all sides + 1px extra on the bottom (calc keeps the relationship to
+       the token explicit — if --spacing-xxs changes, the bottom follows). */
+    padding: var(--spacing-xxs) var(--spacing-xxs) calc(var(--spacing-xxs) + 1px);
     text-align: left;
     color: var(--color-text);
     transition: background-color var(--transition-fast);
@@ -213,15 +243,21 @@
     grid-column: span 3;
   }
 
-  /* Cart: in the flex flow on mobile (next to menu), absolutely positioned top-right on tablet+ */
+  /* Cart: on mobile it sits in the flex flow next to the Menu disclosure (the
+     flex container handles the xxxs gap). margin-top: xxs shifts the cart
+     down by 8px so its top edge lands at y=16 from the viewport (.header
+     padding-top of xxs + this margin) — matching the desktop cart's top
+     offset. On tablet+ it switches to fixed positioning at top-right. */
   .header-right {
     flex-shrink: 0;
+    margin-top: var(--spacing-xxs);
   }
 
   @media (min-width: 600px) {
     .header-right {
-      position: absolute;
-      top: var(--spacing-xxs);
+      margin-top: 0;
+      position: fixed;
+      top: var(--spacing-s);
       right: var(--spacing-xxs);
     }
   }
@@ -233,7 +269,8 @@
     -webkit-backdrop-filter: blur(var(--blur));
     border: 1px solid var(--color-border);
     border-radius: var(--rad-s);
-    padding: var(--spacing-xxs) var(--spacing-xxs) 7px;
+    /* Match the nav-link chip: xxs all sides + 1px extra on the bottom. */
+    padding: var(--spacing-xxs) var(--spacing-xxs) calc(var(--spacing-xxs) + 1px);
     color: var(--color-text);
     transition: background-color var(--transition-fast);
   }
@@ -254,13 +291,21 @@
     opacity: 1;
   }
 
-  /* Staggered fade-in on page load — left to right, top to bottom (or menu+cart on mobile) */
+  /* Staggered fade-in on page load — left to right, top to bottom. Nav-link
+     + mobile-toggle slide in (translateY); the cart only fades because its
+     own positioning (position: fixed; top: xxs) is what places it on screen
+     — applying a translateY initial state would shift it ABOVE the intended
+     position until the animation lands, which reads as "stuck to the top". */
   .nav-link,
-  .header-cart,
   .header-mobile-toggle {
     opacity: 0;
     transform: translateY(-6px);
     animation: header-item-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .header-cart {
+    opacity: 0;
+    animation: header-cart-fade-in 0.22s ease forwards;
   }
 
   .header-mobile-toggle { animation-delay: 0.04s; }
@@ -281,6 +326,12 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes header-cart-fade-in {
+    to {
+      opacity: 1;
     }
   }
 

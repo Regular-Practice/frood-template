@@ -303,7 +303,6 @@
     position: fixed;
     top: var(--spacing-xxs);
     left: var(--spacing-xxs);
-    right: var(--spacing-xxs);
     z-index: 50;
     display: block;
     width: auto;
@@ -583,6 +582,51 @@
       top: auto;
     }
 
+    /* Compact form on tablet: once scrolled past the section, switch from
+       absolute (anchored to section's bottom-left) to fixed (anchored to
+       viewport's bottom-left). The bottom/left offsets come from the base
+       .product-boxes rule above via cascade; only position needs to change.
+       Max-width 386px (from the base rule) is preserved so the compact panel
+       sits as a small floating bar rather than spanning the full width.
+
+       Entry animation: same slide-up-from-below + fade as mobile (the
+       @keyframes is defined once near the bottom of this stylesheet and
+       reused at both breakpoints). The per-child collapse transitions are
+       skipped here too so the bar slides in as a solid unit. */
+    .product-boxes.is-compact {
+      position: fixed;
+      animation: product-boxes-compact-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Tablet-only override: keep the product render visible inside the
+       compact panel. The desktop .is-compact rule collapses .product-box-render
+       to max-height: 0; opacity: 0 — but on tablet the compact card is wider
+       and benefits from showing the render alongside the section-lockup.
+       Mobile still collapses it (matches the default rule).  */
+    .product-boxes.is-compact .product-box-render {
+      max-height: 1200px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* The desktop .is-compact rule zeroes .product-box-main's gap to flush
+       header against next-visible element; on tablet we still have the
+       render visible, so restore the tablet gap (xs) between section-lockup
+       and render in the row-reverse flex. */
+    .product-boxes.is-compact .product-box-main {
+      gap: var(--spacing-xs);
+    }
+
+    /* Tablet-only: skip the inner collapse transitions so accordions and
+       variants snap to their compact state alongside the parent's slide-up
+       (mirrors the mobile rule). The render stays visible on tablet so its
+       transition wouldn't fire either way. */
+    .product-box-render,
+    .product-boxes .product-accordion,
+    .product-boxes .product-box-variants {
+      transition: none;
+    }
+
     /* row-reverse so the render visually leads (left) and the section-lockup
        sits to the right of it, without touching the source order. */
     .product-box-main {
@@ -627,13 +671,12 @@
       aspect-ratio: 1 / 1;
     }
 
-    /* Boxes flow below the slider, full section width — drops the 386px cap,
-       the fixed positioning, and the .is-compact pinning used on desktop.
-       margin-top opens the gap between slider and boxes; matches the mobile
-       section padding (--spacing-xs) so the slider→boxes gap reads the same
-       as the section's edge inset. */
-    .product-boxes,
-    .product-boxes.is-compact {
+    /* Boxes flow below the slider, full section width — drops the 386px cap
+       and the fixed positioning used on desktop. margin-top opens the gap
+       between slider and boxes; matches the mobile section padding
+       (--spacing-xs) so the slider→boxes gap reads the same as the section's
+       edge inset. */
+    .product-boxes {
       position: static;
       width: 100%;
       max-width: none;
@@ -641,6 +684,53 @@
       left: auto;
       right: auto;
       margin-top: var(--spacing-xs);
+    }
+
+    /* Compact form on mobile: once the user has scrolled past the static
+       boxes column, the .is-compact class re-pins the column — but to the
+       BOTTOM of the viewport rather than the top, so it reads as a sticky
+       add-to-cart bar. The desktop .is-compact rules above already collapse
+       the render, accordions, and variants, so only Box 1 (eyebrow + title)
+       and the buy row remain visible inside the pinned panel.
+
+       Entry animation: slide up from below the viewport with a fade. The
+       per-child max-height/opacity transitions are skipped on mobile (see
+       below) so the bar slides in as a single solid unit at its compact
+       size, rather than tall-then-collapsing while it slides. */
+    .product-boxes.is-compact {
+      position: fixed;
+      top: auto;
+      bottom: var(--spacing-xs);
+      left: var(--spacing-xs);
+      right: var(--spacing-xs);
+      width: auto;
+      max-width: none;
+      margin-top: 0;
+      animation: product-boxes-compact-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Mobile-only: skip the inner collapse transitions so the children jump
+       straight to their compact state. The visible motion is the parent
+       bar sliding up from below; the children's internal collapse would
+       compete with that and read as a jitter. */
+    .product-box-render,
+    .product-boxes .product-accordion,
+    .product-boxes .product-box-variants {
+      transition: none;
+    }
+  }
+
+  /* Compact-state entry animation for mobile (referenced inside the <600px
+     media query above). Kept at top level so the @keyframes is parsed once,
+     not redefined per media query. */
+  @keyframes product-boxes-compact-in {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
     }
   }
 

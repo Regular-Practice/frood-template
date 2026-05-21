@@ -4,6 +4,22 @@
     {%- assign active_filter_count = active_filter_count | plus: filter.active_values.size -%}
   {%- endfor -%}
 
+  {%- comment -%}
+    Section-lockup header (mirrors sections/main-recipes.liquid):
+    h1 eyebrow + h3 heading driven by merchant inputs in the schema.
+  {%- endcomment -%}
+  {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+    <header class="collection-header section-lockup">
+      {%- if section.settings.eyebrow != blank -%}
+        <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+      {%- endif -%}
+    </header>
+  {%- endif -%}
+
   <div class="collection-toolbar">
     {%- if section.settings.show_filters -%}
       <button class="collection-filter-toggle button" aria-expanded="false" aria-controls="filter-drawer">
@@ -78,8 +94,35 @@
 </div>
 
 {% stylesheet %}
+  /* Mirrors sections/main-recipes.liquid:
+     – mobile: padding-top l (xl is too much air on a small screen)
+     – tablet+: padding-top steps up to xl
+     – desktop+: inline & bottom paddings step from xs → m */
   .collection {
-    padding: var(--spacing-base);
+    padding-top: var(--spacing-l);
+    padding-inline: var(--spacing-xs);
+    padding-bottom: var(--spacing-xs);
+  }
+
+  @media (min-width: 600px) {
+    .collection {
+      padding-top: var(--spacing-xl);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .collection {
+      padding-inline: var(--spacing-m);
+      padding-bottom: var(--spacing-m);
+    }
+  }
+
+  .collection-header {
+    margin-bottom: var(--spacing-l);
+  }
+
+  .collection-header h3 {
+    max-width: 36ch;
   }
 
   .collection-toolbar {
@@ -145,6 +188,18 @@
 {
   "name": "Collection",
   "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "default": "Range"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break."
+    },
     {
       "type": "range",
       "id": "products_per_page",
