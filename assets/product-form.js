@@ -13,7 +13,7 @@
  * no longer auto-opens — it opens on cart-icon click).
  *
  * Expected markup:
- *   <product-form data-section-id="{{ section.id }}" data-added-message="{{ 'products.product.added_to_cart' | t }}">
+ *   <product-form data-section-id="{{ section.id }}" data-added-message="{{ 'products.product.added_to_cart' | t: product: product.title }}">
  *     <script type="application/json" class="product-json">{ "variants": [...] }</script>
  *     <fieldset class="variant-options">...</fieldset>
  *     <quantity-selector>
@@ -28,6 +28,15 @@
  *     </form>
  *   </product-form>
  */
+
+// Size a Shopify CDN image URL for the 30×30 toast thumbnail (2× = 60px).
+// Mirrors toastThumb() in toast.js — duplicated because this is a classic
+// script (loaded without type="module") and can't import.
+function toastThumb(url, size = 60) {
+  if (!url) return undefined;
+  return `${url}${url.includes('?') ? '&' : '?'}width=${size}`;
+}
+
 class ProductForm extends HTMLElement {
   connectedCallback() {
     this.form = this.querySelector('form');
@@ -192,7 +201,11 @@ class ProductForm extends HTMLElement {
         window.location.href = '/cart';
       } else {
         document.dispatchEvent(new CustomEvent('toast:show', {
-          detail: { message: this.addedMessage || 'Added to cart', variant: 'success' }
+          detail: {
+            message: this.addedMessage || 'Added to cart',
+            variant: 'success',
+            image: toastThumb(data.items?.[0]?.image)
+          }
         }));
       }
 

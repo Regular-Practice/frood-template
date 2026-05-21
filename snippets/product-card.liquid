@@ -116,7 +116,7 @@
       <a href="{{ product.url }}" class="button secondary">{{ 'products.product.view' | t }}</a>
 
       {%- if first_variant -%}
-        <product-card-quick-add>
+        <product-card-quick-add data-added-message="{{ 'products.product.added_to_cart' | t: product: product.title }}">
           <form action="/cart/add" method="post">
             <input type="hidden" name="id" value="{{ first_variant.id }}">
             <button

@@ -87,7 +87,7 @@
   data-capacity="{{ capacity }}"
   {% if box_variant %}data-box-variant-id="{{ box_variant.id }}"{% endif %}
   data-i18n-add="{{ 'sections.bundle_builder.add_to_cart' | t }}"
-  data-i18n-added="{{ 'sections.bundle_builder.added' | t }}"
+  data-i18n-added="{{ 'sections.bundle_builder.added' | t: product: box_product.title }}"
   data-i18n-contents="{{ 'sections.bundle_builder.contents_property' | t }}"
   data-i18n-error="{{ 'sections.bundle_builder.checkout_error' | t }}"
 >

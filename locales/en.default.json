@@ -38,6 +38,7 @@
   "products": {
     "product": {
       "add_to_cart": "Add to cart",
+      "added_to_cart": "Added {{ product }} to cart!",
       "sold_out": "Sold out",
       "sale": "Sale",
       "price": "Price",
@@ -241,7 +242,7 @@
       "price": "Price",
       "add_to_cart": "Add to cart",
       "add_more": "Add {count} more",
-      "added": "Box added to cart",
+      "added": "Added {{ product }} to cart!",
       "caption": "A box of {{ count }} — mix any flavours.",
       "empty_stage": "Add packs to fill your box",
       "no_flavours": "No flavours yet.",

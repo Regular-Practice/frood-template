@@ -116,6 +116,10 @@ summary::-webkit-details-marker {
   --color-success: var(--color-accent-light);
   --color-error-bg: #f8d7da;
 
+  /* Toast variant fills — pale tints (Figma: Toasts frame) */
+  --color-toast-success: #d4f4c9;
+  --color-toast-error: #f9d2d2;
+
   /* Form input backgrounds — brand-locked, identical across all color schemes */
   --color-input-bg: var(--color-bg-dark);
   --color-input-bg-hover: var(--color-accent-light);
@@ -195,6 +199,7 @@ summary::-webkit-details-marker {
 
   /* Border radius */
   --rad-s: 2px;
+  --rad-m: 4px;
 
   /* Blur */
   --blur: 7px;
@@ -1074,18 +1079,21 @@ body {
 
 /* INNER — the visible card; enter/exit motion + swipe. */
 .toast {
+  position: relative;
   pointer-events: auto;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--spacing-xs);
   width: 100%;
-  padding: var(--spacing-xs) var(--spacing-s);
+  /* Symmetric 12px padding; the extra inline-end room reserves space for the
+     absolutely positioned close button so a wrapping message never slides
+     under it. */
+  padding: var(--spacing-xs);
+  padding-inline-end: calc(var(--spacing-xs) + var(--spacing-m));
   background-color: var(--color-bg);
   color: var(--color-text);
-  border-radius: var(--rad-s);
-  /* Variant accent strip — overridden per variant below. */
-  border-left: 3px solid var(--color-text);
-  box-shadow: 1px 2px 12px var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: var(--rad-m);
   /* Vertical drag scrolls the page natively; we own horizontal (swipe). */
   touch-action: pan-y;
 
@@ -1112,30 +1120,47 @@ body {
   transition: none;
 }
 
-/* Generic success/error colors — recognizable, intentionally not brand tokens.
-   Matches the hardcoded #16a34a / #dc2626 used by form-success / form-error. */
+/* Variant fills — pale tints from Figma. info keeps the default off-white card;
+   success/error wash the whole card (recognizable, intentionally not brand tokens). */
+.toast-info {
+  background-color: var(--color-bg);
+}
+
 .toast-success {
-  border-left-color: #16a34a;
+  background-color: var(--color-toast-success);
 }
 
 .toast-error {
-  border-left-color: #dc2626;
+  background-color: var(--color-toast-error);
 }
 
-.toast-info {
-  border-left-color: var(--color-text);
+/* Optional 30×30 product thumbnail — toast.js sets src when an image is passed,
+   else removes the node entirely so the slot isn't reserved. */
+.toast-thumb {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: var(--rad-m);
 }
 
 .toast-message {
   flex: 1;
-  font-size: var(--type-ui-size);
-  line-height: var(--type-ui-height);
-  font-weight: var(--type-ui-weight);
-  /* Optical nudge so the text baseline aligns with the close icon. */
-  padding-top: 2px;
+  min-width: 0;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-height);
+  font-weight: var(--type-body-weight);
 }
 
 .toast-close {
+  position: absolute;
+  top: 5px;
+  inset-inline-end: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
   color: var(--color-text-light);
   transition: color var(--transition-fast);

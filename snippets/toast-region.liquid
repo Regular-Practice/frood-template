@@ -13,6 +13,12 @@
     {%- endcomment -%}
     <div class="toast-item">
       <div class="toast" role="status">
+        {%- comment -%}
+          Optional thumbnail — kept src-less here (inert inside <template>); toast.js
+          fills src + alt when an image is passed, else removes the node. alt="" so
+          it's decorative: the message text already carries the meaning.
+        {%- endcomment -%}
+        <img class="toast-thumb" alt="" width="30" height="30">
         <span class="toast-message"></span>
         <button type="button" class="toast-close" data-dismiss aria-label="{{ 'accessibility.dismiss' | t }}">
           {% render 'icon-close' %}

@@ -13,7 +13,7 @@
 
   Expected markup (emitted by snippets/product-card.liquid):
 
-    <product-card-quick-add data-added-message="{{ 'products.product.added_to_cart' | t }}">
+    <product-card-quick-add data-added-message="{{ 'products.product.added_to_cart' | t: product: product.title }}">
       <form action="/cart/add" method="post">
         <input type="hidden" name="id" value="{{ variant.id }}">
         <button type="submit" class="button">Shop now</button>
@@ -25,6 +25,15 @@
 */
 
 import { showToast } from './toast.js';
+
+// Size a Shopify CDN image URL for the 30×30 toast thumbnail (2× = 60px).
+// Inlined rather than imported from toast.js so a stale cached toast.js can't
+// break this module's import link (Shopify resolves `./toast.js` versionless).
+// Same helper as product-form.js / bundle-builder.js.
+function toastThumb(url, size = 60) {
+  if (!url) return undefined;
+  return `${url}${url.includes('?') ? '&' : '?'}width=${size}`;
+}
 
 class ProductCardQuickAdd extends HTMLElement {
   connectedCallback() {
@@ -83,7 +92,10 @@ class ProductCardQuickAdd extends HTMLElement {
       if (document.body.dataset.cartType === 'page') {
         window.location.href = '/cart';
       } else {
-        showToast(this.addedMessage || 'Added to cart', { variant: 'success' });
+        showToast(this.addedMessage || 'Added to cart', {
+          variant: 'success',
+          image: toastThumb(addData.items?.[0]?.image)
+        });
       }
     } catch (err) {
       console.error('[product-card-quick-add]', err);

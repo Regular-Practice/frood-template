@@ -51,6 +51,15 @@
   only (keys are ephemeral). Filtered to known flavours + capped on load.
 */
 
+// Size a Shopify CDN image URL for the 30×30 toast thumbnail (2× = 60px).
+// Inlined rather than imported from toast.js so this module never depends on a
+// toast.js export — keeps add-to-cart resilient to a stale cached toast.js.
+// Same helper as product-form.js / product-card-quick-add.js.
+function toastThumb(url, size = 60) {
+  if (!url) return undefined;
+  return `${url}${url.includes('?') ? '&' : '?'}width=${size}`;
+}
+
 class BundleBuilder extends HTMLElement {
   connectedCallback() {
     this.capacity = parseInt(this.dataset.capacity, 10) || 4;
@@ -292,7 +301,11 @@ class BundleBuilder extends HTMLElement {
       } else {
         document.dispatchEvent(
           new CustomEvent('toast:show', {
-            detail: { message: this.dataset.i18nAdded || 'Box added to cart', variant: 'success' }
+            detail: {
+              message: this.dataset.i18nAdded || 'Box added to cart',
+              variant: 'success',
+              image: toastThumb(data.items?.[0]?.image)
+            }
           })
         );
       }

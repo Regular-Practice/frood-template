@@ -50,7 +50,11 @@
     </product-bg-slider>
   {%- endif -%}
 
-  <product-form class="product-boxes" data-section-id="{{ section.id }}">
+  <product-form
+    class="product-boxes"
+    data-section-id="{{ section.id }}"
+    data-added-message="{{ 'products.product.added_to_cart' | t: product: product.title }}"
+  >
     <script type="application/json" class="product-json">
       {{ product | json }}
     </script>

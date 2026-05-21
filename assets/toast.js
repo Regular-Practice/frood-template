@@ -11,16 +11,23 @@
  * failure, checkout error). Field-level validation stays inline near the field
  * (see conventions/commerce.md) — don't toast a "Only 3 available" message.
  *
- * Event contract (the public API — unchanged):
+ * Event contract (the public API):
  *   document.dispatchEvent(new CustomEvent('toast:show', {
  *     detail: {
  *       message,                  // string, required — set via textContent
  *       variant = 'info',         // 'success' | 'error' | 'info'
  *       duration = 4000,          // ms; 0 = sticky (no auto-dismiss)
+ *       image,                    // optional URL — shows a 30×30 thumbnail
+ *       imageAlt = '',            // optional alt; '' keeps the thumb decorative
  *     }
  *   }));
  *   // or: import { showToast } from './toast.js';
  *   //     showToast('Added to bag', { variant: 'success' });
+ *
+ * For cart thumbnails, pass a sized CDN URL (e.g. append `&width=60`) so the
+ * 30×30 slot doesn't download the full-size product image. Cart callers inline
+ * a small `toastThumb()` helper for this rather than importing one from here —
+ * a versionless `./toast.js` import can break if the served file is stale.
  *
  * Stacking model (see base.css §23 for the matching CSS):
  *   Toasts are absolutely positioned at a shared bottom anchor. Each toast is
@@ -43,6 +50,7 @@
  *     <template data-toast-template>
  *       <div class="toast-item">
  *         <div class="toast" role="status">
+ *           <img class="toast-thumb" alt="" width="30" height="30">
  *           <span class="toast-message"></span>
  *           <button type="button" class="toast-close" data-dismiss aria-label="…">
  *             {% render 'icon-close' %}
@@ -64,7 +72,7 @@ const SWIPE_RATIO = 0.35; // …or this fraction of the toast width, whichever i
  * Show a toast from anywhere. Thin wrapper over the `toast:show` event so
  * callers don't need a handle on <toast-region>.
  * @param {string} message
- * @param {{ variant?: 'success'|'error'|'info', duration?: number }} [options]
+ * @param {{ variant?: 'success'|'error'|'info', duration?: number, image?: string, imageAlt?: string }} [options]
  */
 export function showToast(message, options = {}) {
   document.dispatchEvent(
@@ -119,9 +127,9 @@ class ToastRegion extends HTMLElement {
 
   /**
    * Build, mount, and schedule a toast.
-   * @param {{ message?: string, variant?: string, duration?: number }} detail
+   * @param {{ message?: string, variant?: string, duration?: number, image?: string, imageAlt?: string }} detail
    */
-  show({ message, variant = 'info', duration = DEFAULT_DURATION }) {
+  show({ message, variant = 'info', duration = DEFAULT_DURATION, image, imageAlt = '' }) {
     if (!message || !this.template) return;
     if (!VARIANTS.includes(variant)) variant = 'info';
 
@@ -129,12 +137,22 @@ class ToastRegion extends HTMLElement {
     const item = fragment.querySelector('.toast-item');
     const toast = item.querySelector('.toast');
     const messageEl = toast.querySelector('.toast-message');
+    const thumb = toast.querySelector('.toast-thumb');
     const closeBtn = toast.querySelector('[data-dismiss]');
 
     toast.classList.add(`toast-${variant}`);
     // Errors announce assertively; success/info inherit the region's polite live setting.
     toast.setAttribute('role', variant === 'error' ? 'alert' : 'status');
     messageEl.textContent = message;
+
+    // Optional thumbnail — width/height attrs keep the box reserved before load
+    // so the stack math doesn't shift. No image → drop the node entirely.
+    if (image && thumb) {
+      thumb.src = image;
+      thumb.alt = imageAlt;
+    } else {
+      thumb?.remove();
+    }
 
     closeBtn?.addEventListener('click', () => this.dismiss(item));
     toast.addEventListener('pointerdown', (e) => this.onDown(e, item));
