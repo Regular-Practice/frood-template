@@ -274,6 +274,15 @@
   "recipes": {
     "index": {
       "empty": "No recipes yet."
+    },
+    "modal": {
+      "close": "Close video",
+      "play": "Play",
+      "pause": "Pause",
+      "mute": "Mute",
+      "unmute": "Unmute",
+      "made_with": "Made with",
+      "view": "View"
     }
   }
 }

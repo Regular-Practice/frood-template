@@ -1,7 +1,14 @@
 {%- comment -%}
-  Placeholder Recipe Card — owned by sections/main-recipes.liquid.
-  Clicking a card opens an inline <recipe-modal> with the recipe video.
-  Expects: recipe (metaobject) with handles: name, image, duration, description, video
+  Recipe Card — owned by sections/main-recipes.liquid.
+
+  Clicking a card opens an inline <recipe-modal>: a two-column dialog with the
+  recipe video on the left (portrait, bespoke media-chrome `chrome: 'minimal'`
+  controls) and info card(s) on the right. Stacks video-over-cards below 900px.
+
+  Expects: recipe (metaobject) with handles:
+    name, image, duration, description, video   (rendered today)
+    made_with (product reference)               (optional — lights up the
+                                                 "Made with" card when present)
 {%- endcomment -%}
 
 <recipe-modal class="recipe-card">
@@ -38,17 +45,18 @@
   </button>
 
   <div class="recipe-modal" role="dialog" aria-modal="true" aria-label="{{ recipe.name | escape }}" hidden>
-    <div class="recipe-modal-inner">
-      <button type="button" class="recipe-modal-close text-h1">
-        {{ 'recipes.modal.close' | t }}
-      </button>
+    <button type="button" class="recipe-modal-close" aria-label="{{ 'recipes.modal.close' | t }}">
+      {% render 'icon-close' %}
+    </button>
 
+    <div class="recipe-modal-inner">
       {%- assign recipe_video = recipe.video.value -%}
       {%- if recipe_video != blank -%}
         <div class="recipe-modal-video">
           {% render 'video',
             media: recipe_video,
             controls: true,
+            chrome: 'minimal',
             autoplay: true,
             loop: true,
             playsinline: true,
@@ -56,6 +64,57 @@
           %}
         </div>
       {%- endif -%}
+
+      <div class="recipe-modal-info">
+        <div class="recipe-info-card">
+          <h2 class="text-ui recipe-info-title">{{ recipe.name }}</h2>
+
+          {%- if recipe.description != blank -%}
+            <div class="text-body recipe-info-description">
+              {{ recipe.description | metafield_tag }}
+            </div>
+          {%- endif -%}
+
+          {%- if recipe.duration != blank -%}
+            <hr class="recipe-info-rule">
+            {%- comment -%}
+              Only `duration` exists on the metaobject today; a `serves` (and any
+              further) detail joins this list once those fields are added.
+            {%- endcomment -%}
+            <ul class="text-body recipe-info-details">
+              <li>{{ recipe.duration }}</li>
+            </ul>
+          {%- endif -%}
+        </div>
+
+        {%- comment -%}
+          "Made with" product card — dormant until the recipes metaobject gains a
+          product-reference field (expected handle: `made_with`). When present it
+          renders the linked product's thumbnail, title and a VIEW link. No other
+          code change needed to switch it on.
+        {%- endcomment -%}
+        {%- assign made_with = recipe.made_with.value -%}
+        {%- if made_with != blank -%}
+          <div class="recipe-madewith-card">
+            <p class="text-body recipe-madewith-label">{{ 'recipes.modal.made_with' | t }}</p>
+            <a class="recipe-madewith-product" href="{{ made_with.url }}">
+              <span class="recipe-madewith-image">
+                {%- if made_with.featured_image != blank -%}
+                  {{
+                    made_with.featured_image
+                    | image_url: width: 176
+                    | image_tag: loading: 'lazy', width: 88, height: 88, alt: made_with.title
+                  }}
+                {%- endif -%}
+              </span>
+              <span class="recipe-madewith-text">
+                <span class="text-ui recipe-madewith-name">{{ made_with.title }}</span>
+                <span class="text-h1 inline-link recipe-madewith-view">{{ 'recipes.modal.view' | t }}</span>
+              </span>
+            </a>
+          </div>
+        {%- endif -%}
+      </div>
     </div>
   </div>
 </recipe-modal>
@@ -132,40 +191,164 @@
     display: none;
   }
 
+  /* Icon-only close — no background, matching the drawer close buttons:
+     muted at rest, full text colour on hover. */
+  .recipe-modal-close {
+    position: absolute;
+    top: var(--spacing-m);
+    right: var(--spacing-m);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xxs);
+    color: var(--color-text-accent);
+    transition: color var(--transition-fast);
+  }
+
+  .recipe-modal-close:hover {
+    color: var(--color-text);
+  }
+
+  /* Mobile: video then info cards, stacked, whole modal body scrolls. */
   .recipe-modal-inner {
     position: relative;
     z-index: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: var(--spacing-s);
+    width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
   }
 
+  /* Desktop: video left (height-driven), 348px info column right, top-aligned. */
+  @media (min-width: 900px) {
+    .recipe-modal-inner {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      width: auto;
+      max-width: 100%;
+      overflow: visible;
+    }
+  }
+
+  /* Video frame — rounded clip with controls overlaid (no beige frame; the v2
+     design sits the controls directly on the video). */
   .recipe-modal-video {
-    padding: var(--spacing-xs);
-    background-color: var(--color-bg-dark);
+    flex: 0 0 auto;
+    display: flex;
+    align-self: center;
     border-radius: var(--rad-s);
+    overflow: hidden;
   }
 
-  /* Size the VIDEO by its own height and let the player box shrink-wrap it, so
-     the frame always matches the video's true aspect ratio — no dependency on a
-     (possibly wrong) metafield aspect_ratio, and no letterbox strip. Mirrors the
-     original native-video sizing, just inside media-chrome. line-height:0 stops
-     the inline-block controller adding descender space below the video. */
+  /* Mobile: shrink-wrap the video within (100% wide, 60vh tall) preserving its
+     own aspect — no pillarbox/letterbox — leaving room for the cards below. */
   .recipe-modal-video media-controller {
     display: inline-block;
     max-width: 100%;
-    max-height: 85vh;
-    border-radius: var(--rad-s);
-    overflow: hidden;
     line-height: 0;
   }
 
   .recipe-modal-video media-controller video[slot="media"] {
     display: block;
-    height: 85vh;
     width: auto;
+    height: auto;
     max-width: 100%;
+    max-height: 60vh;
     object-fit: contain;
+  }
+
+  /* Desktop: height-driven so the frame matches the video's true aspect ratio
+     (no dependency on a metafield aspect_ratio, no letterbox strip). */
+  @media (min-width: 900px) {
+    .recipe-modal-video {
+      align-self: flex-start;
+    }
+
+    .recipe-modal-video media-controller video[slot="media"] {
+      width: auto;
+      height: 85vh;
+      max-width: 100%;
+      max-height: 85vh;
+    }
+  }
+
+  .recipe-modal-info {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-s);
+    width: 100%;
+  }
+
+  @media (min-width: 900px) {
+    .recipe-modal-info {
+      width: 348px;
+    }
+  }
+
+  .recipe-info-card,
+  .recipe-madewith-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs);
+    background-color: var(--color-bg);
+    border-radius: var(--rad-s);
+  }
+
+  .recipe-info-rule {
+    width: 100%;
+    height: 0;
+    margin: 0;
+    border: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .recipe-info-details {
+    margin: 0;
+    padding-left: 1.25em;
+    list-style: disc;
+    color: var(--color-text-accent);
+  }
+
+  .recipe-info-details li + li {
+    margin-top: var(--spacing-xxs);
+  }
+
+  .recipe-madewith-label {
+    color: var(--color-text-accent);
+  }
+
+  .recipe-madewith-product {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+  }
+
+  .recipe-madewith-image {
+    flex: 0 0 88px;
+    width: 88px;
+    height: 88px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .recipe-madewith-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .recipe-madewith-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
   }
 {% endstylesheet %}

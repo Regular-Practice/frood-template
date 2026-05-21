@@ -12,6 +12,15 @@
                       autoplay/loop). This is how a controls-hidden video stays
                       chrome-free while routing through the same snippet.
 
+  Control chrome (only when controls:true) — `chrome` param:
+    'full'    (default)  Standard bar: play · time · scrubber · duration · mute
+                         · fullscreen. Used by product video.
+    'minimal'            Bespoke overlay for the recipe modal: play + mute as
+                         text pills and a time readout, on a bottom gradient.
+                         Built entirely from media-chrome elements (text slotted
+                         in place of the default icons) so play/mute state and
+                         keyboard control still come from the library.
+
   Accepts (defaults in parens):
     media       (required)  Shopify video object — a product media item OR a
                             video metafield's `.value`. Must expose `.sources`.
@@ -65,16 +74,33 @@
 {%- endcapture -%}
 
 {%- if controls -%}
-  <media-controller class="frood-video"{% if label != blank %} aria-label="{{ label | escape }}"{% endif %}>
+  {%- assign chrome = chrome | default: 'full' -%}
+  <media-controller class="frood-video{% if chrome == 'minimal' %} minimal{% endif %}"{% if label != blank %} aria-label="{{ label | escape }}"{% endif %}>
     {{ video_el }}
-    <media-control-bar>
-      <media-play-button></media-play-button>
-      <media-time-display></media-time-display>
-      <media-time-range></media-time-range>
-      <media-duration-display></media-duration-display>
-      <media-mute-button></media-mute-button>
-      <media-fullscreen-button></media-fullscreen-button>
-    </media-control-bar>
+    {%- if chrome == 'minimal' -%}
+      <media-control-bar>
+        <media-play-button class="recipe-control-pill">
+          <span slot="play">{{ 'recipes.modal.play' | t }}</span>
+          <span slot="pause">{{ 'recipes.modal.pause' | t }}</span>
+        </media-play-button>
+        <media-mute-button class="recipe-control-pill">
+          <span slot="high">{{ 'recipes.modal.mute' | t }}</span>
+          <span slot="medium">{{ 'recipes.modal.mute' | t }}</span>
+          <span slot="low">{{ 'recipes.modal.mute' | t }}</span>
+          <span slot="off">{{ 'recipes.modal.unmute' | t }}</span>
+        </media-mute-button>
+        <media-time-display class="recipe-control-time"></media-time-display>
+      </media-control-bar>
+    {%- else -%}
+      <media-control-bar>
+        <media-play-button></media-play-button>
+        <media-time-display></media-time-display>
+        <media-time-range></media-time-range>
+        <media-duration-display></media-duration-display>
+        <media-mute-button></media-mute-button>
+        <media-fullscreen-button></media-fullscreen-button>
+      </media-control-bar>
+    {%- endif -%}
   </media-controller>
 {%- else -%}
   {{ video_el }}
@@ -109,6 +135,47 @@
      beige fill instead — no backdrop-filter directly over video. */
   .frood-video media-control-bar {
     background: var(--color-nav);
+  }
+
+  /* Minimal chrome (recipe modal): play + mute as beige text pills on the left,
+     time readout pushed right, all on a bottom scrim gradient instead of the
+     beige bar. The buttons are real media-chrome controls — only their icons
+     are swapped for slotted text — so state + keyboard handling are unchanged. */
+  .frood-video.minimal media-control-bar {
+    align-items: center;
+    gap: var(--spacing-xxs);
+    padding: var(--spacing-s);
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      color-mix(in srgb, var(--color-text) 25%, transparent)
+    );
+  }
+
+  .frood-video.minimal .recipe-control-pill {
+    border-radius: var(--rad-s);
+    --media-control-background: var(--color-bg-dark);
+    --media-control-hover-background: var(--color-accent-light);
+    --media-control-padding: var(--spacing-xxs);
+  }
+
+  /* Slotted labels read as uppercase mini-caps (matches .text-h1 metrics) in
+     dark burgundy on the beige pill. */
+  .frood-video.minimal .recipe-control-pill span {
+    font-family: 'HW Left', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: var(--color-text);
+  }
+
+  .frood-video.minimal .recipe-control-time {
+    margin-left: auto;
+    --media-control-background: transparent;
+    --media-primary-color: #fff;
+    --media-control-padding: var(--spacing-xxs);
   }
 
   @media (prefers-reduced-motion: reduce) {
