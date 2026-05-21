@@ -1,0 +1,67 @@
+{%- comment -%}
+  Renders a single cart-drawer line item.
+
+  Dedicated to the cart drawer (NOT shared with the cart page, which uses
+  `cart-item`). Owned by sections/cart-drawer.liquid.
+
+  - Subtitle comes from the product metafield `custom.cart_subtitle`, falling
+    back to the variant title when it isn't the default, else hidden.
+  - Quantity uses the shared `quantity-selector` with min 0 — stepping to 0
+    removes the line (handled by assets/cart-items.js). No separate remove btn.
+  - `[data-error]` is the line-level error slot (hidden when empty); populated
+    by assets/cart-items.js on a stock clamp or a failed update.
+
+  Expects:
+    - item: cart line item object
+
+  Usage:
+    {% render 'cart-drawer-item', item: item %}
+{%- endcomment -%}
+
+{%- liquid
+  assign subtitle = item.product.metafields.custom.cart_subtitle.value
+  if subtitle == blank and item.variant.title != 'Default Title'
+    assign subtitle = item.variant.title
+  endif
+
+  assign qty_max = 99
+  if item.variant.inventory_management != blank and item.variant.inventory_policy == 'deny'
+    assign qty_max = item.variant.inventory_quantity
+  endif
+-%}
+
+<div class="cart-drawer-item" data-key="{{ item.key }}">
+  <a href="{{ item.url }}" class="cart-drawer-item-thumb" tabindex="-1" aria-hidden="true">
+    {%- if item.image -%}
+      {{ item.image | image_url: width: 200 | image_tag:
+        loading: 'lazy',
+        widths: '136, 200',
+        width: 68,
+        height: 68,
+        class: 'cart-drawer-item-image',
+        alt: item.product.title
+      }}
+    {%- endif -%}
+  </a>
+
+  <div class="cart-drawer-item-info">
+    <div class="cart-drawer-item-text">
+      <a href="{{ item.url }}" class="cart-drawer-item-title text-ui">{{ item.product.title }}</a>
+      {%- if subtitle != blank -%}
+        <p class="cart-drawer-item-subtitle">{{ subtitle }}</p>
+      {%- endif -%}
+      <p class="cart-drawer-item-error" data-error role="alert"></p>
+    </div>
+
+    <div class="cart-drawer-item-controls">
+      {% render 'quantity-selector',
+        value: item.quantity,
+        name: 'updates[]',
+        min: 0,
+        max: qty_max,
+        data_key: item.key
+      %}
+      <span class="cart-drawer-item-price text-ui">{{ item.final_line_price | money }}</span>
+    </div>
+  </div>
+</div>

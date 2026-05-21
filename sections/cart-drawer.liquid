@@ -1,11 +1,18 @@
 {%- comment -%}
-  Cart drawer — a floating "island" overlay that scales in from the top-right.
-  Renders the native Shopify cart (cart-items + cart-totals, or cart-empty),
-  refreshed via Shopify's Section Rendering API. Listens on `document` for
-  `cart:item-added` and `cart:updated` — both swap the body; neither auto-opens
-  the drawer (add-to-cart shows a success toast, and the drawer opens on
-  cart-icon click). Quantity changes and removes inside the drawer go through
-  the embedded <cart-items> component (assets/cart-items.js).
+  Cart drawer — a floating "island" overlay pinned under the top-right cart
+  button. Brand-locked frosted-beige panel with a static header, a scrollable
+  item list, a conditional totals footer, and a full-bleed checkout bar.
+
+  Dedicated markup (NOT the shared cart-page snippets): line items render via
+  `cart-drawer-item`; totals/empty/checkout are inline here. The whole region
+  below the header (`[data-drawer-body]`) is swapped on refresh via Shopify's
+  Section Rendering API, so totals + empty/filled state stay in sync.
+
+  Behaviour (assets/cart-drawer.js): listens on `document` for `cart:updated`
+  and `cart:item-added` — both swap the body; neither auto-opens (add-to-cart
+  shows a success toast; the drawer opens on cart-icon click). Quantity changes
+  and step-to-zero removal go through the embedded <cart-items>
+  (assets/cart-items.js), which also writes line-level errors into [data-error].
 
   Section id `cart-drawer` is the key for ?section_id=cart-drawer and
   bundled-sections POST bodies (`sections: ['cart-drawer']`).
@@ -14,20 +21,59 @@
   <div class="cart-drawer-overlay" data-overlay></div>
 
   <div class="cart-drawer-panel">
-    <div class="cart-drawer-bar">
-      <button class="cart-drawer-close" data-close aria-label="{{ 'cart.drawer.close' | t }}">
-        {% render 'icon-close' %}
+    <header class="cart-drawer-header">
+      <span class="cart-drawer-title text-ui">{{ 'cart.drawer.title' | t }}</span>
+      <button type="button" class="cart-drawer-close" data-close aria-label="{{ 'cart.drawer.close' | t }}">
+        <span aria-hidden="true">&times;</span>
       </button>
-    </div>
-    <div class="cart-drawer-content" data-drawer-body>
-      <cart-items>
-        {%- if cart.item_count > 0 -%}
-          {% render 'cart-items', cart: cart %}
-          {% render 'cart-totals', cart: cart %}
-        {%- else -%}
-          {% render 'cart-empty' %}
-        {%- endif -%}
-      </cart-items>
+    </header>
+
+    <div class="cart-drawer-main" data-drawer-body>
+      {%- if cart.item_count > 0 -%}
+        <cart-items
+          class="cart-drawer-items"
+          data-error-stock="{{ 'cart.drawer.error_stock' | t }}"
+          data-error-generic="{{ 'cart.drawer.error_generic' | t }}"
+        >
+          {%- for item in cart.items -%}
+            {% render 'cart-drawer-item', item: item %}
+          {%- endfor -%}
+        </cart-items>
+
+        <div class="cart-drawer-footer">
+          {%- if cart.cart_level_discount_applications.size > 0 -%}
+            <div class="cart-drawer-row cart-drawer-subtotal text-body">
+              <span>{{ 'cart.general.subtotal' | t }}</span>
+              <span class="cart-drawer-amount">{{ cart.original_total_price | money }}</span>
+            </div>
+            {%- for discount in cart.cart_level_discount_applications -%}
+              <div class="cart-drawer-row cart-drawer-discount text-body">
+                <svg class="cart-drawer-tag" width="11" height="11" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M3 2.5h5.09c.4 0 .78.16 1.06.44l5.41 5.41a1.5 1.5 0 0 1 0 2.12l-4.09 4.09a1.5 1.5 0 0 1-2.12 0L2.94 9.15A1.5 1.5 0 0 1 2.5 8.09V3a.5.5 0 0 1 .5-.5Zm2.5 4a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" fill="currentColor"/>
+                </svg>
+                <span>{{ discount.title }}</span>
+                <span class="cart-drawer-amount">&minus;&nbsp;{{ discount.total_allocated_amount | money }}</span>
+              </div>
+            {%- endfor -%}
+            <div class="cart-drawer-row cart-drawer-total text-ui">
+              <span>{{ 'cart.general.total' | t }}</span>
+              <span class="cart-drawer-amount">{{ cart.total_price | money }}</span>
+            </div>
+          {%- else -%}
+            <div class="cart-drawer-row cart-drawer-total text-ui">
+              <span>{{ 'cart.general.total' | t }}</span>
+              <span class="cart-drawer-amount">{{ cart.total_price | money }}</span>
+            </div>
+          {%- endif -%}
+        </div>
+
+        <a href="/checkout" class="cart-drawer-checkout text-ui">{{ 'cart.general.checkout' | t }}</a>
+      {%- else -%}
+        <div class="cart-drawer-empty">
+          <p class="text-h3">{{ 'cart.drawer.empty' | t }}</p>
+        </div>
+        <a href="{{ routes.all_products_collection_url }}" class="cart-drawer-checkout text-ui">{{ 'cart.general.continue_shopping' | t }}</a>
+      {%- endif -%}
     </div>
   </div>
 </cart-drawer>
@@ -48,7 +94,7 @@
     pointer-events: auto;
   }
 
-  /* Click-catcher + subtle frosted backdrop behind the island. */
+  /* Click-catcher + frosted backdrop behind the island. */
   .cart-drawer-overlay {
     position: absolute;
     inset: 0;
@@ -63,18 +109,22 @@
     opacity: 1;
   }
 
-  /* Island: a content-sized card pinned under the top-right cart button. */
+  /* Island: a frosted-beige card pinned under the top-right cart button. */
   .cart-drawer-panel {
     position: absolute;
     top: calc(var(--header-height) + var(--spacing-xxs));
     right: var(--spacing-xxs);
     width: 360px;
     max-width: calc(100vw - var(--spacing-s));
+    max-height: calc(100vh - var(--header-height) - var(--spacing-m));
     display: flex;
     flex-direction: column;
-    padding: var(--spacing-s);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
     border-radius: var(--rad-s);
-    background: var(--color-bg);
+    background: var(--color-nav);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
     transform-origin: top right;
     transform: scale(0.96) translateY(-8px);
     opacity: 0;
@@ -86,28 +136,266 @@
     opacity: 1;
   }
 
-  .cart-drawer-bar {
+  /* ---- Header (static — never re-rendered) ---- */
+  .cart-drawer-header {
+    flex: 0 0 auto;
     display: flex;
-    justify-content: flex-end;
-    margin-bottom: var(--spacing-xs);
+    align-items: center;
+    gap: var(--spacing-xxs);
+    padding: var(--spacing-xs);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .cart-drawer-title {
+    flex: 1 1 auto;
+    color: var(--color-text);
   }
 
   .cart-drawer-close {
-    display: block;
-    background: none;
-    border: none;
+    flex: 0 0 auto;
+    /* Negative margin offsets the padding so the glyph stays at the row edge
+       while the hit area stays comfortable. */
+    margin: calc(var(--spacing-xxs) * -1);
+    padding: var(--spacing-xxs);
+    font-size: 16px;
+    line-height: 1;
+    color: var(--color-text-accent);
     cursor: pointer;
-    line-height: 0;
+    transition: color var(--transition-fast);
   }
 
-  .cart-drawer-content {
-    max-height: calc(100vh - var(--header-height) - var(--spacing-l));
+  .cart-drawer-close:hover {
+    color: var(--color-text);
+  }
+
+  /* ---- Main (swapped on refresh) ---- */
+  .cart-drawer-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .cart-drawer-items {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: block;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* Loading state during refresh — dim contents while we swap. */
-  .cart-drawer-content cart-items.is-loading {
+  /* ---- Line item ---- */
+  .cart-drawer-item {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: flex-start;
+    padding: var(--spacing-xs);
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* The header's bottom border already divides off the first item. */
+  .cart-drawer-item:first-child {
+    border-top: none;
+  }
+
+  .cart-drawer-item-thumb {
+    flex: 0 0 auto;
+    width: 68px;
+    height: 68px;
+    overflow: hidden;
+    border-radius: var(--rad-s);
+    background: var(--color-bg-dark);
+  }
+
+  .cart-drawer-item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .cart-drawer-item-info {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-s);
+  }
+
+  .cart-drawer-item-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+
+  .cart-drawer-item-title {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .cart-drawer-item-title:hover {
+    text-decoration: underline;
+  }
+
+  .cart-drawer-item-subtitle {
+    font-size: 12px;
+    line-height: 1.1;
+    color: var(--color-text-accent);
+  }
+
+  /* Line-level error — populated by cart-items.js; hidden when empty. */
+  .cart-drawer-item-error {
+    font-size: 12px;
+    line-height: 1.1;
+    color: #dc2626;
+  }
+
+  .cart-drawer-item-error:empty {
+    display: none;
+  }
+
+  .cart-drawer-item-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
+  .cart-drawer-item-price {
+    flex: 1 1 auto;
+    text-align: right;
+    color: var(--color-text);
+  }
+
+  /* Compact white-segmented stepper — drawer only. The base .quantity-selector
+     (off-white, larger) is left intact for the PDP and cart page. */
+  .cart-drawer .quantity-selector {
+    border: none;
+    /* Solid white pill: fills any sub-pixel seams between segments so the
+       beige panel never shows through. Dividers come from the input borders. */
+    background: #fff;
+    overflow: hidden;
+    align-items: stretch;
+    font-size: 12px;
+  }
+
+  .cart-drawer .quantity-selector button {
+    width: auto;
+    min-width: 25px;
+    padding: var(--spacing-xxs);
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cart-drawer .quantity-selector button:hover {
+    background: var(--color-accent-light);
+  }
+
+  .cart-drawer .quantity-selector input {
+    width: 32px;
+    padding: var(--spacing-xxs);
+    background: #fff;
+  }
+
+  /* ---- Footer totals ---- */
+  .cart-drawer-footer {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .cart-drawer-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+  }
+
+  .cart-drawer-amount {
+    margin-left: auto;
+    text-align: right;
+  }
+
+  .cart-drawer-footer .cart-drawer-subtotal {
+    color: var(--color-text-accent);
+  }
+
+  /* Savings green — functional colour, like the error red / success green. */
+  .cart-drawer-footer .cart-drawer-discount {
+    color: #479d28;
+  }
+
+  .cart-drawer-footer .cart-drawer-total {
+    color: var(--color-text);
+  }
+
+  .cart-drawer-tag {
+    flex: 0 0 auto;
+  }
+
+  /* ---- Checkout bar (full-bleed, flush to panel edges) ---- */
+  .cart-drawer-checkout {
+    flex: 0 0 auto;
+    display: block;
+    padding: var(--spacing-xs);
+    background: var(--color-text);
+    color: var(--color-bg);
+    text-align: center;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .cart-drawer-checkout:hover {
+    color: var(--color-accent);
+  }
+
+  /* ---- Empty state ---- */
+  .cart-drawer-empty {
+    flex: 1 1 auto;
+    min-height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-l) var(--spacing-xs);
+    text-align: center;
+  }
+
+  .cart-drawer-empty .text-h3 {
+    color: var(--color-text);
+  }
+
+  /* ---- Updating / loading: dim the whole panel body + spinner ---- */
+  .cart-drawer .cart-drawer-items.is-loading {
     opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .cart-drawer-main:has(.cart-drawer-items.is-loading) .cart-drawer-footer {
+    opacity: 0.5;
+  }
+
+  .cart-drawer-main:has(.cart-drawer-items.is-loading) .cart-drawer-checkout {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .cart-drawer-main:has(.cart-drawer-items.is-loading)::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid var(--color-text);
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
     pointer-events: none;
   }
 

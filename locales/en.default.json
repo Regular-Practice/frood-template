@@ -95,6 +95,7 @@
         "other": "{{ count }} items"
       },
       "subtotal": "Subtotal",
+      "total": "Total",
       "checkout": "Checkout",
       "taxes_note": "Taxes and shipping calculated at checkout",
       "empty": "Your cart is empty",
@@ -105,8 +106,11 @@
       "update": "Update cart"
     },
     "drawer": {
-      "title": "Your cart",
+      "title": "Your Cart",
       "close": "Close cart",
+      "empty": "Your cart is empty!",
+      "error_stock": "Not enough in stock",
+      "error_generic": "Couldn't update — try again",
       "upsell_heading": "You might also like"
     }
   },

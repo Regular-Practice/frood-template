@@ -22,11 +22,14 @@
  *     role="dialog" aria-modal="true" aria-label="Cart">
  *     <div class="cart-drawer-overlay" data-overlay></div>
  *     <div class="cart-drawer-panel">
- *       <div class="cart-drawer-bar">
- *         <button class="cart-drawer-close" data-close>X</button>
- *       </div>
- *       <div class="cart-drawer-content" data-drawer-body>
- *         <cart-items>…native cart markup…</cart-items>
+ *       <header class="cart-drawer-header">          (static — not swapped)
+ *         <span class="cart-drawer-title">…</span>
+ *         <button class="cart-drawer-close" data-close>×</button>
+ *       </header>
+ *       <div class="cart-drawer-main" data-drawer-body>   (swapped on refresh)
+ *         <cart-items>…line items…</cart-items>
+ *         <div class="cart-drawer-footer">…totals…</div>
+ *         <a class="cart-drawer-checkout" href="/checkout">…</a>
  *       </div>
  *     </div>
  *   </cart-drawer>
