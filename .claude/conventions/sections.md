@@ -33,16 +33,17 @@ Editorial product grid with stacked heading + CTA.
 - **Product cards** still rendered via `{% render 'product-card' %}` — the snippet owner is unchanged.
 - **Grid gap:** `--spacing-xs` (12px) — tighter than `--spacing-s` to let pack visuals breathe without dead space.
 
-### Product cards with 3D pack renders
+### Product card thumbnail media
 
-`snippets/product-card.liquid` looks at `product.media` for a 3D model (`media_type == 'model'`). If one's there, it renders with Shopify's `model_viewer_tag` filter (loads Google's `<model-viewer>` web component automatically — no manual script include needed). Falls back to `product.featured_image` for products without a GLB.
+`snippets/product-card.liquid` drives the card thumbnail entirely off the **first media item** (`product.media.first`), honouring the merchant's media order:
 
-- **GLB upload location:** Shopify admin → Products → [product] → Media → "Add 3D model"
-- **Shopify auto-generates a poster image** from the GLB and serves it before the model loads
-- **Browser support:** `<model-viewer>` works in all modern browsers (Chrome/Safari/Firefox/Edge). Older browsers see the poster image only — graceful fallback
-- **Performance note:** Each card with a 3D model is a WebGL context. Grids with many models can be GPU-heavy. If perf becomes an issue: use intersection observer to defer model loading for off-screen cards, or switch to "poster-only until hover" pattern
+- **First is an image** → that image is the still. If the **second** media is also an image, it cross-fades in on hover (`.product-card-image-hover`, base.css §13). A non-image second item gets no hover.
+- **First is a video** → the video's `preview_image` is the still; a `<product-card-hover-video>` overlay plays the mp4 on hover (intent-debounced, `preload="none"` so zero MP4 bytes until the user settles on a card — see `assets/product-card-hover-video.js`).
+- **Anything else** (model, external video, …) → falls back to `product.featured_image`, else a grey placeholder.
 
-**No hover effects on cards.** Considered grounded shadow + per-vertex squeeze deformation (see conversation history) but reverted — packs render as plain GLBs with the white-cast fix only (tone-mapping neutral, neutral env-image, no shadow). Easy to revisit if/when designed properly.
+Only cards whose first media is a playable video load `product-card-hover-video.js`; all other cards skip it.
+
+**3D / GLB model support is removed for now.** `assets/product-card-stage.js` (the custom shared-renderer three.js) and the three.js import map in `layout/theme.liquid` are left in place so it can be re-wired later — to bring it back, restore the model branch + its `.product-card-model*` CSS in `product-card.liquid` and load the stage script for model-first cards.
 
 ### `text-image-split.liquid` (Text + image split)
 
@@ -107,8 +108,10 @@ derived for the steppers and the line-item property.
 - `assets/box-back.png` + `assets/box-front.png` — committed placeholder box-layer renders (heavy —
   replace with optimised Blender exports). Overridable per-section via the image-picker settings.
 
-three.js is **not** used here any more, but `layout/theme.liquid` still vendors it (the one import
-map) for `product-card-stage.js` — don't remove it.
+three.js is **not** used here any more. `layout/theme.liquid` still vendors it (the one import
+map) for `product-card-stage.js`, which is currently **dormant** — model support was removed from
+the product card (see "Product card thumbnail media"), but the script + import map are kept so it can
+be re-wired later. Don't remove them unless you're dropping 3D for good.
 
 **Two-component split:** `<bundle-builder>` (state) and `<bundle-stage>` (visual) are standalone per
 theme convention — they communicate only via `bundle:updated` on `document`, detail
