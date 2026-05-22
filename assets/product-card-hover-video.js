@@ -6,17 +6,25 @@
   video.load() + play(). After that the file is cached for the session, so
   subsequent hovers are instant.
 
-  Hover in  → 80ms intent debounce → play forward
-  Hover out → pause + currentTime = 0 (snap to frame 0; the always-visible
-              <img> underneath shows the still anyway, so the snap happens
-              "under" the CSS opacity fade and is invisible to the user)
+  Hover in  → 80ms intent debounce → play forward (native, smooth)
+  Hover out → play in REVERSE back to frame 0, then fade to the poster
+
+  MP4 has no native reverse, so the rewind is faked: an rAF loop decrements
+  video.currentTime by the real elapsed delta each frame (time-based, so the
+  rewind mirrors the forward play at natural 1× speed and is FPS-agnostic).
+  When it reaches frame 0 we drop .is-active and the CSS opacity fade hands
+  back to the always-visible poster <img> underneath.
+
+  Visibility is JS-driven via .is-active (set on enter, cleared when reverse
+  completes) rather than pure :hover — otherwise CSS would fade the video out
+  the instant the cursor leaves and the rewind would play invisibly. See the
+  matching CSS in snippets/product-card.liquid.
 
   We swallow the inevitable AbortError from pause()-while-play()-pending via
   .catch() on the stored playPromise.
 
-  prefers-reduced-motion: reduce → skip play entirely. CSS also keeps the
-  video element hidden on hover under reduced motion, so the user just sees
-  the static <img>.
+  prefers-reduced-motion: reduce → skip play and reverse entirely. CSS also
+  keeps the video hidden, so the user just sees the static <img>.
 */
 
 const INTENT_DELAY_MS = 80;
@@ -30,10 +38,13 @@ class ProductCardHoverVideo extends HTMLElement {
 
     this.playPromise = null;
     this.intentTimeout = null;
+    this.reverseRaf = 0;
+    this.reverseLastTs = 0;
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.handleEnter = this.handleEnter.bind(this);
     this.handleLeave = this.handleLeave.bind(this);
+    this.reverseStep = this.reverseStep.bind(this);
     this.card.addEventListener('mouseenter', this.handleEnter);
     this.card.addEventListener('mouseleave', this.handleLeave);
   }
@@ -42,6 +53,7 @@ class ProductCardHoverVideo extends HTMLElement {
     this.card?.removeEventListener('mouseenter', this.handleEnter);
     this.card?.removeEventListener('mouseleave', this.handleLeave);
     if (this.intentTimeout) clearTimeout(this.intentTimeout);
+    this.stopReverse();
   }
 
   handleEnter() {
@@ -60,6 +72,10 @@ class ProductCardHoverVideo extends HTMLElement {
       this.video.load();
     }
 
+    // Resuming forward cancels any in-flight rewind and reveals the video.
+    this.stopReverse();
+    this.classList.add('is-active');
+
     const promise = this.video.play();
     if (promise !== undefined) {
       this.playPromise = promise;
@@ -68,7 +84,7 @@ class ProductCardHoverVideo extends HTMLElement {
   }
 
   handleLeave() {
-    if (!this.video) return;
+    if (this.reducedMotion || !this.video) return;
 
     // Cursor moved out before the intent timer fired — never committed to
     // loading this video. Cancel and bail without any fetch or playback.
@@ -84,7 +100,36 @@ class ProductCardHoverVideo extends HTMLElement {
     }
 
     this.video.pause();
-    this.video.currentTime = 0;
+    this.startReverse();
+  }
+
+  startReverse() {
+    if (this.reverseRaf) return;
+    this.reverseLastTs = 0;
+    this.reverseRaf = requestAnimationFrame(this.reverseStep);
+  }
+
+  reverseStep(ts) {
+    if (!this.reverseLastTs) this.reverseLastTs = ts;
+    const dt = (ts - this.reverseLastTs) / 1000;
+    this.reverseLastTs = ts;
+
+    const next = this.video.currentTime - dt;
+    if (next <= 0) {
+      this.video.currentTime = 0;
+      this.reverseRaf = 0;
+      // Rewind done — release to the static poster (CSS fades it back).
+      this.classList.remove('is-active');
+      return;
+    }
+
+    this.video.currentTime = next;
+    this.reverseRaf = requestAnimationFrame(this.reverseStep);
+  }
+
+  stopReverse() {
+    if (this.reverseRaf) cancelAnimationFrame(this.reverseRaf);
+    this.reverseRaf = 0;
   }
 }
 

@@ -45,9 +45,10 @@
         {%- if hover_video_src -%}
           {%- comment -%}
             Hover overlay. The poster <img> above is the always-visible still.
-            This <video> sits over it at opacity:0 and fades in only on
-            .product-card:hover (CSS). JS handles data-src→src promotion after an
-            80ms hover-intent debounce, play, and reset-to-0 on leave.
+            This <video> sits over it at opacity:0 and fades in via the
+            JS-set .is-active class. JS handles data-src→src promotion after an
+            80ms hover-intent debounce, play forward on enter, and play in
+            reverse back to frame 0 on leave (then fades to the poster).
             preload="none" + data-src means zero MP4 bytes per card on initial
             page load — only fetched when the user actually settles on a card.
           {%- endcomment -%}
@@ -311,8 +312,11 @@
     object-fit: cover;
   }
 
+  /* Visibility is JS-driven (.is-active) rather than :hover so the video stays
+     on screen through the reverse-on-exit rewind, then fades back to the poster
+     when the rewind reaches frame 0. See assets/product-card-hover-video.js. */
   @media (hover: hover) {
-    .product-card:hover .product-card-hover-video {
+    .product-card-hover-video.is-active {
       opacity: 1;
     }
   }
@@ -321,7 +325,7 @@
     .product-card-hover-video {
       transition: none;
     }
-    .product-card:hover .product-card-hover-video {
+    .product-card-hover-video.is-active {
       opacity: 0;
     }
   }
