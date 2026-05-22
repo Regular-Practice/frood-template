@@ -25,7 +25,7 @@
         "button_link": "",
         "collection": "shop",
         "products_to_show": 4,
-        "mobile_layout": "carousel"
+        "mobile_layout": "grid"
       }
     },
     "quote": {
