@@ -277,12 +277,12 @@
       "link": "Link"
     },
     "index": {
-      "empty": "No news yet."
+      "empty": "Nothing to report just yet — check back soon."
     }
   },
   "recipes": {
     "index": {
-      "empty": "No recipes yet."
+      "empty": "New recipes are on the way — check back soon."
     },
     "card": {
       "watch": "Watch"
