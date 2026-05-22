@@ -18,9 +18,15 @@
 
 {% stylesheet %}
   .intro-section {
-    padding: var(--spacing-xl) var(--spacing-m) var(--spacing-m);
+    padding: var(--spacing-xl) var(--spacing-xs) var(--spacing-xs);
     color: var(--color-text);
     background-color: var(--color-bg);
+  }
+
+  @media (min-width: 900px) {
+    .intro-section {
+      padding: var(--spacing-xl) var(--spacing-m) var(--spacing-m);
+    }
   }
 
   .intro-section h3 {

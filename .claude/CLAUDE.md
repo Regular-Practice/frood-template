@@ -254,7 +254,7 @@ These were once derived per color scheme (text color @ 10% / 15% alpha) but are 
 **Spacing:** xxxs `4px`, xxs `8px`, xs `12px`, s `16px`, m `24px`, l `64px`, xl `128px`, xxl `192px`
 (`--spacing-base` is an alias of `--spacing-s` — kept for ~99 legacy references.)
 
-**Responsive section padding rule:** Sections that use `padding: var(--spacing-m)` for their outer container must drop down to `var(--spacing-xs)` on mobile + tablet (<900px) and use `m` only on desktop (≥900px). The breakpoint is `@media (min-width: 900px)`. Currently applied: `featured-collection`, `text-image-split`, `feature-card-section`, `feature-card` (inner card), `bundle-builder`, `footer`, `fullbleed`, `media-tabs-overlay`. When adding new sections, follow this pattern.
+**Responsive section padding rule:** Sections that use `padding: var(--spacing-m)` for their outer container must drop down to `var(--spacing-xs)` on mobile + tablet (<900px) and use `m` only on desktop (≥900px). The breakpoint is `@media (min-width: 900px)`. For sections with multi-value padding (e.g. `xl m m` for top/horizontal/bottom), only the `m` components step down to `xs` on mobile — bespoke vertical values (`l`, `xl`) are preserved. Currently applied: `featured-collection`, `text-image-split`, `feature-card-section`, `feature-card` (inner card), `bundle-builder`, `footer`, `media-tabs-overlay`, `product-recommendations`, `recipe-recommendations`, `quote`, `intro`, `event-slider`. Exempt by design: `hero` (full-bleed brand moment), `fullbleed` (edge-to-edge media). When adding new sections, follow this pattern.
 
 **Border radius:** `--rad-s: 2px`, `--rad-m: 4px`. Circles use `border-radius: 50%`, hard corners use `0` — don't tokenize those.
 

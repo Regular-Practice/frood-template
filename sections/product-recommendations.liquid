@@ -43,10 +43,16 @@
 {% stylesheet %}
   .product-recommendations {
     display: block;
-    padding: var(--spacing-m);
+    padding: var(--spacing-xs);
     color: var(--color-text);
     background-color: var(--color-bg);
     overflow: hidden;
+  }
+
+  @media (min-width: 900px) {
+    .product-recommendations {
+      padding: var(--spacing-m);
+    }
   }
 
   .product-recommendations-header {

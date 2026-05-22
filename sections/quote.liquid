@@ -28,7 +28,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: var(--spacing-l) var(--spacing-m);
+    padding: var(--spacing-l) var(--spacing-xs);
     color: var(--color-text);
     background-color: var(--color-bg);
   }
@@ -36,6 +36,12 @@
   @media (min-width: 600px) {
     .quote-section {
       padding-block: var(--spacing-xl);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .quote-section {
+      padding-inline: var(--spacing-m);
     }
   }
 
@@ -69,11 +75,10 @@
     max-width: 24ch;
   }
 
-  /* Lockup convention: 16px (s) between h2 and the button. The flex `gap`
-     between inner items is xxs (8px), so an extra 8px margin on the button
-     brings the total to s. */
+  /* m margin-top above the button. Stacks with the flex gap (xxs) on
+     .quote-inner, so total spacing under the h2 is xxs + m = 32px. */
   .quote-button {
-    margin-top: var(--spacing-xxs);
+    margin-top: var(--spacing-m);
   }
 
   /* Card surface palette — merchant-pickable from Frood brand tokens only.

@@ -39,9 +39,15 @@
 
 {% stylesheet %}
   .recipe-recommendations {
-    padding: var(--spacing-m);
+    padding: var(--spacing-xs);
     color: var(--color-text);
     background-color: var(--color-bg);
+  }
+
+  @media (min-width: 900px) {
+    .recipe-recommendations {
+      padding: var(--spacing-m);
+    }
   }
 
   .recipe-recommendations-header {

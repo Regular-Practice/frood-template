@@ -60,12 +60,18 @@
 
 {% stylesheet %}
   .event-slider {
-    padding: var(--spacing-xl) var(--spacing-m) var(--spacing-m);
+    padding: var(--spacing-xl) var(--spacing-xs) var(--spacing-xs);
     color: var(--color-text);
     background-color: var(--color-bg);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-m);
+  }
+
+  @media (min-width: 900px) {
+    .event-slider {
+      padding: var(--spacing-xl) var(--spacing-m) var(--spacing-m);
+    }
   }
 
   /* Header's internal xxs gap between h1 + h3 comes from .section-lockup (base.css §22). */

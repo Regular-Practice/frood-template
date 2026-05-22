@@ -287,6 +287,20 @@
     }
   }
 
+  /* Touch devices have no hover — show VIEW + ADD by default so users can
+     act without a hover trigger. No stagger animation (no reveal moment). */
+  @media (hover: none) {
+    .product-card-actions {
+      pointer-events: auto;
+    }
+
+    .product-card-actions > * {
+      opacity: 1;
+      transform: translateY(0);
+      transition: none;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .product-card-actions > * {
       transition: none;
