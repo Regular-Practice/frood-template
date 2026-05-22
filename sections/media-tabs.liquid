@@ -45,7 +45,11 @@
                 <h2 class="text-h1 media-tab-heading">{{ block.settings.heading }}</h2>
               {%- endif -%}
               {%- if block.settings.description != blank -%}
-                <div class="text-body media-tab-description">{{ block.settings.description }}</div>
+                <div class="media-tab-description-wrap">
+                  <div class="media-tab-description-clip">
+                    <div class="text-body media-tab-description">{{ block.settings.description }}</div>
+                  </div>
+                </div>
               {%- endif -%}
             </button>
           </li>
@@ -145,7 +149,6 @@
   .media-tab-button {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-m);
     width: 100%;
     background-color: var(--color-bg-dark);
     color: var(--color-text);
@@ -167,13 +170,34 @@
     margin: 0;
   }
 
-  .media-tab-description {
-    margin: 0;
-    display: none;
+  {%- comment -%}
+    Smooth auto-height reveal (unknown richtext height): the size-driven wrapper
+    animates grid-template-rows 0fr↔1fr with opacity; the clip carries overflow only;
+    the body carries all spacing. Timing matches the video crossfade (--transition-fast)
+    so a tab switch reads as one coordinated motion.
+  {%- endcomment -%}
+  .media-tab-description-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows var(--transition-fast),
+      opacity var(--transition-fast);
   }
 
-  .media-tab-button.is-active .media-tab-description {
-    display: block;
+  .media-tab-button.is-active .media-tab-description-wrap {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  .media-tab-description-clip {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .media-tab-description {
+    margin: 0;
+    padding-top: var(--spacing-m);
   }
 
   .media-tab-description p {
@@ -182,6 +206,12 @@
 
   .media-tab-description p + p {
     margin-top: var(--spacing-xxs);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .media-tab-description-wrap {
+      transition: none;
+    }
   }
 {% endstylesheet %}
 
