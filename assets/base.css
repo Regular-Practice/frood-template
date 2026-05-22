@@ -4,6 +4,10 @@
 
 body {
   margin: 0;
+  /* Safety net: stop any section from ever causing page-level horizontal
+     scroll on mobile. `clip` (vs `hidden`) doesn't create a new scrolling
+     container, so position: sticky on descendants still works. */
+  overflow-x: clip;
 }
 
 * {
