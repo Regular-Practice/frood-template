@@ -12,12 +12,16 @@
     "main": {
       "type": "main-collection",
       "settings": {
+        "eyebrow": "Range",
+        "heading": "",
         "products_per_page": 12,
         "grid_columns": "4",
-        "show_filters": true,
-        "show_sorting": true
+        "show_filters": false,
+        "show_sorting": false
       }
     }
   },
-  "order": ["main"]
+  "order": [
+    "main"
+  ]
 }
