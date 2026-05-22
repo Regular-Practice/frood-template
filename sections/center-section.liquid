@@ -1,0 +1,151 @@
+{%- comment -%}
+  Frood Center Section — text lockup (h1 + h3) sitting next to a video.
+  Desktop (≥900px): two containers side-by-side, centered horizontally in
+  the section, section 85vh tall. The video fills 100% of section height
+  and keeps a 3:4 portrait ratio (width = height × 3/4).
+  Mobile + tablet (<900px): containers stack vertically; section sizes to
+  content, video sits full-width with its natural 3:4 frame.
+{%- endcomment -%}
+
+<section class="center-section">
+  <div class="center-section-inner">
+    <div class="center-section-text section-lockup">
+      {%- if section.settings.eyebrow != blank -%}
+        <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.video != blank -%}
+      <product-render-video class="center-section-media" loop-delay="2000">
+        {{
+          section.settings.video
+          | video_tag:
+            autoplay: true,
+            muted: true,
+            controls: false,
+            playsinline: true,
+            class: 'center-section-video'
+        }}
+      </product-render-video>
+    {%- endif -%}
+  </div>
+</section>
+
+<script src="{{ 'product-render-video.js' | asset_url }}" defer></script>
+
+{% stylesheet %}
+  .center-section {
+    padding: var(--spacing-xs);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+
+  .center-section-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-m);
+  }
+
+  .center-section-text {
+    /* h1 + h3 lockup — xxs gap between siblings comes from .section-lockup
+       (base.css §22). In the column layout (<900px) the lockup pulls to the
+       left of the section while the video stays centered. */
+    align-self: flex-start;
+  }
+
+  .center-section-text h3 {
+    max-width: 36ch;
+  }
+
+  .center-section-media {
+    /* Mobile + tablet: video sits full-width within its natural 3:4 frame.
+       display: block because <product-render-video> is a custom element
+       (inline by default) — without this, aspect-ratio + overflow don't apply. */
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: var(--rad-s);
+    background-color: var(--color-bg-dark);
+  }
+
+  .center-section-video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Desktop: 85vh tall, two containers side-by-side, centered as a group.
+     Video drives its width off its height (85vh × 3/4 = 63.75vh) — overrides
+     the mobile aspect-ratio + max-width. */
+  @media (min-width: 900px) {
+    .center-section {
+      min-height: 85vh;
+      padding: var(--spacing-m);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .center-section-inner {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-l);
+      width: 100%;
+      height: 100%;
+    }
+
+    .center-section-media {
+      width: auto;
+      max-width: none;
+      height: calc((85vh - var(--spacing-m) * 2) * 0.85);
+      min-height: 0;
+      aspect-ratio: 3 / 4;
+    }
+
+    /* Desktop is a row layout — reset the column-mode left-pull so the text
+       sits vertically centered next to the video. */
+    .center-section-text {
+      align-self: auto;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Center section",
+  "tag": "section",
+  "class": "center-section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break."
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Video"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Center section"
+    }
+  ]
+}
+{% endschema %}

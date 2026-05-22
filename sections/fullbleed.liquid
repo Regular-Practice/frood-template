@@ -43,7 +43,23 @@
       <div class="fullbleed-media placeholder" aria-hidden="true"></div>
     {%- endif -%}
 
-    {%- if section.settings.caption_heading != blank or section.settings.caption_body != blank -%}
+    {%- comment -%}
+      Quote and caption are mutually exclusive — when "Add quote" is on, the
+      caption is suppressed even if its fields are filled in.
+    {%- endcomment -%}
+    {%- if section.settings.add_quote -%}
+      <div class="fullbleed-quote">
+        {%- if section.settings.quote_eyebrow != blank -%}
+          <h1 class="text-h1">{{ section.settings.quote_eyebrow }}</h1>
+        {%- endif -%}
+        {%- if section.settings.quote_heading != blank -%}
+          <h2 class="text-h2">{{ section.settings.quote_heading }}</h2>
+        {%- endif -%}
+        {%- if section.settings.quote_button_text != blank and section.settings.quote_button_link != blank -%}
+          <a class="button fullbleed-quote-button" href="{{ section.settings.quote_button_link }}">{{ section.settings.quote_button_text }}</a>
+        {%- endif -%}
+      </div>
+    {%- elsif section.settings.caption_heading != blank or section.settings.caption_body != blank -%}
       <div class="fullbleed-caption">
         {%- if section.settings.caption_heading != blank -%}
           <h1 class="text-h1">{{ section.settings.caption_heading }}</h1>
@@ -94,6 +110,13 @@
     background-color: var(--color-overlay);
     pointer-events: none;
     z-index: 1;
+  }
+
+  /* When the section has a quote on the media, double the overlay strength
+     so the quote stays legible against the photo.
+     --color-overlay is --color-text @ 10%; this is @ 20%. */
+  .fullbleed-frame:has(.fullbleed-quote)::after {
+    background-color: color-mix(in srgb, var(--color-text) 20%, transparent);
   }
 
   /* Media (image / video / placeholder) — in fixed-height mode it fills the
@@ -162,6 +185,54 @@
   .fullbleed-caption-body p + p {
     margin-top: var(--spacing-xxs);
   }
+
+  /* Quote overlay — centered text on the media, mirroring the Quote section's
+     lockup (eyebrow + heading + optional button). No card surface — just text
+     directly on the image. Mutually exclusive with the caption. */
+  .fullbleed-quote {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    color: var(--color-bg);
+    width: calc(100% - var(--spacing-m));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--spacing-xxs);
+  }
+
+  @media (min-width: 900px) {
+    .fullbleed-quote {
+      width: 75%;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .fullbleed-quote {
+      width: 50%;
+    }
+  }
+
+  .fullbleed-quote h2 {
+    max-width: 24ch;
+  }
+
+  /* Brand rule override: .text-h1 is normally locked to --color-text-accent
+     (warm muted grey). Here it's explicitly overridden to --color-bg so it
+     reads on the photo with the rest of the quote text. */
+  .fullbleed-quote .text-h1 {
+    color: var(--color-bg);
+  }
+
+  /* m margin-top above the button. Stacks with the .fullbleed-quote flex gap
+     (xxs), so total spacing under the h2 is xxs + m = 32px — same treatment
+     as .quote-button in the Quote section. */
+  .fullbleed-quote-button {
+    margin-top: var(--spacing-m);
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -211,6 +282,10 @@
       "content": "Caption"
     },
     {
+      "type": "paragraph",
+      "content": "Hidden when \"Add quote\" is on — the two are mutually exclusive."
+    },
+    {
       "type": "text",
       "id": "caption_heading",
       "label": "Caption heading (h1 — small uppercase label)"
@@ -219,6 +294,38 @@
       "type": "richtext",
       "id": "caption_body",
       "label": "Caption body"
+    },
+    {
+      "type": "header",
+      "content": "Quote overlay"
+    },
+    {
+      "type": "checkbox",
+      "id": "add_quote",
+      "label": "Add quote",
+      "info": "When on, replaces the caption with a centered off-white quote card (same design as the Quote section).",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "quote_eyebrow",
+      "label": "Quote eyebrow (h1 — small uppercase label)"
+    },
+    {
+      "type": "textarea",
+      "id": "quote_heading",
+      "label": "Quote heading (h2)"
+    },
+    {
+      "type": "text",
+      "id": "quote_button_text",
+      "label": "Quote button label"
+    },
+    {
+      "type": "url",
+      "id": "quote_button_link",
+      "label": "Quote button link",
+      "info": "Both label and link must be set for the button to appear."
     }
   ],
   "presets": [

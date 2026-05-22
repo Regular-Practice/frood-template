@@ -12,7 +12,11 @@
     "main": {
       "type": "main-page",
       "settings": {}
+    },
+    "center_section": {
+      "type": "center-section",
+      "settings": {}
     }
   },
-  "order": ["main"]
+  "order": ["main", "center_section"]
 }
