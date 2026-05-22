@@ -267,7 +267,7 @@ These were previously derived per color scheme (text color @ 10% / 15% alpha) bu
 
 **Responsive section padding rule:** Sections that use `padding: var(--spacing-m)` for their outer container must drop down to `var(--spacing-xs)` on mobile + tablet (<900px) and use `m` only on desktop (≥900px). The breakpoint is `@media (min-width: 900px)`. Currently applied: `featured-collection`, `text-image-split`, `feature-card-section`, `feature-card` (inner card), `footer`, `fullbleed`, `media-tabs-overlay`. When adding new sections, follow this pattern.
 
-**Border radius:** `--rad-s: 2px`. Circles use `border-radius: 50%`, hard corners use `0` — don't tokenize those.
+**Border radius:** `--rad-s: 2px`, `--rad-m: 4px`. Circles use `border-radius: 50%`, hard corners use `0` — don't tokenize those.
 
 **Blur:** `--blur: 7px` — for `backdrop-filter: blur(var(--blur))` (frosted-glass effects).
 

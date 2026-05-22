@@ -4,7 +4,7 @@
     <p class="form-success text-body" role="alert">{{ 'newsletter.success' | t }}</p>
   {%- endif -%}
   {%- if form.errors -%}
-    <p class="form-error text-body" role="alert">{{ form.errors.translated_fields.email | default: 'newsletter.error' | t }}</p>
+    <p class="form-error text-body" role="alert">{{ form.errors | default_errors }}</p>
   {%- endif -%}
   <div class="newsletter-pill">
     <label for="newsletter-email" class="visually-hidden">{{ 'newsletter.email_placeholder' | t }}</label>

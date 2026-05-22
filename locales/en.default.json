@@ -200,13 +200,13 @@
   },
   "password": {
     "general": {
-      "title": "Opening soon",
+      "title": "Coming soon",
       "message": "We're working on something great. Stay tuned.",
       "password_label": "Password",
       "password_placeholder": "Enter store password",
       "enter": "Enter",
       "admin_link": "Are you the store owner? Log in here",
-      "newsletter_heading": "Be the first to know"
+      "newsletter_heading": "Sign up to be the first to know when we launch!"
     }
   },
   "not_found": {
