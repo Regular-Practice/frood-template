@@ -4,13 +4,17 @@
 {%- endcomment -%}
 
 <section class="quote-section color-{{ section.settings.color_scheme }}">
-  <div class="quote-inner{% if section.settings.use_card %} quote-inner-card{% endif %}">
+  <div class="quote-inner{% if section.settings.use_card %} quote-inner-card card-bg-{{ section.settings.card_bg }} card-color-{{ section.settings.card_color }}{% endif %}">
     {%- if section.settings.eyebrow != blank -%}
       <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
     {%- endif -%}
 
     {%- if section.settings.heading != blank -%}
       <h2 class="text-h2">{{ section.settings.heading }}</h2>
+    {%- endif -%}
+
+    {%- if section.settings.button_text != blank and section.settings.button_link != blank -%}
+      <a class="button quote-button" href="{{ section.settings.button_link }}">{{ section.settings.button_text }}</a>
     {%- endif -%}
   </div>
 </section>
@@ -44,12 +48,9 @@
   }
 
   .quote-inner-card {
-    background-color: var(--color-accent);
-    color: var(--color-text);
     padding: var(--spacing-l) var(--spacing-m);
     border-radius: 8px;
     width: 100%;
-
   }
 
   @media (min-width: 900px) {
@@ -67,6 +68,29 @@
   .quote-section h2 {
     max-width: 24ch;
   }
+
+  /* Lockup convention: 16px (s) between h2 and the button. The flex `gap`
+     between inner items is xxs (8px), so an extra 8px margin on the button
+     brings the total to s. */
+  .quote-button {
+    margin-top: var(--spacing-xxs);
+  }
+
+  /* Card surface palette — merchant-pickable from Frood brand tokens only.
+     Mirrors the same modifier classes used by sections/feature-card.liquid. */
+  .card-bg-bg            { background-color: var(--color-bg); }
+  .card-bg-bg-dark       { background-color: var(--color-bg-dark); }
+  .card-bg-text          { background-color: var(--color-text); }
+  .card-bg-text-accent   { background-color: var(--color-text-accent); }
+  .card-bg-accent        { background-color: var(--color-accent); }
+  .card-bg-accent-light  { background-color: var(--color-accent-light); }
+
+  .card-color-bg            { color: var(--color-bg); }
+  .card-color-bg-dark       { color: var(--color-bg-dark); }
+  .card-color-text          { color: var(--color-text); }
+  .card-color-text-accent   { color: var(--color-text-accent); }
+  .card-color-accent        { color: var(--color-accent); }
+  .card-color-accent-light  { color: var(--color-accent-light); }
 {% endstylesheet %}
 
 {% schema %}
@@ -88,10 +112,61 @@
       "default": "We built a way to cook that fits your life: real ingredients, real flavour, less effort."
     },
     {
+      "type": "header",
+      "content": "Button (optional)"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link",
+      "info": "Both label and link must be set for the button to appear."
+    },
+    {
+      "type": "header",
+      "content": "Card"
+    },
+    {
       "type": "checkbox",
       "id": "use_card",
-      "label": "Show inside a yellow card",
+      "label": "Show inside a card",
       "default": false
+    },
+    {
+      "type": "select",
+      "id": "card_bg",
+      "label": "Card background",
+      "options": [
+        { "value": "bg", "label": "Off-white" },
+        { "value": "bg-dark", "label": "Beige" },
+        { "value": "text", "label": "Dark burgundy" },
+        { "value": "text-accent", "label": "Warm grey" },
+        { "value": "accent", "label": "Yellow" },
+        { "value": "accent-light", "label": "Pale yellow" }
+      ],
+      "default": "accent"
+    },
+    {
+      "type": "select",
+      "id": "card_color",
+      "label": "Card text color",
+      "options": [
+        { "value": "text", "label": "Dark burgundy" },
+        { "value": "text-accent", "label": "Warm grey" },
+        { "value": "bg", "label": "Off-white" },
+        { "value": "bg-dark", "label": "Beige" },
+        { "value": "accent", "label": "Yellow" },
+        { "value": "accent-light", "label": "Pale yellow" }
+      ],
+      "default": "text"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
     },
     {
       "type": "color_scheme",
