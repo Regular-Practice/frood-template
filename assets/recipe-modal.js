@@ -55,6 +55,7 @@ class RecipeModal extends HTMLElement {
     this.handlePointerDown = this.handlePointerDown.bind(this);
     this.handleBackdropClick = this.handleBackdropClick.bind(this);
     this.handleVideoEnded = this.handleVideoEnded.bind(this);
+    this.afterClose = this.afterClose.bind(this);
 
     this.trigger.addEventListener('click', this.handleOpen);
     this.closeBtn?.addEventListener('click', this.handleClose);
@@ -73,6 +74,8 @@ class RecipeModal extends HTMLElement {
     document.removeEventListener('keydown', this.handleKeydown);
     document.body.style.overflow = '';
     clearTimeout(this.loopTimer);
+    clearTimeout(this.closeTimer);
+    this.modal?.removeEventListener('transitionend', this.afterClose);
     this.video?.removeEventListener('ended', this.handleVideoEnded);
     // Safety net: if the element is torn down while open (e.g. a theme-editor
     // section re-render), don't leave the video playing in the background.
@@ -82,7 +85,15 @@ class RecipeModal extends HTMLElement {
   open() {
     this.previouslyFocused = document.activeElement;
     this.pressedContent = false;
+    // Cancel a pending hide if we're re-opening mid fade-out.
+    clearTimeout(this.closeTimer);
+    this.modal.removeEventListener('transitionend', this.afterClose);
     this.modal.hidden = false;
+    // Force a reflow so the browser registers the [hidden]-removed start state
+    // (opacity 0 / scale 0.96) before `is-open` flips it — otherwise the two
+    // changes batch and the transition is skipped.
+    void this.modal.offsetWidth;
+    this.modal.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', this.handleKeydown);
     (this.closeBtn || this.modal.querySelector(FOCUSABLE))?.focus();
@@ -91,7 +102,7 @@ class RecipeModal extends HTMLElement {
   }
 
   close() {
-    this.modal.hidden = true;
+    this.modal.classList.remove('is-open');
     document.body.style.overflow = '';
     document.removeEventListener('keydown', this.handleKeydown);
     clearTimeout(this.loopTimer);
@@ -100,7 +111,26 @@ class RecipeModal extends HTMLElement {
       this.video.currentTime = 0;
     }
     this.previouslyFocused?.focus?.();
+
+    // Set [hidden] (display:none) once the fade-out finishes, so the closed
+    // modal leaves the tab order. Under reduced motion there's no transition —
+    // and thus no transitionend — so hide right away. The setTimeout is a
+    // fallback in case transitionend never fires.
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.modal.hidden = true;
+    } else {
+      this.modal.addEventListener('transitionend', this.afterClose);
+      this.closeTimer = setTimeout(this.afterClose, 250);
+    }
+
     this.dispatchEvent(new CustomEvent('recipe-modal:closed', { bubbles: true }));
+  }
+
+  afterClose() {
+    clearTimeout(this.closeTimer);
+    this.modal.removeEventListener('transitionend', this.afterClose);
+    // Guard against a re-open that happened during the fade-out.
+    if (!this.modal.classList.contains('is-open')) this.modal.hidden = true;
   }
 
   handleVideoEnded() {

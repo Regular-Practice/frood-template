@@ -212,37 +212,68 @@
     overflow-x: hidden;
     scrollbar-gutter: stable both-edges;
     -webkit-overflow-scrolling: touch;
-    background-color: var(--color-overlay);
   }
 
-  /* Fade-in on open. Runs whenever the modal is rendered (i.e. `[hidden]`
-     is removed). The video plays immediately under the fade; the pause
-     between loop replays is handled in recipe-modal.js (LOOP_DELAY_MS). */
-  @keyframes recipe-modal-fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+  /* In/out animation matched to the cart drawer: the backdrop (::before) and
+     the content (.recipe-modal-inner) each fade on their OWN layer, and the
+     content also scales up. recipe-modal.js toggles `is-open` around the
+     [hidden] flip — display:none stays the at-rest state so the many per-card
+     modals on the index stay out of the tab order; the fade-out plays, then JS
+     sets [hidden] once it ends.
+
+     The opacity transition is deliberately NOT on .recipe-modal itself: on the
+     parent it wraps the backdrop-filter ::before in a group-opacity compositing
+     pass that re-samples the blur every frame and makes it judder. Fading a
+     dedicated backdrop layer (like .cart-drawer-overlay) keeps it smooth. */
+
+  /* Not display:none yet during the fade-out — keep it click-through so the
+     closing 0.2s window can't be re-triggered. */
+  .recipe-modal:not(.is-open) {
+    pointer-events: none;
   }
 
-  .recipe-modal:not([hidden]) {
-    animation: recipe-modal-fade-in 0.7s ease both;
+  /* Scale on the inner content (NOT .recipe-modal): a transform on the modal
+     itself would make it the containing block for the position:fixed backdrop
+     (::before) and close button and break their viewport pinning. Centered
+     scale, no translate — the drawer's translateY is specific to its top-right
+     corner anchoring. */
+  .recipe-modal-inner {
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .recipe-modal.is-open .recipe-modal-inner {
+    opacity: 1;
+    transform: scale(1);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .recipe-modal:not([hidden]) { animation: none; }
+    .recipe-modal::before,
+    .recipe-modal-inner,
+    .recipe-modal-close { transition: none; }
   }
 
-  /* Frosted backdrop on its own layer, pinned to the viewport (position:fixed,
-     not absolute) so it keeps covering the screen while the dialog scrolls
-     rather than scrolling away with the content. Kept off the video's ancestors
-     to avoid a GPU compositing bug that renders <video> solid black when an
-     ancestor is backdrop-filtered. */
+  /* Frosted backdrop (tint + blur) on its own fixed layer, pinned to the
+     viewport (position:fixed, not absolute) so it keeps covering the screen
+     while the dialog scrolls rather than scrolling away with the content. Kept
+     off the video's ancestors to avoid a GPU compositing bug that renders
+     <video> solid black when an ancestor is backdrop-filtered. Fades on its own
+     opacity — matched to .cart-drawer-overlay — which keeps the blur smooth. */
   .recipe-modal::before {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 0;
+    background-color: var(--color-overlay);
     backdrop-filter: blur(var(--blur));
     -webkit-backdrop-filter: blur(var(--blur));
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+  }
+
+  .recipe-modal.is-open::before {
+    opacity: 1;
   }
 
   .recipe-modal[hidden] {
@@ -262,7 +293,12 @@
     justify-content: center;
     padding: var(--spacing-xxs);
     color: var(--color-text-accent);
-    transition: color var(--transition-fast);
+    opacity: 0;
+    transition: color var(--transition-fast), opacity var(--transition-fast);
+  }
+
+  .recipe-modal.is-open .recipe-modal-close {
+    opacity: 1;
   }
 
   .recipe-modal-close:hover {
