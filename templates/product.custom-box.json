@@ -1,0 +1,40 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "settings": {
+        "show_quantity": true
+      }
+    },
+    "recipe_recommendations": {
+      "type": "recipe-recommendations",
+      "settings": {
+        "eyebrow": "Try it with",
+        "heading": "Recipes built around this pack."
+      }
+    },
+    "product_recommendations_76MMMN": {
+      "type": "product-recommendations",
+      "name": "Product recommendations",
+      "settings": {
+        "heading": "You may also like",
+        "products_to_show": 4,
+        "grid_columns": "4"
+      }
+    }
+  },
+  "order": [
+    "main",
+    "recipe_recommendations",
+    "product_recommendations_76MMMN"
+  ]
+}
