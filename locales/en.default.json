@@ -10,6 +10,7 @@
 {
   "general": {
     "continue_shopping": "Continue shopping",
+    "shop_now": "Shop now",
     "pagination": {
       "label": "Pagination",
       "previous": "Previous",
@@ -274,6 +275,9 @@
   "recipes": {
     "index": {
       "empty": "No recipes yet."
+    },
+    "card": {
+      "watch": "Watch"
     },
     "modal": {
       "close": "Close video",

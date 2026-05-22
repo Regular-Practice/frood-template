@@ -190,6 +190,18 @@
     width: 1em;
     height: auto;
     display: block;
+    transition: transform var(--transition-fast);
+  }
+
+  .recipe-card-link:hover .recipe-card-watch-icon,
+  .recipe-card-link:focus-visible .recipe-card-watch-icon {
+    transform: translateX(var(--spacing-xxs));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .recipe-card-watch-icon { transition: none; }
+    .recipe-card-link:hover .recipe-card-watch-icon,
+    .recipe-card-link:focus-visible .recipe-card-watch-icon { transform: none; }
   }
 
   .recipe-modal {
@@ -201,6 +213,22 @@
     scrollbar-gutter: stable both-edges;
     -webkit-overflow-scrolling: touch;
     background-color: var(--color-overlay);
+  }
+
+  /* Fade-in on open. Runs whenever the modal is rendered (i.e. `[hidden]`
+     is removed). The video plays immediately under the fade; the pause
+     between loop replays is handled in recipe-modal.js (LOOP_DELAY_MS). */
+  @keyframes recipe-modal-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .recipe-modal:not([hidden]) {
+    animation: recipe-modal-fade-in 0.7s ease both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .recipe-modal:not([hidden]) { animation: none; }
   }
 
   /* Frosted backdrop on its own layer, pinned to the viewport (position:fixed,

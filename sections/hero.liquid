@@ -17,6 +17,37 @@
   <div class="hero-frood-logo">
     {% render 'logo-frood' %}
   </div>
+
+  {%- if section.settings.product != blank -%}
+    {%- assign feat_product = section.settings.product -%}
+    {%- assign render_video = feat_product.metafields.custom.product_render_video.value -%}
+    <div class="hero-frood-feature">
+      <div class="hero-frood-product">
+        <div class="hero-frood-product-text">
+          <h2 class="text-ui hero-frood-product-title">{{ feat_product.title }}</h2>
+          {%- if section.settings.attributes != blank -%}
+            <p class="text-h1 hero-frood-product-attributes">{{ section.settings.attributes }}</p>
+          {%- endif -%}
+        </div>
+        {%- if render_video != blank -%}
+          <product-render-video class="hero-frood-product-render" loop-delay="10000">
+            {{ render_video | video_tag: autoplay: true, muted: true, controls: false, playsinline: true }}
+          </product-render-video>
+        {%- elsif feat_product.featured_image -%}
+          <div class="hero-frood-product-render">
+            {{ feat_product.featured_image | image_url: width: 480 | image_tag:
+              loading: 'lazy',
+              alt: feat_product.featured_image.alt | default: feat_product.title,
+              width: feat_product.featured_image.width,
+              height: feat_product.featured_image.height
+            }}
+          </div>
+        {%- endif -%}
+      </div>
+      <a href="{{ feat_product.url }}" class="button hero-frood-product-cta">{{ 'general.shop_now' | t }}</a>
+    </div>
+    <script src="{{ 'product-render-video.js' | asset_url }}" defer></script>
+  {%- endif -%}
 </section>
 
 {% stylesheet %}
@@ -41,7 +72,7 @@
   .hero-frood-logo {
     position: relative;
     z-index: 1;
-    width: 45vw;
+    width: 85%;
     color: var(--color-accent);
     /* Fades in after the header stagger finishes (~0.6s) */
     opacity: 0;
@@ -53,6 +84,18 @@
     display: block;
     width: 100%;
     height: auto;
+  }
+
+  @media (min-width: 600px) {
+    .hero-frood-logo {
+      width: 400px;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .hero-frood-logo {
+      width: 500px;
+    }
   }
 
   @keyframes hero-logo-in {
@@ -69,6 +112,117 @@
       animation: none;
     }
   }
+
+  .hero-frood-feature {
+    position: absolute;
+    bottom: var(--spacing-xxs);
+    left: var(--spacing-xxs);
+    z-index: 2;
+    width: auto;
+    max-width: calc(100% - var(--spacing-xxs) * 2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxxs);
+  }
+
+  /* Mobile + tablet: product render (left) sits next to the text column
+     (right). Desktop (≥900px) reverts to the original stacked column. */
+  .hero-frood-product {
+    background-color: var(--color-bg-dark);
+    border-radius: var(--rad-s);
+    padding: var(--spacing-xxs);
+    padding-right: var(--spacing-xs);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-xxs);
+    color: var(--color-text);
+    /* Fades in after the logo settles (logo finishes at ~1.1s) */
+    opacity: 0;
+    transform: translateY(8px);
+    animation: hero-feature-in 0.5s ease-out 1.1s forwards;
+  }
+
+  .hero-frood-product-render {
+    flex: 0 0 128px;
+    order: 0;
+  }
+
+  .hero-frood-product-text {
+    flex: 0 1 auto;
+    order: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+
+  .hero-frood-product-cta {
+    display: block;
+    width: 100%;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: hero-feature-in 0.5s ease-out 1.25s forwards;
+  }
+
+  @keyframes hero-feature-in {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-frood-product,
+    .hero-frood-product-cta {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+
+  .hero-frood-product-render {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background-color: var(--color-bg);
+    border-radius: var(--rad-s);
+    overflow: hidden;
+  }
+
+  .hero-frood-product-render video,
+  .hero-frood-product-render img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-frood-product-title,
+  .hero-frood-product-attributes {
+    margin: 0;
+  }
+
+  /* Desktop: narrower feature card with the original stacked layout —
+     text on top, product render below. */
+  @media (min-width: 900px) {
+    .hero-frood-feature {
+      width: 240px;
+    }
+
+    .hero-frood-product {
+      flex-direction: column;
+      align-items: stretch;
+      padding-right: var(--spacing-xxs);
+    }
+
+    .hero-frood-product-text,
+    .hero-frood-product-render {
+      flex: initial;
+      min-width: initial;
+      order: initial;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -76,7 +230,19 @@
   "name": "Frood Hero",
   "tag": "section",
   "class": "section-frood-hero",
-  "settings": [],
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Featured product"
+    },
+    {
+      "type": "text",
+      "id": "attributes",
+      "label": "Attributes",
+      "default": "Rich • Tangy • Tasty"
+    }
+  ],
   "presets": [
     { "name": "Frood Hero" }
   ]

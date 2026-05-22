@@ -31,6 +31,10 @@
  */
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
+/* Pause between video replays. Native `loop` is overridden so the `ended`
+   event fires; we then wait this long before restarting the video. */
+const LOOP_DELAY_MS = 2000;
+
 /* The real content boxes. A click anywhere else inside the dialog — backdrop,
    or the transparent layout wrappers (flex gaps, the space around the cards) —
    counts as a backdrop click and closes the modal. */
@@ -50,16 +54,26 @@ class RecipeModal extends HTMLElement {
     this.handleKeydown = this.handleKeydown.bind(this);
     this.handlePointerDown = this.handlePointerDown.bind(this);
     this.handleBackdropClick = this.handleBackdropClick.bind(this);
+    this.handleVideoEnded = this.handleVideoEnded.bind(this);
 
     this.trigger.addEventListener('click', this.handleOpen);
     this.closeBtn?.addEventListener('click', this.handleClose);
     this.modal.addEventListener('pointerdown', this.handlePointerDown);
     this.modal.addEventListener('click', this.handleBackdropClick);
+
+    // Override the markup's `loop` so the `ended` event fires; we schedule a
+    // replay manually with LOOP_DELAY_MS between plays.
+    if (this.video) {
+      this.video.loop = false;
+      this.video.addEventListener('ended', this.handleVideoEnded);
+    }
   }
 
   disconnectedCallback() {
     document.removeEventListener('keydown', this.handleKeydown);
     document.body.style.overflow = '';
+    clearTimeout(this.loopTimer);
+    this.video?.removeEventListener('ended', this.handleVideoEnded);
     // Safety net: if the element is torn down while open (e.g. a theme-editor
     // section re-render), don't leave the video playing in the background.
     this.video?.pause();
@@ -80,12 +94,22 @@ class RecipeModal extends HTMLElement {
     this.modal.hidden = true;
     document.body.style.overflow = '';
     document.removeEventListener('keydown', this.handleKeydown);
+    clearTimeout(this.loopTimer);
     if (this.video) {
       this.video.pause();
       this.video.currentTime = 0;
     }
     this.previouslyFocused?.focus?.();
     this.dispatchEvent(new CustomEvent('recipe-modal:closed', { bubbles: true }));
+  }
+
+  handleVideoEnded() {
+    clearTimeout(this.loopTimer);
+    this.loopTimer = setTimeout(() => {
+      if (!this.video || this.modal.hidden) return;
+      this.video.currentTime = 0;
+      this.video.play().catch(() => {});
+    }, LOOP_DELAY_MS);
   }
 
   handleKeydown(e) {

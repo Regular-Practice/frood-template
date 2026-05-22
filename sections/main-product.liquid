@@ -2,15 +2,14 @@
   {% render 'json-ld-product', product: product %}
 
   {%- comment -%}
-    Background slider: product.media from index 2 onwards (the first two
-    media entries are reserved — media[0] is rendered inside Box 1 as the
-    product render; media[1] is currently unused but kept reserved per spec).
+    Background slider: product.media from index 1 onwards. media[0] is reserved
+    for Box 1's product render, so the slider picks up every media item after it.
   {%- endcomment -%}
-  {%- if product.media.size > 2 -%}
+  {%- if product.media.size > 1 -%}
     <product-bg-slider class="product-bg-slider" aria-hidden="true">
       <div class="product-bg-slider-viewport">
         <div class="product-bg-slider-container">
-          {%- for media in product.media offset: 2 -%}
+          {%- for media in product.media offset: 1 -%}
             <div class="product-bg-slider-slide">
               {%- case media.media_type -%}
                 {%- when 'image' -%}
@@ -222,7 +221,7 @@
 {% stylesheet %}
   .main-product {
     position: relative;
-    min-height: calc(100svh - var(--header-height));
+    min-height: 100vh;
     padding: var(--spacing-m);
   }
 
@@ -658,17 +657,20 @@
   @media (max-width: 599px) {
     .main-product {
       /* Section is content-sized once children are in normal flow; the
-         100svh min-height was only there to give the absolute-positioned
+         100vh min-height was only there to give the absolute-positioned
          slider something to fill. */
       min-height: 0;
     }
 
-    /* Slider sits in-flow at the top of the section. 1:1 aspect ratio so it
-       reads as a hero image rather than a thin strip. */
+    /* Slider sits in-flow at the top of the section, 85svh tall so the fixed
+       header overlays it (svh, not dvh, keeps the height stable as mobile
+       browser chrome collapses). Negative inline + top margins pull it out of
+       the section's --spacing-xs padding so it runs full-bleed edge-to-edge. */
     .product-bg-slider {
       position: static;
-      width: 100%;
-      aspect-ratio: 1 / 1;
+      height: 85svh;
+      margin-top: calc(-1 * var(--spacing-xs));
+      margin-inline: calc(-1 * var(--spacing-xs));
     }
 
     /* Boxes flow below the slider, full section width — drops the 386px cap
