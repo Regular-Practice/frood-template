@@ -22,6 +22,23 @@
         "heading": "Recipes built around this pack."
       }
     },
+    "fullbleed_EN6NHa": {
+      "type": "fullbleed",
+      "name": "Full-bleed",
+      "settings": {
+        "video": "{{ product.metafields.custom.product_use_video.value }}",
+        "height": "100",
+        "keep_ratio": false,
+        "margins": false,
+        "caption_heading": "",
+        "caption_body": "",
+        "add_quote": false,
+        "quote_eyebrow": "",
+        "quote_heading": "",
+        "quote_button_text": "",
+        "quote_button_link": ""
+      }
+    },
     "product_recommendations_hc87aa": {
       "type": "product-recommendations",
       "name": "Product recommendations",
@@ -36,6 +53,7 @@
   "order": [
     "main",
     "recipe_recommendations",
+    "fullbleed_EN6NHa",
     "product_recommendations_hc87aa"
   ]
 }
