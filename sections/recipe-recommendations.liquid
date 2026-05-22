@@ -61,7 +61,8 @@
   /* Grid mirrors main-recipes.liquid:
      – mobile + tablet (<900px): 1 column
      – desktop (≥900px): 2 columns
-     – large (≥1500px): 3 columns */
+     – extra-wide (≥1800px): 3 columns (past the 1500px "large" breakpoint on
+       purpose — these horizontal cards need width, so most screens stay 2-up) */
   .recipe-recommendations-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -74,7 +75,7 @@
     }
   }
 
-  @media (min-width: 1500px) {
+  @media (min-width: 1800px) {
     .recipe-recommendations-grid {
       grid-template-columns: repeat(3, 1fr);
     }

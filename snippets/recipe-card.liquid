@@ -1,9 +1,9 @@
 {%- comment -%}
   Placeholder Recipe Card — owned by sections/main-recipes.liquid.
-  Clicking the "Watch →" button opens the inline <recipe-modal> with the
-  recipe video. recipe-modal.js binds the modal to the `.recipe-card-link`
-  trigger — moving that class from the whole card to just the "Watch" button
-  means only that button opens the dialog.
+  The whole card is the modal trigger: recipe-modal.js binds to the
+  `.recipe-card-link` button, whose stretched ::after overlay (see stylesheet)
+  makes a click anywhere on the card open the inline <recipe-modal> with the
+  recipe video. The visible "Watch →" label stays as the affordance.
 
   Expects: recipe (metaobject) with handles: name, image, description, video.
 {%- endcomment -%}
@@ -137,15 +137,35 @@
 </recipe-modal>
 
 {% stylesheet %}
-  /* The card is the flex row (image left, info right). The old wrapping
-     <button class="recipe-card-link"> is gone — only the "Watch →" button
-     at the bottom now triggers the modal. */
+  /* The card is the flex row (image left, info right) AND the modal trigger:
+     the `.recipe-card-link` button stretches a transparent ::after across the
+     whole card (see below), so a click anywhere opens the modal. position:
+     relative anchors that overlay; the hover/focus tint highlights the card as
+     one clickable unit. The xxs padding lets that tint frame the image + text
+     evenly rather than only lighting up the info column. */
   .recipe-card {
+    position: relative;
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: var(--spacing-s);
+    padding: var(--spacing-xxs);
     text-align: left;
+    border-radius: var(--rad-s);
+    transition: background-color var(--transition-fast);
+  }
+
+  .recipe-card:hover {
+    background-color: var(--color-accent-light);
+  }
+
+  /* Keyboard focus lands on the (visually small) trigger button, but the whole
+     card is the target — so move the focus ring onto the card and tint it too.
+     The button's own outline is suppressed below. */
+  .recipe-card:has(.recipe-card-link:focus-visible) {
+    background-color: var(--color-accent-light);
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
   }
 
   .recipe-card-image {
@@ -177,13 +197,29 @@
   }
 
   /* Watch → trigger: .text-h1 typography (small uppercase) + inline arrow.
-     Self-aligns to the left of the info column, sits below the description. */
+     Self-aligns to the left of the info column, sits below the description.
+     Its ::after is a transparent overlay stretched across the whole card
+     (anchored by .recipe-card's position:relative) so the entire card — image
+     included — is one click target. The overlay carries NO background (it sits
+     above the image/text); the visible hover tint lives on .recipe-card. */
   .recipe-card-link {
     align-self: flex-start;
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-xxs);
     cursor: pointer;
+  }
+
+  .recipe-card-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  /* The card shows the focus ring instead — see .recipe-card above. */
+  .recipe-card-link:focus-visible {
+    outline: none;
   }
 
   .recipe-card-watch-icon {
@@ -193,15 +229,15 @@
     transition: transform var(--transition-fast);
   }
 
-  .recipe-card-link:hover .recipe-card-watch-icon,
-  .recipe-card-link:focus-visible .recipe-card-watch-icon {
+  .recipe-card:hover .recipe-card-watch-icon,
+  .recipe-card:has(.recipe-card-link:focus-visible) .recipe-card-watch-icon {
     transform: translateX(var(--spacing-xxs));
   }
 
   @media (prefers-reduced-motion: reduce) {
     .recipe-card-watch-icon { transition: none; }
-    .recipe-card-link:hover .recipe-card-watch-icon,
-    .recipe-card-link:focus-visible .recipe-card-watch-icon { transform: none; }
+    .recipe-card:hover .recipe-card-watch-icon,
+    .recipe-card:has(.recipe-card-link:focus-visible) .recipe-card-watch-icon { transform: none; }
   }
 
   .recipe-modal {

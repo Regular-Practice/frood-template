@@ -6,8 +6,10 @@
   If the type handle in admin is `recipe` (singular) instead, swap the dot-key.
   See CLAUDE.md → "Snippet Ownership" — `recipe-card` is owned by this section.
 
-  Mobile: 1 column. Tablet (≥600px): 2 columns. Desktop (≥900px): 3 columns.
-  (Tighter grid than products since recipe cards carry more written content.)
+  Columns: 1 below 900px, 2 from 900px, 3 from 1800px. The 3-col jump sits well
+  beyond the standard 1500px "large" breakpoint on purpose — these are wide
+  horizontal (image + text) cards, so only very wide screens get three across;
+  most desktops/laptops stay 2-up so each card keeps its width.
 {%- endcomment -%}
 
 <script type="module" src="{{ 'media-chrome.js' | asset_url }}"></script>
@@ -79,14 +81,16 @@
   }
 
   /* Mobile + tablet (<900px): 1 column — cards take the full row width.
-     Desktop (≥900px): 2 columns. Large (≥1500px): 3 columns. */
+     Desktop (≥900px): 2 columns. Extra-wide (≥1800px): 3 columns. The 3-col
+     jump is deliberately past the 1500px "large" breakpoint: these horizontal
+     cards need width, so most laptops/desktops stay 2-up. */
   @media (min-width: 900px) {
     .recipes-index-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  @media (min-width: 1500px) {
+  @media (min-width: 1800px) {
     .recipes-index-grid {
       grid-template-columns: repeat(3, 1fr);
     }
