@@ -411,10 +411,35 @@ body {
 
 .typeset {
   word-wrap: break-word;
+  /* Comfortable reading leading. The body default (--type-base-height) is
+     tuned tight for all-caps labels/headings; long-form prose needs air or
+     wrapped lines crowd together (badly visible in dense legal copy). */
+  line-height: 1.25;
 }
 
 .typeset p:not(:first-child) {
   margin-top: 1em;
+}
+
+/* Headings inside prose. The global reset (§1) flattens h1–h6 to body size +
+   normal weight, so merchant rich-text headings (page/article bodies) need an
+   explicit hierarchy: h1/h2 take the h3 display scale — the page already owns
+   the larger visual H2 title — and h3+ read as bold labels. text-box: none
+   restores natural leading (the global trim is tuned for all-caps labels). */
+.typeset h1,
+.typeset h2,
+.typeset h3,
+.typeset h4,
+.typeset h5,
+.typeset h6 {
+  text-box: none;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.typeset h1,
+.typeset h2 {
+  font-size: var(--type-h3-size);
 }
 
 .typeset h1:not(:first-child),
@@ -435,6 +460,19 @@ body {
 .typeset ol {
   padding-inline-start: 0;
   list-style-position: inside;
+}
+
+/* List items: the global text-box trim (§1) strips each item's leading, so
+   adjacent items render flush — the same problem the global `ol li` rule (§1)
+   already fixes for ordered lists, but `ul li` was never covered. Restore
+   natural leading + a small inter-item gap for both list types in prose so
+   wrapped legal/FAQ bullet lists breathe instead of overlapping. */
+.typeset li {
+  text-box: none;
+}
+
+.typeset li + li {
+  margin-top: var(--spacing-xxxs);
 }
 
 /* Any <a> inside a richtext-bearing wrapper (.typeset for long-form prose,
