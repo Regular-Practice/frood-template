@@ -6,7 +6,7 @@
   See CLAUDE.md → "Frood Homepage Sections" for rules.
 {%- endcomment -%}
 
-<section class="featured-collection color-{{ section.settings.color_scheme }}">
+<section class="featured-collection">
   <header class="featured-collection-header section-lockup">
     {%- if section.settings.eyebrow != blank -%}
       <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
@@ -194,12 +194,6 @@
         { "value": "grid", "label": "Grid (stacked)" }
       ],
       "default": "carousel"
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "presets": [

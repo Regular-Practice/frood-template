@@ -14,8 +14,7 @@
     "header": {
       "type": "header",
       "settings": {
-        "menu": "main-menu",
-        "color_scheme": ""
+        "menu": "main-menu"
       }
     }
   },

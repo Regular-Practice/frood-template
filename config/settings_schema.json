@@ -8,59 +8,6 @@
     "theme_support_url": "https://github.com"
   },
   {
-    "name": "Colors",
-    "settings": [
-      {
-        "type": "color_scheme_group",
-        "id": "color_schemes",
-        "definition": [
-          {
-            "type": "color",
-            "id": "background",
-            "label": "Background",
-            "info": "Section background color"
-          },
-          {
-            "type": "color",
-            "id": "text",
-            "label": "Text",
-            "info": "Primary text color"
-          },
-          {
-            "type": "color",
-            "id": "text_light",
-            "label": "Secondary text",
-            "info": "Captions, muted text"
-          },
-          {
-            "type": "color",
-            "id": "button_background",
-            "label": "Button background"
-          },
-          {
-            "type": "color",
-            "id": "button_text",
-            "label": "Button text"
-          }
-        ],
-        "role": {
-          "text": "text",
-          "background": {
-            "solid": "background"
-          },
-          "links": "text",
-          "icons": "text",
-          "primary_button": "button_background",
-          "on_primary_button": "button_text",
-          "primary_button_border": "button_background",
-          "secondary_button": "background",
-          "on_secondary_button": "text",
-          "secondary_button_border": "text"
-        }
-      }
-    ]
-  },
-  {
     "name": "Social media",
     "settings": [
       {

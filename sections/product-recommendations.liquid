@@ -1,5 +1,5 @@
 <product-recommendations
-  class="product-recommendations color-{{ section.settings.color_scheme }}"
+  class="product-recommendations bg-tinted"
   data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.products_to_show }}&intent=related"
 >
   {%- capture lockup_header -%}
@@ -131,12 +131,6 @@
         { "value": "4", "label": "4 columns" }
       ],
       "default": "4"
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "presets": [

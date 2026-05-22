@@ -13,7 +13,7 @@
 {%- endcomment -%}
 
 <section
-  class="fullbleed-section color-{{ section.settings.color_scheme }} height-{{ section.settings.height }}{% if section.settings.margins %} has-margins{% endif %}{% if section.settings.keep_ratio %} keep-ratio{% endif %}"
+  class="fullbleed-section height-{{ section.settings.height }}{% if section.settings.margins %} has-margins{% endif %}{% if section.settings.keep_ratio %} keep-ratio{% endif %}"
 >
   <div class="fullbleed-frame">
     {%- if section.settings.video != blank -%}
@@ -219,12 +219,6 @@
       "type": "richtext",
       "id": "caption_body",
       "label": "Caption body"
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "presets": [

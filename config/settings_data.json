@@ -29,53 +29,6 @@
         "disabled": false,
         "settings": {}
       }
-    },
-    "color_schemes": {
-      "scheme-1": {
-        "settings": {
-          "background": "#fffef9",
-          "text": "#36262b",
-          "text_light": "#979193",
-          "button_background": "#36262b",
-          "button_text": "#fffef9"
-        }
-      },
-      "scheme-2": {
-        "settings": {
-          "background": "#36262b",
-          "text": "#fffef9",
-          "text_light": "#979193",
-          "button_background": "#ffe74b",
-          "button_text": "#36262b"
-        }
-      },
-      "scheme-3": {
-        "settings": {
-          "background": "#dfdcd4",
-          "text": "#36262b",
-          "text_light": "#979193",
-          "button_background": "#36262b",
-          "button_text": "#fffef9"
-        }
-      },
-      "scheme-4": {
-        "settings": {
-          "background": "#ffe74b",
-          "text": "#36262b",
-          "text_light": "#979193",
-          "button_background": "#36262b",
-          "button_text": "#fffef9"
-        }
-      },
-      "scheme-5": {
-        "settings": {
-          "background": "#f7f0c1",
-          "text": "#36262b",
-          "text_light": "#979193",
-          "button_background": "#36262b",
-          "button_text": "#fffef9"
-        }
-      }
     }
   }
 }

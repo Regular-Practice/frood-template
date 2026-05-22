@@ -1,4 +1,4 @@
-<article class="article color-{{ section.settings.color_scheme }}">
+<article class="article">
   <div class="article-container">
     <a href="{{ blog.url }}" class="article-back text-link">
       &larr; {{ 'blogs.article.back_to_blog' | t: blog_title: blog.title }}
@@ -164,12 +164,6 @@
       "id": "show_related",
       "label": "Show related articles",
       "default": true
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ]
 }

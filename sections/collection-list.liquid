@@ -1,4 +1,4 @@
-<section class="collection-list color-{{ section.settings.color_scheme }}">
+<section class="collection-list">
   {%- if section.settings.heading != blank -%}
     <h2 class="collection-list-heading text-large">{{ section.settings.heading }}</h2>
   {%- endif -%}
@@ -119,12 +119,6 @@
       "id": "show_collection_count",
       "label": "Show product count",
       "default": true
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "blocks": [

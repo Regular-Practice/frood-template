@@ -9,7 +9,7 @@
   only carries the visual layer. See the three-div contract below.
 {%- endcomment -%}
 
-<section class="faq color-{{ section.settings.color_scheme }}">
+<section class="faq">
   <div class="faq-intro">
     <header class="section-lockup">
       {%- if section.settings.eyebrow != blank -%}
@@ -67,6 +67,14 @@
     padding: var(--spacing-xs);
     background-color: var(--color-bg);
     color: var(--color-text);
+  }
+
+  /* When FAQ leads a page it sits under the fixed, floating header (~52px).
+     Clear it the way main-page / the index pages do — header height plus
+     editorial breathing room. Scoped to :first-child so a mid-page FAQ keeps
+     its normal padding; the ID selector wins over the desktop grid's padding. */
+  #main-content > .faq-section:first-child .faq {
+    padding-top: calc(var(--header-height, 52px) + var(--spacing-l));
   }
 
   /* Heading caps like the rest of the theme; the desktop column narrows it further. */
@@ -194,12 +202,6 @@
       "type": "url",
       "id": "link_url",
       "label": "Contact link"
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "blocks": [

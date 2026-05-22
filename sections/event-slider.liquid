@@ -15,7 +15,7 @@
 {%- assign past_events = shop.metaobjects.news.values | where: 'add_to_previous_events', true -%}
 
 {%- if past_events.size > 0 -%}
-  <section class="event-slider color-{{ section.settings.color_scheme }}">
+  <section class="event-slider">
     <header class="event-slider-header section-lockup">
       {%- if section.settings.eyebrow != blank -%}
         <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
@@ -171,12 +171,6 @@
       "id": "heading",
       "label": "Heading (h3)",
       "info": "Press Enter to add a line break."
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "presets": [

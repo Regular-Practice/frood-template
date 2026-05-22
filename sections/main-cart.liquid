@@ -1,4 +1,4 @@
-<div class="cart-page color-{{ section.settings.color_scheme }}">
+<div class="cart-page">
   <h1 class="cart-title text-large">{{ 'cart.general.title' | t }}</h1>
 
   <form action="{{ routes.cart_url }}" method="post" class="cart-form">
@@ -67,12 +67,6 @@
       "id": "show_note",
       "label": "Show order note",
       "default": false
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ]
 }

@@ -3,8 +3,7 @@
     "main": {
       "type": "main-cart",
       "settings": {
-        "show_note": false,
-        "color_scheme": "scheme-1"
+        "show_note": false
       }
     }
   },

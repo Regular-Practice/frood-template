@@ -3,7 +3,7 @@
   Used on the homepage right after featured-collection.
 {%- endcomment -%}
 
-<section class="quote-section color-{{ section.settings.color_scheme }}">
+<section class="quote-section">
   <div class="quote-inner{% if section.settings.use_card %} quote-inner-card card-bg-{{ section.settings.card_bg }} card-color-{{ section.settings.card_color }}{% endif %}">
     {%- if section.settings.eyebrow != blank -%}
       <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
@@ -163,16 +163,6 @@
         { "value": "accent-light", "label": "Pale yellow" }
       ],
       "default": "text"
-    },
-    {
-      "type": "header",
-      "content": "Appearance"
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "presets": [

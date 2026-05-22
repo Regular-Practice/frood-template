@@ -58,29 +58,22 @@ Raw numbers (not tokens):
 | Lightbox / modals | `999` |
 | Skip link | `9999` |
 
-### Color Schemes
+### Background Tint
 
-Shopify native `color_scheme_group` system. Three default schemes defined in `settings_data.json`:
+**There is no merchant color-scheme picker.** The old Shopify `color_scheme_group` system (5 schemes + a `theme.liquid` generator emitting `.color-scheme-N` rules) was removed — in practice only one section ever used a non-default scheme, and the brand locks buttons/accents/inputs regardless. Backgrounds are now brand-locked to two tones:
 
-| Scheme | Background | Text |
-|--------|-----------|------|
-| `scheme-1` | White `#ffffff` | Black |
-| `scheme-2` | Black `#000000` | White |
-| `scheme-3` | Light gray `#f5f5f5` | Black |
+| Tone | Variable | Class |
+|------|----------|-------|
+| Default | `--color-bg` (warm off-white `#fffef9`) | none |
+| Tinted | `--color-bg-dark` (warm beige/stone `#dfdcd4`) | `.bg-tinted` |
 
 **How it works:**
 
-1. `settings_schema.json` declares a `color_scheme_group` with five slots: `background`, `text`, `text_light`, `button_background`, `button_text`
-2. `theme.liquid` generates CSS that maps each scheme to variable overrides (`.color-scheme-1 { --color-bg: ...; }`)
-3. Sections apply the class with the `color-` prefix: `class="section-name color-{{ section.settings.color_scheme }}"`
-4. Component styles use semantic tokens (`var(--color-bg)`, `var(--color-text)`) — they adapt automatically
+1. `base.css` §3 defines `.bg-tinted { --color-bg: var(--color-bg-dark); }` — that's the whole mechanism.
+2. Component styles already use semantic tokens (`var(--color-bg)`, `var(--color-text)`), so adding `.bg-tinted` to a section wrapper swaps just the background; text and other tokens stay on `:root` values.
+3. The tint is **hardcoded in markup**, not a setting. Currently only `product-recommendations` carries it.
 
-**Critical:** Always use `color-{{ section.settings.color_scheme }}` — never bare `{{ section.settings.color_scheme }}`.
-
-Every section schema includes:
-```json
-{ "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" }
-```
+**Critical:** Don't add a `color_scheme` setting, a `color-` / `color-scheme-N` class, or any per-section background control. If a section needs the beige tone, put `.bg-tinted` in its markup; if it needs to be merchant-toggleable, that's a design decision — don't reintroduce the multi-scheme picker.
 
 ### Section Styles
 
@@ -316,9 +309,7 @@ Always include `shopify_attributes` for theme editor support:
   "name": "Section Name",
   "tag": "section",
   "class": "section-name",
-  "settings": [
-    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" }
-  ],
+  "settings": [],
   "blocks": [],
   "presets": [{ "name": "Section Name" }]
 }
@@ -407,7 +398,7 @@ When added:
 ```
 
 - Font loading: `@font-face` declarations in `theme.liquid` using `asset_url` — not in `base.css`
-- Color scheme CSS: generated in `theme.liquid` via a loop over `settings.color_schemes`
+- Background tint: `.bg-tinted` lives in `base.css` §3 (no `theme.liquid` color generation; the old per-scheme loop was removed)
 - Cart drawer: only rendered when `settings.cart_type == 'drawer'`
 
 ### password.liquid

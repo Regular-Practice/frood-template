@@ -22,8 +22,7 @@
         "button_link": "",
         "collection": "shop",
         "products_to_show": 4,
-        "mobile_layout": "carousel",
-        "color_scheme": "scheme-1"
+        "mobile_layout": "carousel"
       }
     },
     "quote": {
@@ -31,8 +30,7 @@
       "settings": {
         "eyebrow": "Our solution",
         "heading": "We built a way to cook that fits your life: real ingredients, real flavour, less effort.",
-        "use_card": true,
-        "color_scheme": "scheme-1"
+        "use_card": true
       }
     },
     "bundle_builder_mNULHm": {
@@ -41,8 +39,7 @@
       "settings": {
         "box_product": "mixed-box",
         "eyebrow": "Build your box",
-        "heading": "Create and customise your box from the Frood selection.",
-        "color_scheme": "scheme-1"
+        "heading": "Create and customise your box from the Frood selection."
       }
     },
     "fullbleed": {
@@ -52,8 +49,7 @@
         "height": "75",
         "margins": true,
         "caption_heading": "The Problem",
-        "caption_body": "<p>We all want to eat better. But between busy schedules and long ingredient lists, cooking from scratch demands time we just don’t have. </p>",
-        "color_scheme": "scheme-1"
+        "caption_body": "<p>We all want to eat better. But between busy schedules and long ingredient lists, cooking from scratch demands time we just don’t have. </p>"
       }
     },
     "feature_card": {
@@ -94,8 +90,7 @@
         "heading": "Nourishing recipes that don't ask too much of you. Simple ingredients, big flavour, the way eating well should feel.",
         "button_text": "Recipes",
         "button_link": "shopify://pages/recipes",
-        "text_vertical_alignment": "top",
-        "color_scheme": ""
+        "text_vertical_alignment": "top"
       }
     },
     "media_tabs": {
@@ -131,9 +126,7 @@
         "tab_2",
         "tab_3"
       ],
-      "settings": {
-        "color_scheme": "scheme-1"
-      }
+      "settings": {}
     }
   },
   "order": [

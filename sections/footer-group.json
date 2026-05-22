@@ -15,8 +15,7 @@
       "type": "newsletter-banner",
       "settings": {
         "eyebrow": "Newsletter",
-        "heading": "Be the first to hear about new ingredients, recipes, and limited drops.",
-        "color_scheme": "scheme-1"
+        "heading": "Be the first to hear about new ingredients, recipes, and limited drops."
       }
     },
     "footer": {
@@ -57,9 +56,7 @@
         "link_list_9ByDgm",
         "link_list_VpgbTy"
       ],
-      "settings": {
-        "color_scheme": ""
-      }
+      "settings": {}
     }
   },
   "order": [

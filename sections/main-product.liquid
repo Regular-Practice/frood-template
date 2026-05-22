@@ -1,4 +1,4 @@
-<section class="main-product color-{{ section.settings.color_scheme }}">
+<section class="main-product">
   {% render 'json-ld-product', product: product %}
 
   {%- comment -%}
@@ -236,22 +236,13 @@
 <script type="module" src="{{ 'accordion.js' | asset_url }}"></script>
 
 {% stylesheet %}
+  /* Tight padding so the boxes column reads as a floating panel rather than a
+     section with broad chrome. (Previously gated on .color-scheme-1, which the PDP
+     always used — its higher specificity meant xxs was already the live padding on
+     every viewport, so the old m/xs rules never actually applied.) */
   .main-product {
     position: relative;
     min-height: 100vh;
-    padding: var(--spacing-m);
-  }
-
-  @media (max-width: 899px) {
-    .main-product {
-      padding: var(--spacing-xs);
-    }
-  }
-
-
-  /* Scheme-1 PDP runs tighter so the boxes column reads as a floating panel
-     rather than a section with broad chrome. */
-  .main-product.color-scheme-1 {
     padding: var(--spacing-xxs);
   }
 
@@ -807,12 +798,6 @@
 {
   "name": "Product information",
   "settings": [
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
-    },
     {
       "type": "checkbox",
       "id": "show_quantity",

@@ -82,7 +82,7 @@
 {%- endif -%}
 
 <bundle-builder
-  class="bundle-builder color-{{ section.settings.color_scheme }}{% if section.settings.full_screen %} full-screen{% endif %}"
+  class="bundle-builder{% if section.settings.full_screen %} full-screen{% endif %}"
   data-section-id="{{ section.id }}"
   data-capacity="{{ capacity }}"
   {% if box_variant %}data-box-variant-id="{{ box_variant.id }}"{% endif %}
@@ -657,12 +657,6 @@
     {
       "type": "header",
       "content": "Appearance"
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     },
     {
       "type": "checkbox",

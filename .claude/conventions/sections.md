@@ -99,7 +99,7 @@ derived for the steppers and the line-item property.
 **Files:**
 
 - `sections/bundle-builder.liquid` — markup, co-located stylesheet, schema (box `product` picker,
-  header text, optional `box_back_image`/`box_front_image` overrides, color scheme). No blocks.
+  header text, optional `box_back_image`/`box_front_image` overrides). No blocks.
 - `assets/bundle-builder.js` — `<bundle-builder>` web component: owns the ordered pack list,
   localStorage persistence (`frood.bundle.v3.<sectionId>` — flavour ids only), steppers, and native
   add-to-cart. Header comment documents the full expected-markup + event contract.

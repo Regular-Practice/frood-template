@@ -6,7 +6,7 @@
 
 ## Standard
 
-**WCAG 2.1 Level AA** — all pages, all interactive elements, all color schemes.
+**WCAG 2.1 Level AA** — all pages, all interactive elements, both backgrounds (default off-white and `.bg-tinted` beige).
 
 ---
 
@@ -48,7 +48,7 @@ Custom outline on all interactive elements:
 }
 ```
 
-- `currentColor` adapts to color scheme automatically
+- `currentColor` adapts to the surrounding text color automatically
 - Never remove focus outlines without providing an alternative
 - Input elements use `outline-offset: 5px`
 
@@ -123,7 +123,7 @@ Custom outline on all interactive elements:
 - Normal text: 4.5:1 minimum ratio
 - Large text (18px+ bold or 24px+): 3:1 minimum
 - UI components and borders: 3:1 minimum
-- Applies to all three color schemes (scheme-1, scheme-2, scheme-3)
+- Applies on both backgrounds (default off-white and `.bg-tinted` beige)
 
 ---
 

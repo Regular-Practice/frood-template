@@ -12,7 +12,6 @@
     "main": {
       "type": "main-product",
       "settings": {
-        "color_scheme": "scheme-1",
         "show_quantity": true
       }
     },
@@ -20,8 +19,7 @@
       "type": "recipe-recommendations",
       "settings": {
         "eyebrow": "Try it with",
-        "heading": "Recipes built around this pack.",
-        "color_scheme": "scheme-1"
+        "heading": "Recipes built around this pack."
       }
     },
     "product_recommendations_76MMMN": {
@@ -30,25 +28,13 @@
       "settings": {
         "heading": "You may also like",
         "products_to_show": 4,
-        "grid_columns": "4",
-        "color_scheme": "scheme-3"
-      }
-    },
-    "product_recommendations_e4XLkN": {
-      "type": "product-recommendations",
-      "name": "Product recommendations",
-      "settings": {
-        "heading": "You may also like",
-        "products_to_show": 4,
-        "grid_columns": "4",
-        "color_scheme": ""
+        "grid_columns": "4"
       }
     }
   },
   "order": [
     "main",
     "recipe_recommendations",
-    "product_recommendations_76MMMN",
-    "product_recommendations_e4XLkN"
+    "product_recommendations_76MMMN"
   ]
 }

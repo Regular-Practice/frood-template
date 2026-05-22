@@ -10,7 +10,7 @@
  * changes the text, the key changes and the bar reappears for all visitors.
  *
  * Expected markup:
- *   <announcement-bar class="announcement-bar color-scheme-2"
+ *   <announcement-bar class="announcement-bar"
  *     data-dismiss-key="abc123">
  *     <p class="announcement-bar-content">Free shipping on orders over $50</p>
  *     <button class="announcement-bar-close" data-dismiss aria-label="Dismiss announcement">

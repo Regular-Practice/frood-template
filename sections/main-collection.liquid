@@ -1,4 +1,4 @@
-<div class="collection color-{{ section.settings.color_scheme }}" data-section-id="{{ section.id }}">
+<div class="collection" data-section-id="{{ section.id }}">
   {%- assign active_filter_count = 0 -%}
   {%- for filter in collection.filters -%}
     {%- assign active_filter_count = active_filter_count | plus: filter.active_values.size -%}
@@ -230,12 +230,6 @@
       "id": "show_sorting",
       "label": "Show sorting",
       "default": true
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ]
 }

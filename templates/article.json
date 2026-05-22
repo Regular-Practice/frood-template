@@ -7,8 +7,7 @@
         "show_date": true,
         "show_tags": true,
         "show_share": true,
-        "show_related": true,
-        "color_scheme": "scheme-1"
+        "show_related": true
       }
     }
   },

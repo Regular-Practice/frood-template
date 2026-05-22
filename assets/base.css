@@ -198,9 +198,9 @@ summary::-webkit-details-marker {
   --color-overlay: color-mix(in srgb, var(--color-text) 10%, transparent);
 
   /* Note: legacy --color-button-* tokens removed — Frood's primary button uses brand tokens
-     directly (--color-accent, --color-text). The scheme picker in theme.liquid still emits
-     --color-button-bg / --color-button-text for Shopify checkout role mapping, but they no longer
-     drive any on-page CSS. */
+     directly (--color-accent, --color-text). The old per-section color-scheme picker (and the
+     theme.liquid generator that emitted these) is gone; backgrounds are now either the default
+     --color-bg or the .bg-tinted variant below. */
 
   /* Typography */
   --type-cap-spacing: 0.066em;
@@ -304,8 +304,14 @@ summary::-webkit-details-marker {
   }
 }
 
-/* ========== 3. Color Schemes ========== */
-/* Generated dynamically in theme.liquid from settings.color_schemes */
+/* ========== 3. Background Tint ========== */
+/* Frood backgrounds are brand-locked: the default is --color-bg (warm off-white).
+   Apply .bg-tinted to a section wrapper for the one alternate tone the design uses —
+   the warm beige/stone (--color-bg-dark). This replaces the old multi-scheme picker;
+   text and all other tokens stay on their :root values. */
+.bg-tinted {
+  --color-bg: var(--color-bg-dark);
+}
 
 /* ========== 4. Body Defaults ========== */
 

@@ -23,8 +23,8 @@
 | **Naming convention** | Simple semantic names | Readable, no BEM complexity, easy to understand |
 | **Utility classes** | Minimal | Avoid Tailwind-style utilities; keep CSS in context |
 | **Section styles** | Co-located in section files | Styles live with their markup, easy to find |
-| **Color management** | Shopify native `color_scheme_group` | CSS generated in `theme.liquid` from merchant-defined schemes; applied via `color-{{ section.settings.color_scheme }}` |
-| **Merchant controls** | Minimal (colors only) | Consistency across projects; devs control typography/spacing |
+| **Color management** | Brand-locked tokens + a single `.bg-tinted` class | The 5-scheme `color_scheme_group` was removed (only one section ever used a non-default scheme, and buttons/accents/inputs are brand-locked anyway). Backgrounds are `--color-bg` or `.bg-tinted` beige, hardcoded in markup |
+| **Merchant controls** | Minimal (no color/type/spacing) | Consistency across projects; devs control the design system |
 
 ---
 

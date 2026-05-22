@@ -5,7 +5,7 @@
   tab is activated automatically (looping back to the first). Tabs can also be clicked.
 {%- endcomment -%}
 
-<section class="media-tabs-section color-{{ section.settings.color_scheme }}">
+<section class="media-tabs-section">
   <media-tabs class="media-tabs">
     <div class="media-tabs-videos" aria-hidden="true">
       {%- for block in section.blocks -%}
@@ -220,14 +220,7 @@
   "name": "Media tabs",
   "tag": "section",
   "class": "media-tabs-section-wrapper",
-  "settings": [
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
-    }
-  ],
+  "settings": [],
   "blocks": [
     {
       "type": "tab",

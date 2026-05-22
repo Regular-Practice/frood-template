@@ -83,28 +83,19 @@ Keys defined in `locales/en.default.json`.
 {%- comment -%} This won't render to browser {%- endcomment -%}
 ```
 
-### Color Schemes
+### Background Tint
 
-Shopify native `color_scheme_group` system. Every section with color support:
+**There is no merchant color-scheme picker.** Frood backgrounds are brand-locked: the default is `--color-bg` (warm off-white). The one alternate tone the design uses — warm beige/stone (`--color-bg-dark`) — is applied by adding the `.bg-tinted` class to a section wrapper. That class (in `base.css` §3) just overrides one variable:
 
-Schema:
-
-```json
-{
-  "type": "color_scheme",
-  "id": "color_scheme",
-  "label": "Color scheme",
-  "default": "scheme-1"
-}
+```css
+.bg-tinted { --color-bg: var(--color-bg-dark); }
 ```
-
-HTML — always use the `color-` prefix:
 
 ```liquid
-<section class="section-name color-{{ section.settings.color_scheme }}">
+<section class="section-name bg-tinted">
 ```
 
-Three default schemes: scheme-1 (white/black), scheme-2 (black/white), scheme-3 (light gray/black).
+Sections already paint `background-color: var(--color-bg)` / `color: var(--color-text)`, so toggling that one variable is all that's needed; text and every other token stay on their `:root` values. Currently only `product-recommendations` is tinted (hardcoded). **Do not add a `color_scheme` setting, the `color-` prefix, or per-section background controls** — the old 5-scheme `color_scheme_group` system (and its `theme.liquid` generator) was removed. If a new section genuinely needs the beige tone, add `.bg-tinted` to its markup; if it needs to be merchant-toggleable, raise it for a design decision rather than reintroducing the picker.
 
 ### Section Styles
 
@@ -195,9 +186,7 @@ Always include dimensions to prevent layout shift:
   "name": "Section Name",
   "tag": "section",
   "class": "section-name",
-  "settings": [
-    { "type": "color_scheme", "id": "color_scheme", "label": "Color scheme", "default": "scheme-1" }
-  ],
+  "settings": [],
   "blocks": [],
   "presets": [{ "name": "Section Name" }]
 }
@@ -248,14 +237,14 @@ Each snippet is owned by ONE section/area. When modifying a snippet, read its ow
 
 **Semantic alias:** `--color-text-light` → `--color-text-accent` (kept so existing references keep working).
 
-**Form input backgrounds** (brand-locked, same across all color schemes):
+**Form input backgrounds** (brand-locked):
 
 - `--color-input-bg` → `--color-bg-dark` (warm beige) — default state
 - `--color-input-bg-hover` → `--color-accent-light` (pale yellow) — hover/focus state
 
-These were previously derived per color scheme (text color @ 10% / 15% alpha) but are now brand-locked. Used by `.input`, `.checkbox`, `.textarea`, `.select`.
+These were once derived per color scheme (text color @ 10% / 15% alpha) but are now brand-locked. Used by `.input`, `.checkbox`, `.textarea`, `.select`.
 
-**Translucent overlays** (derived from `--color-text` via `color-mix`, so they adapt to color schemes):
+**Translucent overlays** (derived from `--color-text` via `color-mix`):
 
 - `--color-border` text @ 10% — borders, hairlines
 - `--color-shadow-soft` text @ 5% — pressed-state shadows
@@ -438,7 +427,7 @@ Output lands in `.claude/meta-dump/` (gitignored) — one `metafields-<OWNER>.js
 - No per-section padding/margin merchant controls
 - No `@font-face` in base.css — font faces go in theme.liquid via Liquid `asset_url`
 - No hardcoded user-facing strings — always `{{ 'key' | t }}`
-- No bare `{{ section.settings.color_scheme }}` — always prefix with `color-`
+- No `color_scheme` settings or `color-`/`color-scheme-N` classes — backgrounds are the default `--color-bg` or `.bg-tinted`, nothing else
 - No second JS import map — `theme.liquid` has the only one (vendored three.js); a document can have just one
 
 ## Accessibility Checklist
@@ -458,7 +447,7 @@ Output lands in `.claude/meta-dump/` (gitignored) — one `metafields-<OWNER>.js
 | Topic                                                                    | Read                           | Contains                                                                                                                                                                                          |
 | ------------------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Custom Frood section details (layout, breakpoints, schema, gotchas)      | `conventions/sections.md`      | hero, featured-collection, product-card 3D, text-image-split, feature-card, bundle-builder                                                                                                        |
-| CSS patterns, JS components, Liquid conventions, animation, layout, i18n | `conventions/architecture.md`  | Class naming, breakpoints, color schemes, Web Component pattern, event naming, fetch patterns, Section Rendering API, inline settings, whitespace control, Motion library, theme.liquid structure |
+| CSS patterns, JS components, Liquid conventions, animation, layout, i18n | `conventions/architecture.md`  | Class naming, breakpoints, background tint, Web Component pattern, event naming, fetch patterns, Section Rendering API, inline settings, whitespace control, Motion library, theme.liquid structure |
 | Cart behavior, add-to-cart, event protocol                               | `conventions/commerce.md`      | Cart event flow, bundled section rendering, quantity selector, error handling, loading states, no-JS fallback                                                                                     |
 | WCAG, keyboard, ARIA, focus management                                   | `conventions/accessibility.md` | Focus trapping pattern, ARIA attributes, heading hierarchy, form accessibility, color contrast, reduced motion, testing checklist                                                                 |
 | Why we chose X over Y                                                    | `conventions/decisions.md`     | Rationale for light DOM, no BEM, vanilla CSS, Embla, no Shadow DOM, no build tools, etc.                                                                                                          |

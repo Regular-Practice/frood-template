@@ -1,4 +1,4 @@
-<footer class="footer color-{{ section.settings.color_scheme }}">
+<footer class="footer">
   <div class="footer-brand">
     <div class="footer-icon">{% render 'logo-frood' %}</div>
     {%- assign current_year = 'now' | date: '%Y' -%}
@@ -161,14 +161,7 @@
 {% schema %}
 {
   "name": "Footer",
-  "settings": [
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
-    }
-  ],
+  "settings": [],
   "blocks": [
     {
       "type": "link_list",

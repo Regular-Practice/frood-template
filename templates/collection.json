@@ -6,8 +6,7 @@
         "products_per_page": 12,
         "grid_columns": "4",
         "show_filters": true,
-        "show_sorting": true,
-        "color_scheme": "scheme-1"
+        "show_sorting": true
       }
     }
   },

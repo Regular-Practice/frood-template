@@ -3,7 +3,6 @@
     "main": {
       "type": "main-recipes",
       "settings": {
-        "color_scheme": "scheme-1",
         "eyebrow": "Recipes",
         "heading": "What we cook with our packs."
       }

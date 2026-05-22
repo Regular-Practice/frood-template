@@ -5,7 +5,7 @@
   See CLAUDE.md → "Frood Homepage Sections" for the rules.
 {%- endcomment -%}
 
-<section class="text-image-split color-{{ section.settings.color_scheme }}">
+<section class="text-image-split">
   <div class="text-image-split-text text-align-{{ section.settings.text_vertical_alignment }}">
     <header class="section-lockup">
       {%- if section.settings.eyebrow != blank -%}
@@ -183,12 +183,6 @@
         { "value": "bottom", "label": "Bottom" }
       ],
       "default": "middle"
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "blocks": [

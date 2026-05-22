@@ -11,7 +11,7 @@
   via .newsletter-banner descendant selectors.
 {%- endcomment -%}
 
-<section class="newsletter-banner color-{{ section.settings.color_scheme }}">
+<section class="newsletter-banner">
   <div class="newsletter-banner-inner">
     {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
       <header class="newsletter-banner-header section-lockup">
@@ -99,12 +99,6 @@
       "label": "Heading (h3)",
       "info": "Press Enter to add a line break.",
       "default": "Be the first to hear about new ingredients, recipes, and limited drops."
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "presets": [

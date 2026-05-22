@@ -57,18 +57,6 @@
 
   {{ 'base.css' | asset_url | stylesheet_tag }}
 
-  {% style %}
-    {%- for scheme in settings.color_schemes -%}
-      .color-{{ scheme.id }} {
-        --color-bg: {{ scheme.settings.background }};
-        --color-text: {{ scheme.settings.text }};
-        --color-text-light: {{ scheme.settings.text | color_modify: 'alpha', 0.66 }};
-        --color-button-bg: {{ scheme.settings.button_background }};
-        --color-button-text: {{ scheme.settings.button_text }};
-      }
-    {%- endfor -%}
-  {% endstyle %}
-
   {{ content_for_header }}
 </head>
 <body data-cart-type="{{ settings.cart_type }}">

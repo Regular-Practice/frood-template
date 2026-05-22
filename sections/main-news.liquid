@@ -7,7 +7,7 @@
   See CLAUDE.md → "Snippet Ownership" — `news-card` is owned by this section.
 {%- endcomment -%}
 
-<section class="news-index color-{{ section.settings.color_scheme }}">
+<section class="news-index">
   <header class="news-index-header section-lockup">
     {%- if section.settings.eyebrow != blank -%}
       <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
@@ -129,12 +129,6 @@
       "label": "Heading (h3)",
       "info": "Press Enter to add a line break.",
       "default": "What we're up to."
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "presets": [

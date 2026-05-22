@@ -13,7 +13,7 @@
 <script type="module" src="{{ 'media-chrome.js' | asset_url }}"></script>
 <script type="module" src="{{ 'recipe-modal.js' | asset_url }}"></script>
 
-<section class="recipes-index color-{{ section.settings.color_scheme }}">
+<section class="recipes-index">
   <header class="recipes-index-header section-lockup">
     {%- if section.settings.eyebrow != blank -%}
       <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
@@ -116,12 +116,6 @@
       "label": "Heading (h3)",
       "info": "Press Enter to add a line break.",
       "default": "What we cook with our packs."
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
     }
   ],
   "presets": [

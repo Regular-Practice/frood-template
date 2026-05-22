@@ -6,8 +6,7 @@
         "heading": "Page not found",
         "subheading": "The page you're looking for doesn't exist.",
         "show_search": true,
-        "show_popular_links": true,
-        "color_scheme": "scheme-1"
+        "show_popular_links": true
       }
     }
   },

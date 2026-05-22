@@ -11,17 +11,14 @@
   "sections": {
     "main": {
       "type": "main-news",
-      "settings": {
-        "color_scheme": "scheme-1"
-      }
+      "settings": {}
     },
     "event_slider_WQdf4M": {
       "type": "event-slider",
       "name": "Event slider",
       "settings": {
         "eyebrow": "Previous",
-        "heading": "Pop-ups, partnerships, and plenty of good food — here's where we've been.",
-        "color_scheme": ""
+        "heading": "Pop-ups, partnerships, and plenty of good food — here's where we've been."
       }
     }
   },
