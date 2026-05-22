@@ -179,19 +179,15 @@
       </div>
 
       <footer class="bundle-footer">
-        {%- if box_variant -%}
-          <div class="bundle-price-row text-ui">
-            <span>{{ 'sections.bundle_builder.price' | t }}</span>
-            <span>{{ box_variant.price | money }}</span>
-          </div>
-        {%- endif -%}
-
         <button type="button" class="button bundle-add" data-add disabled>
           <span class="bundle-add-inner">
-            <span data-add-label>{{ 'sections.bundle_builder.add_to_cart' | t }}</span>
-            <svg class="bundle-add-icon" width="16" height="12" viewBox="0 0 16 12" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-              <path d="M10 12L8.6 10.55L12.15 7H0V5H12.15L8.6 1.45L10 0L16 6L10 12Z"/>
-            </svg>
+            <span class="bundle-add-label" data-add-label>{{ 'sections.bundle_builder.add_to_cart' | t }}</span>
+            <span class="bundle-add-end">
+              {%- if box_variant -%}
+                <span class="bundle-add-price">{{ box_variant.price | money }}</span>
+              {%- endif -%}
+              {% render 'icon-arrow', class: 'bundle-add-icon' %}
+            </span>
           </span>
         </button>
 
@@ -367,24 +363,20 @@
     font-size: var(--type-mini-size);
   }
 
-  /* Footer: price row + add button + progress bar */
+  /* Footer: add button (carries the flat box price) + progress bar */
   .bundle-footer {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
   }
 
-  .bundle-price-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin: 0;
-  }
-
   /* Dark variant of the primary .button: same shape/type as .button but with
-     a muted bg until the box is full. Hover inverts to yellow on dark. */
+     a muted bg until the box is full. Hover inverts to yellow on dark.
+     One step up from the .button label size (h1 12px → ui 14px) so this
+     primary CTA reads larger than a standard button. */
   .bundle-add {
     width: 100%;
+    font-size: var(--type-ui-size);
     background-color: var(--color-text-accent);
     color: var(--color-bg);
     transition:
@@ -416,6 +408,13 @@
     justify-content: space-between;
     align-items: center;
     gap: var(--spacing-s);
+  }
+
+  /* Price + forward arrow, pinned to the button's trailing edge. */
+  .bundle-add-end {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
   }
 
   /* Progress bar — thin track + fill that grows to capacity. Anchored to the

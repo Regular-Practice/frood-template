@@ -1,0 +1,25 @@
+{%- comment -%}
+  Renders the Frood right-arrow icon (→) as inline SVG. Recolours via
+  currentColor (set `color` on a parent — same pattern as the other icon-*).
+  Natural size is 16×12; consumers override sizing/animation with the `class`
+  param + their own CSS.
+
+  Owner: header.liquid (with the other icon-* snippets).
+  Used by: bundle-builder (add-to-cart CTA), recipe-card ("Watch" trigger).
+
+  Expects (optional):
+    class — extra class(es) on the <svg>, e.g. 'bundle-add-icon',
+            'recipe-card-watch-icon'
+{%- endcomment -%}
+<svg
+  {%- if class != blank %} class="{{ class }}"{%- endif %}
+  width="16"
+  height="12"
+  viewBox="0 0 16 12"
+  fill="currentColor"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path d="M10 12L8.6 10.55L12.15 7H0V5H12.15L8.6 1.45L10 0L16 6L10 12Z"/>
+</svg>

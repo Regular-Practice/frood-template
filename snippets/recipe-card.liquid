@@ -36,9 +36,7 @@
 
     <button type="button" class="recipe-card-link text-h1" aria-haspopup="dialog">
       <span>{{ 'recipes.card.watch' | t }}</span>
-      <svg class="recipe-card-watch-icon" width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-        <path d="M10 12L8.6 10.55L12.15 7H0V5H12.15L8.6 1.45L10 0L16 6L10 12Z" fill="currentColor"/>
-      </svg>
+      {% render 'icon-arrow', class: 'recipe-card-watch-icon' %}
     </button>
   </div>
 
