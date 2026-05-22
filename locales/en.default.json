@@ -259,7 +259,6 @@
       "caption": "A box of {{ count }} — mix any flavours.",
       "empty_stage": "Add packs to fill your box",
       "no_flavours": "No flavours yet.",
-      "contents_property": "Flavours",
       "decrease": "Remove one {{ name }}",
       "increase": "Add one {{ name }}",
       "view_product": "View {{ name }} product page",

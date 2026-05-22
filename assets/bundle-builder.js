@@ -18,11 +18,10 @@
 
     <bundle-builder
       data-section-id  data-capacity="4"  data-box-variant-id
-      data-i18n-add  data-i18n-add-more  data-i18n-added
-      data-i18n-contents  data-i18n-error>
+      data-i18n-add  data-i18n-add-more  data-i18n-added  data-i18n-error>
 
       <script type="application/json" class="bundle-flavours">
-        [{ id, name, attributes, image }, …]       (id = metaobject handle)
+        [{ id, name, attributes, image, sku }, …]  (id = metaobject handle)
       </script>
 
       [data-flavour-list]
@@ -241,16 +240,28 @@ class BundleBuilder extends HTMLElement {
 
   // ---- Add to cart (native Shopify cart) --------------------------------
 
-  // Builds a readable "Flavours" line-item property from the box contents,
-  // ordered by the flavour list, e.g. "2 × Mexi Fiesta Blend, 2 × Golden Curry".
-  contentsProperty() {
+  // Builds the line-item properties for the box, ordered by the flavour list:
+  //
+  //   • One VISIBLE entry per flavour (key = flavour name, value = "× N") so the
+  //     cart drawer, cart page, and native checkout all show a readable
+  //     per-flavour list with no string parsing.
+  //   • One HIDDEN `_bundle` entry — the leading underscore tells Shopify to
+  //     keep it off the customer-facing cart/checkout while still saving it on
+  //     the order. It carries handle + name + qty + sku per flavour as JSON,
+  //     the machine-readable payload for fulfilment / reconstruction.
+  buildProperties() {
     const counts = this.counts;
-    const parts = [];
+    const properties = {};
+    const structured = [];
     for (const id of Object.keys(this.flavours)) {
       const qty = counts[id];
-      if (qty) parts.push(`${qty} × ${this.flavours[id].name}`);
+      if (!qty) continue;
+      const flavour = this.flavours[id];
+      properties[flavour.name] = `× ${qty}`;
+      structured.push({ handle: id, name: flavour.name, qty, sku: flavour.sku || '' });
     }
-    return parts.join(', ');
+    properties._bundle = JSON.stringify(structured);
+    return properties;
   }
 
   async addToCart() {
@@ -259,11 +270,10 @@ class BundleBuilder extends HTMLElement {
     this.addButton.classList.add('is-loading');
     this.addButton.disabled = true;
 
-    const contentsLabel = this.dataset.i18nContents || 'Flavours';
     const item = {
       id: parseInt(this.boxVariantId, 10),
       quantity: 1,
-      properties: { [contentsLabel]: this.contentsProperty() }
+      properties: this.buildProperties()
     };
 
     try {

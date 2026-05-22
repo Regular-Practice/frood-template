@@ -135,11 +135,33 @@ and `image` (file reference, image) — the pouch render for the stack. Missing 
 gracefully (`onerror`). The box capacity (4) is independent of how many flavours are included; no box
 product (or an empty metafield) → no flavours render and the add button stays disabled.
 
-**The box is a single product + flavour property:** the section's `product` setting is the flat-priced
+**The box is a single product + flavour properties:** the section's `product` setting is the flat-priced
 "Build Your Box" product. When the box is full, the builder POSTs that product's variant to
-`/cart/add.js` (`{ items: [{ id, quantity: 1, properties: { Flavours: "2 × Mexi, 2 × Curry" } }],
-sections: ['cart-drawer'] }`), clears the local draft, dispatches `cart:item-added` with the bundled
+`/cart/add.js` with line-item properties built by `buildProperties()` — **one visible entry per flavour**
+(key = flavour name, value = `× N`, e.g. `{ "Mexi Fiesta Blend": "× 2", "Golden Curry": "× 2" }`) so the
+cart drawer, cart page, and native checkout all show a readable per-flavour list, **plus a hidden
+`_bundle` entry** (leading `_` → saved on the order but suppressed from the customer cart/checkout)
+carrying `[{ handle, name, qty, sku }, …]` as JSON for fulfilment / reconstruction. The flavour `sku`
+comes from each flavour metaobject's `product_reference` variant, surfaced in the `.bundle-flavours`
+JSON blob. After the POST it clears the local draft, dispatches `cart:item-added` with the bundled
 section HTML, and fires a success `toast:show` — the same contract as `product-form.js` (the native
 `<cart-drawer>` refreshes but does **not** auto-open; it opens on cart-icon click). The bundle is never
-the cart — flavours have no SKU/inventory of their own; the box line carries them as a property only.
-If no box product is configured, the builder still assembles but the add button stays disabled.
+the cart — flavours have no SKU/inventory of their own; the box line carries them as properties only.
+Identical boxes merge to one line (quantity 2); different mixes stay separate lines.
+
+**Cart rendering — the bundle line is differentiated from normal line items.** Both `cart-item.liquid`
+(cart page) and `cart-drawer-item.liquid` (drawer) detect a bundle via its hidden `_bundle` property. A
+bundle line **drops the box product thumbnail** (`.is-bundle`) and renders its contents through the
+shared `bundle-line-contents` snippet (owned by this section): **one row per flavour — a `dark_colour`
+chip + flavour name + qty**. That snippet resolves flavours from the box product's
+`custom.included_flavours` metaobjects (so order matches the builder) and reads each quantity straight
+from the visible properties via `item.properties[flavour.name.value]` — no JSON parsing, no extra data on
+the line. Matching qty by flavour name is fine for the live cart (the property was written from the same
+metaobject); it isn't rename-proof, but that only degrades to a missing row, never a crash. Non-bundle
+lines still render any properties via the generic `item.properties` loop (skipping `_`-prefixed + blank).
+The snippet's `{% stylesheet %}` is co-located so its styles travel to the global cart drawer.
+
+The chip uses `flavour.dark_colour`; the `flavour` metaobject also defines `light_colour` (a two-tone
+chip is an easy future tweak). Note the live store doesn't define the `flavour` metaobject yet — until it
+exists (with `dark_colour`/`image`/`product_reference`), the chip rows render empty and `sku` stays
+blank. If no box product is configured, the builder still assembles but the add button stays disabled.

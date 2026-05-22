@@ -19,6 +19,11 @@
 {%- endcomment -%}
 
 {%- liquid
+  assign is_bundle = false
+  if item.properties['_bundle'] != blank
+    assign is_bundle = true
+  endif
+
   assign subtitle = item.product.metafields.custom.cart_subtitle.value
   if subtitle == blank and item.variant.title != 'Default Title'
     assign subtitle = item.variant.title
@@ -30,25 +35,56 @@
   endif
 -%}
 
-<div class="cart-drawer-item" data-key="{{ item.key }}">
-  <a href="{{ item.url }}" class="cart-drawer-item-thumb" tabindex="-1" aria-hidden="true">
-    {%- if item.image -%}
-      {{ item.image | image_url: width: 200 | image_tag:
-        loading: 'lazy',
-        widths: '136, 200',
-        width: 68,
-        height: 68,
-        class: 'cart-drawer-item-image',
-        alt: item.product.title
-      }}
-    {%- endif -%}
-  </a>
+{%- comment -%}
+  A bundle line (Build Your Box) is flagged by its hidden `_bundle` property.
+  It drops the box thumbnail and shows the flavour contents (chip + name + qty)
+  via `bundle-line-contents` instead of the generic property list.
+{%- endcomment -%}
+<div class="cart-drawer-item{% if is_bundle %} is-bundle{% endif %}" data-key="{{ item.key }}">
+  {%- unless is_bundle -%}
+    <a href="{{ item.url }}" class="cart-drawer-item-thumb" tabindex="-1" aria-hidden="true">
+      {%- if item.image -%}
+        {{ item.image | image_url: width: 200 | image_tag:
+          loading: 'lazy',
+          widths: '136, 200',
+          width: 68,
+          height: 68,
+          class: 'cart-drawer-item-image',
+          alt: item.product.title
+        }}
+      {%- endif -%}
+    </a>
+  {%- endunless -%}
 
   <div class="cart-drawer-item-info">
     <div class="cart-drawer-item-text">
       <a href="{{ item.url }}" class="cart-drawer-item-title text-ui">{{ item.product.title }}</a>
       {%- if subtitle != blank -%}
         <p class="cart-drawer-item-subtitle">{{ subtitle }}</p>
+      {%- endif -%}
+      {%- if is_bundle -%}
+        {% render 'bundle-line-contents', item: item %}
+      {%- else -%}
+        {%- comment -%}
+          Generic line-item properties. Skip Shopify's hidden `_`-prefixed keys
+          and any blank values — the canonical pattern.
+        {%- endcomment -%}
+        {%- assign has_properties = false -%}
+        {%- for property in item.properties -%}
+          {%- assign property_first_char = property.first | slice: 0 -%}
+          {%- if property.last != blank and property_first_char != '_' -%}
+            {%- assign has_properties = true -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if has_properties -%}
+          <ul class="cart-drawer-item-properties unstyled-list">
+            {%- for property in item.properties -%}
+              {%- assign property_first_char = property.first | slice: 0 -%}
+              {%- if property.last == blank or property_first_char == '_' -%}{%- continue -%}{%- endif -%}
+              <li>{{ property.first }} {{ property.last }}</li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
       {%- endif -%}
       <p class="cart-drawer-item-error" data-error role="alert"></p>
     </div>

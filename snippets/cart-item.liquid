@@ -8,16 +8,28 @@
     {% render 'cart-item', item: item %}
 {%- endcomment -%}
 
-<div class="cart-item" data-key="{{ item.key }}">
-  <a href="{{ item.url }}" class="cart-item-image">
-    <div class="aspect-square">
-      {{ item.image | image_url: width: 200 | image_tag:
-          loading: 'lazy',
-          width: item.image.width,
-          height: item.image.height
-      }}
-    </div>
-  </a>
+{%- comment -%}
+  A bundle line (Build Your Box) is flagged by its hidden `_bundle` property.
+  It drops the box thumbnail and shows the flavour contents (chip + name + qty)
+  via `bundle-line-contents` instead of the generic property list.
+{%- endcomment -%}
+{%- assign is_bundle = false -%}
+{%- if item.properties['_bundle'] != blank -%}
+  {%- assign is_bundle = true -%}
+{%- endif -%}
+
+<div class="cart-item{% if is_bundle %} is-bundle{% endif %}" data-key="{{ item.key }}">
+  {%- unless is_bundle -%}
+    <a href="{{ item.url }}" class="cart-item-image">
+      <div class="aspect-square">
+        {{ item.image | image_url: width: 200 | image_tag:
+            loading: 'lazy',
+            width: item.image.width,
+            height: item.image.height
+        }}
+      </div>
+    </a>
+  {%- endunless -%}
 
   <div class="cart-item-details">
     <a href="{{ item.url }}" class="cart-item-title">
@@ -26,6 +38,31 @@
 
     {%- if item.variant.title != 'Default Title' -%}
       <p class="cart-item-variant text-mini">{{ item.variant.title }}</p>
+    {%- endif -%}
+
+    {%- if is_bundle -%}
+      {% render 'bundle-line-contents', item: item %}
+    {%- else -%}
+      {%- comment -%}
+        Generic line-item properties. Skip Shopify's hidden `_`-prefixed keys
+        and any blank values — the canonical pattern.
+      {%- endcomment -%}
+      {%- assign has_properties = false -%}
+      {%- for property in item.properties -%}
+        {%- assign property_first_char = property.first | slice: 0 -%}
+        {%- if property.last != blank and property_first_char != '_' -%}
+          {%- assign has_properties = true -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- if has_properties -%}
+        <ul class="cart-item-properties text-mini unstyled-list">
+          {%- for property in item.properties -%}
+            {%- assign property_first_char = property.first | slice: 0 -%}
+            {%- if property.last == blank or property_first_char == '_' -%}{%- continue -%}{%- endif -%}
+            <li>{{ property.first }} {{ property.last }}</li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
     {%- endif -%}
 
     <p class="cart-item-price">
@@ -67,6 +104,11 @@
     border-bottom: 1px solid var(--color-border);
   }
 
+  /* Bundle line drops the thumbnail column — the flavour rows carry the visual. */
+  .cart-item.is-bundle {
+    grid-template-columns: 1fr;
+  }
+
   .cart-item:first-child {
     padding-top: 0;
   }
@@ -96,6 +138,14 @@
   }
 
   .cart-item-variant {
+    color: var(--color-text-light);
+  }
+
+  /* Line-item properties (bundle flavours, etc.) — a quiet stacked list. */
+  .cart-item-properties {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxxs);
     color: var(--color-text-light);
   }
 

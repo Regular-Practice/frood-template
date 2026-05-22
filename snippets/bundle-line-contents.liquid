@@ -1,0 +1,79 @@
+{%- comment -%}
+  Renders a bundle (Build Your Box) cart line's contents — one row per flavour:
+  a colour chip + flavour name + quantity. Owned by sections/bundle-builder.liquid.
+
+  How it resolves the contents WITHOUT any extra data on the line item:
+    - Flavours come from the box product's curated `custom.included_flavours`
+      metafield (the same list the builder renders), so order matches the builder.
+    - Per-flavour quantity is read straight from the VISIBLE line-item properties
+      the builder writes (key = flavour name, value = "× N") via hash lookup —
+      `item.properties[flavour.name.value]` — so there's nothing to parse.
+    - The chip uses the flavour metaobject's `dark_colour` (the same field the
+      builder tints its active cards with), falling back to a neutral chip.
+
+  Renders nothing if the line isn't a bundle / the metafield is empty. The
+  co-located stylesheet ships wherever the snippet renders — the cart drawer is
+  global, so the styles must travel with the snippet rather than living in the
+  bundle-builder section (which only loads on the bundle page).
+
+  Expects:
+    - item: cart line item object (the box product line)
+
+  Usage:
+    {% render 'bundle-line-contents', item: item %}
+{%- endcomment -%}
+
+{%- assign flavours = item.product.metafields.custom.included_flavours.value -%}
+{%- if flavours != blank -%}
+  <ul class="bundle-line unstyled-list">
+    {%- for flavour in flavours -%}
+      {%- assign qty = item.properties[flavour.name.value] -%}
+      {%- if qty == blank -%}{%- continue -%}{%- endif -%}
+      <li class="bundle-line-row">
+        <span
+          class="bundle-line-chip"
+          {%- if flavour.dark_colour != blank %} style="background-color: {{ flavour.dark_colour }};"{% endif -%}
+          aria-hidden="true"
+        ></span>
+        <span class="bundle-line-name text-body">{{ flavour.name }}</span>
+        <span class="bundle-line-qty text-body">{{ qty }}</span>
+      </li>
+    {%- endfor -%}
+  </ul>
+{%- endif -%}
+
+{% stylesheet %}
+  .bundle-line {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+
+  .bundle-line-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
+  /* Colour chip — the flavour's brand colour. Default neutral fill + a hairline
+     ring so pale or unset colours still read against the cart background. */
+  .bundle-line-chip {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: var(--color-bg-dark);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+
+  .bundle-line-name {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .bundle-line-qty {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    color: var(--color-text-accent);
+  }
+{% endstylesheet %}
