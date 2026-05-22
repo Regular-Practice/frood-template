@@ -11,7 +11,10 @@
   "sections": {
     "hero": {
       "type": "hero",
-      "settings": {}
+      "settings": {
+        "product": "swedish-meatball-box",
+        "attributes": "Rich • Tangy • Tasty"
+      }
     },
     "featured_collection": {
       "type": "featured-collection",
@@ -30,7 +33,11 @@
       "settings": {
         "eyebrow": "Our solution",
         "heading": "We built a way to cook that fits your life: real ingredients, real flavour, less effort.",
-        "use_card": true
+        "button_text": "",
+        "button_link": "",
+        "use_card": true,
+        "card_bg": "accent",
+        "card_color": "text"
       }
     },
     "bundle_builder_mNULHm": {
@@ -39,7 +46,8 @@
       "settings": {
         "box_product": "mixed-box",
         "eyebrow": "Build your box",
-        "heading": "Create and customise your box from the Frood selection."
+        "heading": "Create and customise your box from the Frood selection.",
+        "full_screen": false
       }
     },
     "fullbleed": {
@@ -47,9 +55,15 @@
       "settings": {
         "image": "shopify://shop_images/FOOD_DEC_LOWRESJPG-139.jpg",
         "height": "75",
+        "keep_ratio": false,
         "margins": true,
         "caption_heading": "The Problem",
-        "caption_body": "<p>We all want to eat better. But between busy schedules and long ingredient lists, cooking from scratch demands time we just don’t have. </p>"
+        "caption_body": "<p>We all want to eat better. But between busy schedules and long ingredient lists, cooking from scratch demands time we just don’t have. </p>",
+        "add_quote": false,
+        "quote_eyebrow": "",
+        "quote_heading": "",
+        "quote_button_text": "",
+        "quote_button_link": ""
       }
     },
     "feature_card": {
