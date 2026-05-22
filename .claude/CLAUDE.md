@@ -95,7 +95,7 @@ Keys defined in `locales/en.default.json`.
 <section class="section-name bg-tinted">
 ```
 
-Sections already paint `background-color: var(--color-bg)` / `color: var(--color-text)`, so toggling that one variable is all that's needed; text and every other token stay on their `:root` values. Currently only `product-recommendations` is tinted (hardcoded). **Do not add a `color_scheme` setting, the `color-` prefix, or per-section background controls** — the old 5-scheme `color_scheme_group` system (and its `theme.liquid` generator) was removed. If a new section genuinely needs the beige tone, add `.bg-tinted` to its markup; if it needs to be merchant-toggleable, raise it for a design decision rather than reintroducing the picker.
+Sections already paint `background-color: var(--color-bg)` / `color: var(--color-text)`, so toggling that one variable is all that's needed; text and every other token stay on their `:root` values. Currently no sections apply `.bg-tinted` by default. **Do not add a `color_scheme` setting, the `color-` prefix, or per-section background controls** — the old 5-scheme `color_scheme_group` system (and its `theme.liquid` generator) was removed. If a new section genuinely needs the beige tone, add `.bg-tinted` to its markup; if it needs to be merchant-toggleable, raise it for a design decision rather than reintroducing the picker.
 
 ### Section Styles
 
