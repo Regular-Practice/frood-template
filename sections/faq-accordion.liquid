@@ -1,94 +1,117 @@
+{%- comment -%}
+  Frood FAQ — two-column editorial split (mirrors text-image-split).
+  Left column: section-lockup (eyebrow + heading + optional contact link), pinned
+  sticky on desktop. Right column: the accordion list.
+  Mobile + tablet (<900px): stacks (intro above list).
+
+  Accordion mechanics (smooth grid-rows close animation + no-JS fallback) are
+  owned by <accordion-list> (assets/accordion.js) and base.css §24. This section
+  only carries the visual layer. See the three-div contract below.
+{%- endcomment -%}
+
 <section class="faq color-{{ section.settings.color_scheme }}">
-  <div class="faq-container{% if section.settings.narrow_width %} faq-narrow{% endif %}">
-    {%- if section.settings.heading != blank -%}
-      <h2 class="faq-heading text-large">{{ section.settings.heading }}</h2>
-    {%- endif -%}
+  <div class="faq-intro">
+    <header class="section-lockup">
+      {%- if section.settings.eyebrow != blank -%}
+        <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+      {%- endif -%}
 
-    {%- if section.settings.subheading != blank -%}
-      <p class="faq-subheading text-medium text-light">{{ section.settings.subheading }}</p>
-    {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+      {%- endif -%}
 
-    {%- if section.blocks.size > 0 -%}
-      <accordion-list class="faq-list" allow-multiple>
-        {%- for block in section.blocks -%}
-          <details class="faq-item" {{ block.shopify_attributes }}>
-            <summary class="faq-question">
-              {{ block.settings.question }}
-              <span class="faq-icon" aria-hidden="true">+</span>
-            </summary>
-            {%- comment -%}
-              Three-div structure for the smooth grid-rows close animation:
-              .accordion-content is the size-driven grid wrapper, -inner clips
-              the overflow with no padding, and .faq-answer carries all padding.
-              See assets/accordion.js for the contract.
-            {%- endcomment -%}
-            <div class="accordion-content">
-              <div class="accordion-content-inner">
-                <div class="faq-answer typeset">
-                  {{ block.settings.answer }}
-                </div>
+      {%- if section.settings.link_text != blank -%}
+        <a class="inline-link text-ui" href="{{ section.settings.link_url | default: '#' }}">
+          {{ section.settings.link_text }}
+        </a>
+      {%- endif -%}
+    </header>
+  </div>
+
+  {%- if section.blocks.size > 0 -%}
+    <accordion-list class="faq-list" allow-multiple>
+      {%- for block in section.blocks -%}
+        <details class="faq-item" {{ block.shopify_attributes }}>
+          <summary class="faq-question text-ui">
+            {{ block.settings.question }}
+            <span class="faq-icon" aria-hidden="true">+</span>
+          </summary>
+          {%- comment -%}
+            Three-div structure for the smooth grid-rows close animation:
+            .accordion-content is the size-driven grid wrapper, -inner clips
+            the overflow with no padding, and .faq-answer carries all padding.
+            See assets/accordion.js for the contract.
+          {%- endcomment -%}
+          <div class="accordion-content">
+            <div class="accordion-content-inner">
+              <div class="faq-answer typeset">
+                {{ block.settings.answer }}
               </div>
             </div>
-          </details>
-        {%- endfor -%}
-      </accordion-list>
-    {%- endif -%}
-  </div>
+          </div>
+        </details>
+      {%- endfor -%}
+    </accordion-list>
+  {%- endif -%}
 </section>
 
 <script type="module" src="{{ 'accordion.js' | asset_url }}"></script>
 
 {% stylesheet %}
+  /* Mobile + tablet: single column, intro stacked above the list.
+     Padding follows the responsive section rule (xs <900px, m ≥900px). */
   .faq {
-    padding: var(--spacing-l) var(--spacing-base);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+    padding: var(--spacing-xs);
+    background-color: var(--color-bg);
+    color: var(--color-text);
   }
 
-  @media (min-width: 600px) {
-    .faq {
-      padding: var(--spacing-xl) var(--spacing-m);
-    }
+  /* Heading caps like the rest of the theme; the desktop column narrows it further. */
+  .faq-intro h3 {
+    max-width: 36ch;
   }
 
-  .faq-narrow {
-    max-width: 720px;
-    margin-inline: auto;
+  /* Contact link gets button-like separation from the heading (the lockup only
+     gives non-button children --spacing-xxs by default). */
+  .faq-intro .section-lockup > .inline-link {
+    margin-top: var(--spacing-s);
   }
 
-  .faq-heading {
-    margin: 0 0 var(--spacing-s) 0;
-  }
-
-  .faq-subheading {
-    margin: 0 0 var(--spacing-m) 0;
-  }
-
-  .faq-list {
-    margin-top: var(--spacing-m);
-  }
-
+  /* Enclosed ledger: hairline above the first item + below every item.
+     --color-border (text @ 10%) stays light across a long list, unlike the
+     solid --color-text the news index uses for its handful of entries. */
   .faq-item {
-    border-bottom: 1px solid var(--color-text-light);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .faq-item:first-child {
+    border-top: 1px solid var(--color-border);
   }
 
   .faq-question {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-base) 0;
+    gap: var(--spacing-s);
+    padding: var(--spacing-s) 0;
     cursor: pointer;
     list-style: none;
-    font-weight: bold;
   }
 
   .faq-question::-webkit-details-marker {
     display: none;
   }
 
+  /* Refined rotating +: weight 400 (a hairline glyph against the .text-ui 500
+     question), sized up as a clear affordance. Co-times with the body height. */
   .faq-icon {
     flex-shrink: 0;
-    font-size: var(--type-medium-size);
+    font-size: 1.5em;
+    font-weight: 400;
     line-height: 1;
-    /* Match the body's duration + easing so the +/x icon co-times with the height. */
     transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
@@ -98,12 +121,12 @@
   }
 
   .faq-answer {
-    padding: 0 0 var(--spacing-base) 0;
+    padding: 0 0 var(--spacing-s) 0;
+    max-width: 60ch;
   }
 
-  /* Generic grid-rows mechanics live in base.css section 24. Below: just the
-     FAQ-specific bits — folding the summary gap into the animated body, and
-     co-timing the icon. */
+  /* Generic grid-rows mechanics live in base.css §24. Below: just the FAQ-specific
+     bits — folding the summary gap into the animated body, and co-timing the icon. */
 
   /* The global open-summary gap is dropped under [data-enhanced] (base.css), so
      re-add it inside the animated body where it can tween instead of snap. */
@@ -115,6 +138,23 @@
      [open] (which lingers through the close), so it un-rotates in lock-step. */
   accordion-list[data-enhanced] details:not(.is-open) .faq-icon {
     transform: rotate(0deg);
+  }
+
+  /* Desktop: two-column split. align-items:start keeps the intro column
+     content-sized so it can stick; the list column's height gives it room to travel. */
+  @media (min-width: 900px) {
+    .faq {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: var(--spacing-l);
+      padding: var(--spacing-m);
+      align-items: start;
+    }
+
+    .faq-intro {
+      position: sticky;
+      top: var(--spacing-m);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -132,20 +172,28 @@
   "settings": [
     {
       "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "default": "FAQ"
+    },
+    {
+      "type": "textarea",
       "id": "heading",
-      "label": "Heading",
-      "default": "Frequently asked questions"
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break.",
+      "default": "Everything you\nneed to know."
     },
     {
       "type": "text",
-      "id": "subheading",
-      "label": "Subheading"
+      "id": "link_text",
+      "label": "Contact link label",
+      "info": "Low-emphasis underlined link below the heading. Leave blank to hide.",
+      "default": "Still have questions? Get in touch"
     },
     {
-      "type": "checkbox",
-      "id": "narrow_width",
-      "label": "Narrow width",
-      "default": true
+      "type": "url",
+      "id": "link_url",
+      "label": "Contact link"
     },
     {
       "type": "color_scheme",
