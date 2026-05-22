@@ -208,6 +208,14 @@
       "enter": "Enter",
       "admin_link": "Are you the store owner? Log in here",
       "newsletter_heading": "Sign up to be the first to know when we launch!"
+    },
+    "countdown": {
+      "days": "Days",
+      "hours": "Hrs",
+      "minutes": "Min",
+      "seconds": "Sec",
+      "launched": "We're live!",
+      "aria_prefix": "Launching in"
     }
   },
   "not_found": {
