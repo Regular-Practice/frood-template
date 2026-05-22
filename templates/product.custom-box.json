@@ -9,14 +9,26 @@
  */
 {
   "sections": {
+    "bundle_builder_gXqyz6": {
+      "type": "bundle-builder",
+      "name": "Bundle builder",
+      "settings": {
+        "box_product": "mixed-box",
+        "eyebrow": "Build your box",
+        "heading": "Create and customise your box from the Frood selection.",
+        "full_screen": true
+      }
+    },
     "main": {
       "type": "main-product",
+      "disabled": true,
       "settings": {
         "show_quantity": true
       }
     },
     "recipe_recommendations": {
       "type": "recipe-recommendations",
+      "disabled": true,
       "settings": {
         "eyebrow": "Try it with",
         "heading": "Recipes built around this pack."
@@ -24,8 +36,10 @@
     },
     "product_recommendations_76MMMN": {
       "type": "product-recommendations",
+      "disabled": true,
       "name": "Product recommendations",
       "settings": {
+        "eyebrow": "More to try",
         "heading": "You may also like",
         "products_to_show": 4,
         "grid_columns": "4"
@@ -33,6 +47,7 @@
     }
   },
   "order": [
+    "bundle_builder_gXqyz6",
     "main",
     "recipe_recommendations",
     "product_recommendations_76MMMN"
