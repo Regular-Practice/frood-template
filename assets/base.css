@@ -1325,3 +1325,67 @@ quantity-selector {
 .toast-close:hover {
   color: var(--color-text);
 }
+
+/* ========== 24. Accordion (smooth grid-rows) ========== */
+/* Progressive enhancement for native <details> accordions. <accordion-list>
+   (assets/accordion.js) sets data-enhanced once it upgrades and toggles
+   `.is-open` on each <details>; until then the native <details> + global
+   ::details-content animation (section 1) is the fallback. Per-item markup:
+
+     <details>
+       <summary>label <span class="...-icon">+</span></summary>
+       <div class="accordion-content">          (size-driven grid wrapper)
+         <div class="accordion-content-inner">  (overflow clip, NO padding)
+           <div class="...body...">...</div>     (all padding/border lives here)
+         </div>
+       </div>
+     </details>
+
+   Only the height/opacity mechanics live here. Visual styling (borders, summary
+   layout, icon treatment, body padding, and folding the summary gap into the
+   animated body) stays in each owning section/snippet. */
+
+accordion-list {
+  display: block;
+}
+
+/* Swap the global ::details-content height tween for the grid-rows technique on
+   enhanced items so the two don't animate the same content at once. */
+accordion-list[data-enhanced] details::details-content {
+  block-size: auto;
+  overflow: visible;
+  transition: none;
+}
+
+/* The global open-summary gap (section 1) sits outside the animated region and
+   would snap on close. Drop it; each section folds the gap into its body. */
+accordion-list[data-enhanced] details[open] > summary {
+  margin-bottom: 0;
+}
+
+/* Size-driven wrapper: 0fr (collapsed) to 1fr (natural height). */
+accordion-list[data-enhanced] .accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+accordion-list[data-enhanced] details.is-open .accordion-content {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+/* Overflow clip lives on the inner wrapper, never on the size-driven element,
+   and it carries no padding (that's the padding trap). */
+accordion-list[data-enhanced] .accordion-content-inner {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  accordion-list[data-enhanced] .accordion-content {
+    transition: none;
+  }
+}

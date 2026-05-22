@@ -9,11 +9,14 @@
 {% endcomment %}
 
 <form id="filter-form" data-filters class="filter-form" action="{{ collection.url }}" method="get">
+  <accordion-list allow-multiple>
   {%- for filter in collection.filters -%}
     <details open>
       <summary>{{ filter.label }}</summary>
 
-      <div class="filter-options">
+      <div class="accordion-content">
+        <div class="accordion-content-inner">
+          <div class="filter-options">
         {%- case filter.type -%}
           {%- when 'boolean' or 'list' -%}
             {%- for value in filter.values -%}
@@ -55,8 +58,12 @@
               </div>
             </div>
         {%- endcase -%}
+          </div>
+        </div>
       </div>
     </details>
   {%- endfor -%}
-
+  </accordion-list>
 </form>
+
+<script type="module" src="{{ 'accordion.js' | asset_url }}"></script>

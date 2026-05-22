@@ -126,6 +126,8 @@
         {%- endif -%}
       </div>
 
+      <accordion-list allow-multiple>
+
       {%- comment -%} Details box: product description (open by default) {%- endcomment -%}
       {%- if product.description != blank -%}
         <details class="product-box product-accordion" open>
@@ -140,8 +142,12 @@
             </svg>
           </span>
           </summary>
-          <div class="product-accordion-content typeset">
-            {{ product.description }}
+          <div class="accordion-content">
+            <div class="accordion-content-inner">
+              <div class="product-accordion-content typeset">
+                {{ product.description }}
+              </div>
+            </div>
           </div>
         </details>
       {%- endif -%}
@@ -160,8 +166,12 @@
             </svg>
           </span>
           </summary>
-          <div class="product-accordion-content typeset">
-            {{ product.metafields.custom.instructions | metafield_tag }}
+          <div class="accordion-content">
+            <div class="accordion-content-inner">
+              <div class="product-accordion-content typeset">
+                {{ product.metafields.custom.instructions | metafield_tag }}
+              </div>
+            </div>
           </div>
         </details>
       {%- endif -%}
@@ -180,11 +190,17 @@
             </svg>
           </span>
           </summary>
-          <div class="product-accordion-content typeset">
-            {{ product.metafields.custom.nutritional_info | metafield_tag }}
+          <div class="accordion-content">
+            <div class="accordion-content-inner">
+              <div class="product-accordion-content typeset">
+                {{ product.metafields.custom.nutritional_info | metafield_tag }}
+              </div>
+            </div>
           </div>
         </details>
       {%- endif -%}
+
+      </accordion-list>
 
       {%- comment -%} Variants (own box, only when the product has real variant options) {%- endcomment -%}
       {%- unless product.has_only_default_variant -%}
@@ -217,6 +233,7 @@
 <script src="{{ 'quantity-selector.js' | asset_url }}" defer></script>
 <script src="{{ 'product-render-video.js' | asset_url }}" defer></script>
 <script src="{{ 'product-boxes-scroll.js' | asset_url }}" defer></script>
+<script type="module" src="{{ 'accordion.js' | asset_url }}"></script>
 
 {% stylesheet %}
   .main-product {
@@ -531,38 +548,86 @@
     display: none;
   }
 
-  /* Accordion icon: plus by default, swaps to minus when [open]. Both SVGs
-     inline so `currentColor` inherits from the summary; sized to 1em so
-     they match the .text-ui label sitting next to them. */
+  /* Accordion icon: plus by default, crossfades to minus when open. Both SVGs
+     are stacked (absolute) inside the 1em box so they can fade rather than
+     swap; the + visually contains the - (its horizontal bar), so the crossfade
+     reads as the vertical stroke dissolving. currentColor inherits from the
+     summary; sized to ~1em to match the .text-ui label beside it. */
   .product-accordion-icon {
     flex-shrink: 0;
+    position: relative;
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
     width: 1em;
     height: 1em;
   }
 
   .product-accordion-icon svg {
+    position: absolute;
+    inset: 0;
+    margin: auto;
     width: 0.8em;
     height: auto;
-    display: block;
   }
 
+  /* Closed: plus visible, minus hidden. */
   .product-accordion-icon .icon-minus {
-    display: none;
+    opacity: 0;
   }
 
+  /* No-JS baseline: native [open] swaps via opacity (instant — the crossfade
+     transition is only added under [data-enhanced] below). */
   .product-accordion[open] .product-accordion-icon .icon-plus {
-    display: none;
+    opacity: 0;
   }
 
   .product-accordion[open] .product-accordion-icon .icon-minus {
-    display: block;
+    opacity: 1;
+  }
+
+  /* Enhanced: animate the crossfade, driven off .is-open (set at the start of
+     the tween) so it co-times with the body and starts un-fading the moment a
+     close begins, rather than lagging until [open] is finally dropped. */
+  accordion-list[data-enhanced] .product-accordion-icon svg {
+    transition: opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  accordion-list[data-enhanced] details:not(.is-open) .product-accordion-icon .icon-plus {
+    opacity: 1;
+  }
+
+  accordion-list[data-enhanced] details:not(.is-open) .product-accordion-icon .icon-minus {
+    opacity: 0;
+  }
+
+  accordion-list[data-enhanced] details.is-open .product-accordion-icon .icon-plus {
+    opacity: 0;
+  }
+
+  accordion-list[data-enhanced] details.is-open .product-accordion-icon .icon-minus {
+    opacity: 1;
   }
 
   .product-accordion-content {
     padding-top: var(--spacing-xxs);
+  }
+
+  /* The global open-summary gap is dropped under [data-enhanced] (base.css);
+     re-add it inside the animated body so it tweens with the height. */
+  accordion-list[data-enhanced] .product-accordion-content {
+    padding-top: var(--spacing-xs);
+  }
+
+  /* The wrapper is layout-transparent: the three .product-accordion <details>
+     stay flex children of <form>, so the form gap + the .is-compact collapse
+     keep working unchanged. It only carries the JS state hook + data-enhanced. */
+  .product-boxes accordion-list {
+    display: contents;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-accordion-icon svg {
+      transition: none;
+    }
   }
 
   product-form.is-loading [data-variant-render] {

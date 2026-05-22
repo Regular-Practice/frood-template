@@ -9,22 +9,34 @@
     {%- endif -%}
 
     {%- if section.blocks.size > 0 -%}
-      <div class="faq-list">
+      <accordion-list class="faq-list" allow-multiple>
         {%- for block in section.blocks -%}
           <details class="faq-item" {{ block.shopify_attributes }}>
             <summary class="faq-question">
               {{ block.settings.question }}
               <span class="faq-icon" aria-hidden="true">+</span>
             </summary>
-            <div class="faq-answer typeset">
-              {{ block.settings.answer }}
+            {%- comment -%}
+              Three-div structure for the smooth grid-rows close animation:
+              .accordion-content is the size-driven grid wrapper, -inner clips
+              the overflow with no padding, and .faq-answer carries all padding.
+              See assets/accordion.js for the contract.
+            {%- endcomment -%}
+            <div class="accordion-content">
+              <div class="accordion-content-inner">
+                <div class="faq-answer typeset">
+                  {{ block.settings.answer }}
+                </div>
+              </div>
             </div>
           </details>
         {%- endfor -%}
-      </div>
+      </accordion-list>
     {%- endif -%}
   </div>
 </section>
+
+<script type="module" src="{{ 'accordion.js' | asset_url }}"></script>
 
 {% stylesheet %}
   .faq {
@@ -74,17 +86,41 @@
 
   .faq-icon {
     flex-shrink: 0;
-    transition: transform var(--transition-fast);
     font-size: var(--type-medium-size);
     line-height: 1;
+    /* Match the body's duration + easing so the +/x icon co-times with the height. */
+    transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
+  /* No-JS baseline: native [open] drives the icon. */
   details[open] .faq-icon {
     transform: rotate(45deg);
   }
 
   .faq-answer {
     padding: 0 0 var(--spacing-base) 0;
+  }
+
+  /* Generic grid-rows mechanics live in base.css section 24. Below: just the
+     FAQ-specific bits — folding the summary gap into the animated body, and
+     co-timing the icon. */
+
+  /* The global open-summary gap is dropped under [data-enhanced] (base.css), so
+     re-add it inside the animated body where it can tween instead of snap. */
+  accordion-list[data-enhanced] .faq-answer {
+    padding-top: var(--spacing-xs);
+  }
+
+  /* Drive the icon off .is-open (set at the start of the tween) rather than
+     [open] (which lingers through the close), so it un-rotates in lock-step. */
+  accordion-list[data-enhanced] details:not(.is-open) .faq-icon {
+    transform: rotate(0deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-icon {
+      transition: none;
+    }
   }
 {% endstylesheet %}
 
