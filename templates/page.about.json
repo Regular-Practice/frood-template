@@ -11,12 +11,29 @@
   "sections": {
     "main": {
       "type": "main-page",
+      "disabled": true,
       "settings": {}
     },
-    "center_section": {
-      "type": "center-section",
-      "settings": {}
+    "fullbleed_trW7mm": {
+      "type": "fullbleed",
+      "name": "Full-bleed",
+      "settings": {
+        "image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-18.jpg",
+        "height": "100",
+        "keep_ratio": false,
+        "margins": false,
+        "caption_heading": "",
+        "caption_body": "",
+        "add_quote": true,
+        "quote_eyebrow": "Frood",
+        "quote_heading": "Built by Frida, from her kitchen to yours.",
+        "quote_button_text": "",
+        "quote_button_link": ""
+      }
     }
   },
-  "order": ["main", "center_section"]
+  "order": [
+    "main",
+    "fullbleed_trW7mm"
+  ]
 }
