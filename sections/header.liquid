@@ -131,6 +131,10 @@
     background-color: var(--color-accent);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    /* Override base.css's global `details[open] > summary { margin-bottom: xs }`
+       — that's for product accordions on the PDP; the mobile menu sits flush
+       to its absolutely-positioned panel. */
+    margin-bottom: 0;
   }
 
   /* Dropdown panel — ONE pill container holding all nav-links as plain rows.
