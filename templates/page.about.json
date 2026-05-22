@@ -30,10 +30,84 @@
         "quote_button_text": "",
         "quote_button_link": ""
       }
+    },
+    "text_image_split_hEDRy6": {
+      "type": "text-image-split",
+      "blocks": {
+        "media_WnTt3g": {
+          "type": "media",
+          "settings": {
+            "video": "shopify://files/videos/988e895365b447f3ac64374b4ca3569d.mp4",
+            "caption": ""
+          }
+        },
+        "media_rC9M6a": {
+          "type": "media",
+          "settings": {
+            "image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-7.jpg",
+            "caption": ""
+          }
+        }
+      },
+      "block_order": [
+        "media_WnTt3g",
+        "media_rC9M6a"
+      ],
+      "name": "Text + image split",
+      "settings": {
+        "eyebrow": "Our story",
+        "heading": "FROOD was founded by Frida Redknapp, a Swedish-born mother of five and trusted voice in family, food, and wellbeing.",
+        "button_text": "",
+        "button_link": "",
+        "text_vertical_alignment": "top"
+      }
+    },
+    "center_section_pjP9GK": {
+      "type": "center-section",
+      "name": "Center section",
+      "settings": {
+        "eyebrow": "About us",
+        "heading": "Over the years, Frida has built a deeply engaged community who turn to her for honest guidance on parenting, health, and home life.",
+        "video": "shopify://files/videos/Frood_Red_Bolognese_video_1596a32e-3b0d-4328-a441-120a11848e36.mp4"
+      }
+    },
+    "fullbleed_n4yydW": {
+      "type": "fullbleed",
+      "name": "Full-bleed",
+      "settings": {
+        "image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-17.jpg",
+        "height": "75",
+        "keep_ratio": false,
+        "margins": false,
+        "caption_heading": "Team Work",
+        "caption_body": "<p>She shares this journey with her husband Jamie Redknapp, raising their big blended family with warmth and authenticity.</p>",
+        "add_quote": false,
+        "quote_eyebrow": "",
+        "quote_heading": "",
+        "quote_button_text": "",
+        "quote_button_link": ""
+      }
+    },
+    "featured_collection_UVjnCP": {
+      "type": "featured-collection",
+      "name": "Featured collection",
+      "settings": {
+        "eyebrow": "Our collection",
+        "heading": "Real food, made simple.\nMade for modern home cooks.",
+        "button_text": "",
+        "button_link": "",
+        "collection": "shop",
+        "products_to_show": 4,
+        "mobile_layout": "carousel"
+      }
     }
   },
   "order": [
     "main",
-    "fullbleed_trW7mm"
+    "fullbleed_trW7mm",
+    "text_image_split_hEDRy6",
+    "center_section_pjP9GK",
+    "fullbleed_n4yydW",
+    "featured_collection_UVjnCP"
   ]
 }
