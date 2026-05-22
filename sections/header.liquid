@@ -244,20 +244,18 @@
   }
 
   /* Cart: on mobile it sits in the flex flow next to the Menu disclosure (the
-     flex container handles the xxxs gap). margin-top: xxs shifts the cart
-     down by 8px so its top edge lands at y=16 from the viewport (.header
-     padding-top of xxs + this margin) — matching the desktop cart's top
-     offset. On tablet+ it switches to fixed positioning at top-right. */
+     flex container handles the xxxs gap). No top margin — its top edge lands at
+     y=8 from the viewport (.header padding-top of xxs), matching the desktop
+     cart's fixed top offset (top: xxs). On tablet+ it switches to fixed
+     positioning at top-right. */
   .header-right {
     flex-shrink: 0;
-    margin-top: var(--spacing-xxs);
   }
 
   @media (min-width: 600px) {
     .header-right {
-      margin-top: 0;
       position: fixed;
-      top: var(--spacing-s);
+      top: var(--spacing-xxs);
       right: var(--spacing-xxs);
     }
   }

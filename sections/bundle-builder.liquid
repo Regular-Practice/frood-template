@@ -300,8 +300,6 @@
   .bundle-flavour-title {
     display: flex;
     flex-direction: column;
-    /* Was 0 before the global text-box trim landed — without natural leading,
-       a 0 gap let the attributes line collide with the name's descenders. */
     gap: var(--spacing-xxs);
   }
 
@@ -412,7 +410,7 @@
   }
 
   /* Inner flex wrapper — per the .button convention, never flex the button
-     itself (breaks the global text-box trim) — flex an inner span instead. */
+     itself (breaks the .button text-box trim) — flex an inner span instead. */
   .bundle-add-inner {
     display: flex;
     justify-content: space-between;

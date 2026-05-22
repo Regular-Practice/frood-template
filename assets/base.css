@@ -8,9 +8,22 @@ body {
 
 * {
   box-sizing: border-box;
-  /* Trim the font's leading half-cap above and descender below from every text
-     box, so all-caps labels (h1, .text-h1, .button, .nav-link) sit optically
-     centred on their own padding/margins. No-ops on non-text boxes. */
+}
+
+/* Trim the font's leading half-cap above and descender below so these labels
+   sit optically centred on their own padding/margins. Scoped to the label and
+   heading surfaces that benefit — deliberately NOT the universal `*`, which
+   swept the trim into form controls (e.g. the quantity-selector input) and
+   arbitrary boxes where it collapsed the box model. Font-metric driven, so it
+   auto-adapts when the typeface is swapped. No-ops on non-text boxes and where
+   one of these classes becomes a flex item. */
+.text-h1,
+.text-h2,
+.text-h3,
+.button,
+.nav-link,
+.header-cart,
+.header-mobile-toggle {
   text-box: trim-both cap alphabetic;
 }
 
@@ -40,16 +53,6 @@ ol {
   margin-block-start: 0;
   margin-block-end: 0;
   padding-inline-start: var(--spacing-xxs);
-}
-
-/* Restore the font's natural leading inside list items. The global
-   `* { text-box: trim-both cap alphabetic }` reset (§1) strips half-leading
-   from every box, which is great for all-caps labels but makes adjacent
-   list items render flush — the xxxs margin between items gets visually
-   swallowed because there's no leading buffer above/below each glyph row.
-   Turning the trim off here lets the line-height breathe so the gap reads. */
-ol li {
-  text-box: none;
 }
 
 ol li + li {
@@ -421,18 +424,16 @@ body {
   margin-top: 1em;
 }
 
-/* Headings inside prose. The global reset (§1) flattens h1–h6 to body size +
-   normal weight, so merchant rich-text headings (page/article bodies) need an
-   explicit hierarchy: h1/h2 take the h3 display scale — the page already owns
-   the larger visual H2 title — and h3+ read as bold labels. text-box: none
-   restores natural leading (the global trim is tuned for all-caps labels). */
+/* Headings inside prose. The reset (§1) flattens h1–h6 to body size + normal
+   weight, so merchant rich-text headings (page/article bodies) need an explicit
+   hierarchy: h1/h2 take the h3 display scale — the page already owns the larger
+   visual H2 title — and h3+ read as bold labels. */
 .typeset h1,
 .typeset h2,
 .typeset h3,
 .typeset h4,
 .typeset h5,
 .typeset h6 {
-  text-box: none;
   font-weight: 500;
   line-height: 1.2;
 }
@@ -462,15 +463,7 @@ body {
   list-style-position: inside;
 }
 
-/* List items: the global text-box trim (§1) strips each item's leading, so
-   adjacent items render flush — the same problem the global `ol li` rule (§1)
-   already fixes for ordered lists, but `ul li` was never covered. Restore
-   natural leading + a small inter-item gap for both list types in prose so
-   wrapped legal/FAQ bullet lists breathe instead of overlapping. */
-.typeset li {
-  text-box: none;
-}
-
+/* Small inter-item gap so wrapped legal/FAQ bullet lists in prose breathe. */
 .typeset li + li {
   margin-top: var(--spacing-xxxs);
 }
@@ -503,13 +496,14 @@ body {
 .button {
   display: inline-block;
   text-align: center;
-  /* Symmetric vertical padding: the global text-box trim (§4) strips the
-     cap/baseline half-leading so the all-caps label is optically centred on its
-     own — same treatment as .nav-link. This relies on .button being a
-     block-level box: as inline-flex the trim silently no-ops (the label becomes
-     an anonymous flex item the `*` rule can't reach), which is why this used to
-     need a manual 8px/7px asymmetric fudge. As a flex item (e.g.
-     .buy-buttons .button) inline-block blockifies to block, which trim handles. */
+  /* Symmetric vertical padding: the label text-box trim (§1, scoped to
+     .button/.nav-link/.text-h*) strips the cap/baseline half-leading so the
+     all-caps label is optically centred on its own — same treatment as
+     .nav-link. This relies on .button being a block-level box: as a flex item
+     the trim silently no-ops (the label becomes an anonymous flex item the rule
+     can't reach), which is why this used to need a manual 8px/7px asymmetric
+     fudge. As a flex item (e.g. .buy-buttons .button) inline-block blockifies to
+     block, which trim handles. */
   padding: var(--spacing-xxs) var(--spacing-xs);
   background-color: var(--color-accent);
   color: var(--color-text);
