@@ -13,11 +13,9 @@ The homepage (`templates/index.json`) uses a small set of custom Frood sections.
 Full-bleed image background with the Frood wordmark centered in `--color-accent` (yellow).
 
 - **Dimensions:** width 100% (effectively full viewport), height 100vh
-- **Background image:** currently hardcoded to `assets/dummy.jpg` via `asset_url`. Swap for a merchant-editable `image_picker` setting once the real hero image is finalized.
+- **Background:** merchant-editable via two schema settings — `background_video` (video) and `background_image` (image_picker). Video wins if both are set; otherwise the image renders; if both are empty, the section falls back to `assets/dummy.jpg`. The same `.hero-frood-bg` class (absolute, full-bleed, `object-fit: cover`) styles both the `<img>` and `<video>` tags.
 - **Logo:** rendered via `{% render 'logo-frood' %}` — inline SVG with `fill="currentColor"`. Sized to **45vw width**. Color is set via the `--color-accent` token on the parent `.hero-frood-logo` div.
-- **No content other than the image + logo.** No heading, no button, no scroll cue. Brand-locked layout.
-
-When the hero image needs to be merchant-editable, add an `image_picker` setting to the schema and replace the hardcoded `<img>` src.
+- **No content other than the background + logo.** No heading, no button, no scroll cue. Brand-locked layout.
 
 ### `featured-collection.liquid` (rebuilt)
 

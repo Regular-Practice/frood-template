@@ -1,18 +1,47 @@
 {%- comment -%}
-  Frood Hero — full-bleed image background with the Frood logo centered in accent yellow.
+  Frood Hero — full-bleed image/video background with the Frood logo centered in accent yellow.
   100vh tall, fills page width. Logo is the inline SVG snippet logo-frood (recolorable via currentColor).
+  Background: video wins if set, else image, else falls back to dummy.jpg.
   See CLAUDE.md → "Frood Hero section" for design rules.
 {%- endcomment -%}
 
 <section class="hero-frood">
-  <img
-    class="hero-frood-bg"
-    src="{{ 'dummy.jpg' | asset_url }}"
-    alt=""
-    loading="eager"
-    width="2400"
-    height="1600"
-  >
+  {%- if section.settings.background_video != blank -%}
+    {{
+      section.settings.background_video
+      | video_tag:
+        class: 'hero-frood-bg',
+        controls: false,
+        autoplay: true,
+        loop: true,
+        muted: true,
+        playsinline: true
+    }}
+  {%- elsif section.settings.background_image != blank -%}
+    {%- assign hero_img = section.settings.background_image -%}
+    {{
+      hero_img
+      | image_url: width: 2400
+      | image_tag:
+        class: 'hero-frood-bg',
+        loading: 'eager',
+        fetchpriority: 'high',
+        sizes: '100vw',
+        widths: '600, 900, 1200, 1800, 2400',
+        alt: hero_img.alt | default: '',
+        width: hero_img.width,
+        height: hero_img.height
+    }}
+  {%- else -%}
+    <img
+      class="hero-frood-bg"
+      src="{{ 'dummy.jpg' | asset_url }}"
+      alt=""
+      loading="eager"
+      width="2400"
+      height="1600"
+    >
+  {%- endif -%}
 
   <div class="hero-frood-logo">
     {% render 'logo-frood' %}
@@ -231,6 +260,25 @@
   "tag": "section",
   "class": "section-frood-hero",
   "settings": [
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image"
+    },
+    {
+      "type": "video",
+      "id": "background_video",
+      "label": "Background video",
+      "info": "If both image and video are set, video wins. Falls back to a placeholder if both are empty."
+    },
+    {
+      "type": "header",
+      "content": "Featured product"
+    },
     {
       "type": "product",
       "id": "product",
