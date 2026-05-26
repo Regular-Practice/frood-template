@@ -43,7 +43,7 @@
 
 // Per-step deltas: offsetX/Y are % of the stage (negative X = left, up = negative
 // Y); scaleStep/rotateStep default to 0 because the renders are authored in scale.
-const STACK = { offsetX: -9.5, offsetY: -4, scaleStep: 0, rotateStep: 0 };
+const STACK = { offsetX: -9.5, offsetY: 0, scaleStep: 0, rotateStep: 0 };
 
 class BundleStage extends HTMLElement {
   connectedCallback() {
