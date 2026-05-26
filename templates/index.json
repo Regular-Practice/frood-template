@@ -12,7 +12,7 @@
     "hero": {
       "type": "hero",
       "settings": {
-        "background_video": "shopify://files/videos/Comp 2_4_1.mp4",
+        "overlay_opacity": 20,
         "product": "swedish-meatball-box",
         "attributes": "Rich • Tangy • Tasty"
       }
