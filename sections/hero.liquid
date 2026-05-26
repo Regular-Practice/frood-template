@@ -25,6 +25,13 @@
     height="1080"
   ></video>
 
+  {%- if section.settings.overlay_opacity > 0 -%}
+    <div
+      class="hero-frood-overlay"
+      style="--hero-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }}"
+    ></div>
+  {%- endif -%}
+
   <div class="hero-frood-logo">
     {% render 'logo-frood' %}
   </div>
@@ -90,6 +97,14 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .hero-frood-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-text);
+    opacity: var(--hero-overlay-opacity, 0.3);
+    pointer-events: none;
   }
 
   .hero-frood-logo {
@@ -263,6 +278,17 @@
       "id": "background_image",
       "label": "Poster image",
       "info": "Shown before the video loads and as a still fallback. The hero video itself lives in the theme (assets/frood-hero.mp4) — ask a dev to swap it."
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "info": "Burgundy scrim over the video. Helps the wordmark and feature card pop.",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 30
     },
     {
       "type": "header",
