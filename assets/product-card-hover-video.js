@@ -25,6 +25,21 @@
 
   prefers-reduced-motion: reduce → skip play and reverse entirely. CSS also
   keeps the video hidden, so the user just sees the static <img>.
+
+  Canvas paint (mirrors <product-render-video> in assets/product-render-video.js):
+    The inner <video> is hidden (1px / opacity:0, kept in-DOM for correctness)
+    and a sibling <canvas> is painted from it on a setTimeout loop (~33fps)
+    while the card is hovered or rewinding. The canvas uses the browser's
+    IMAGE colour path, so the video's baked-in flat background blends
+    seamlessly with the surrounding CSS hex on macOS / wide-gamut displays —
+    fixes the macOS <video> colour-management drift, while keeping the
+    existing Shopify-hosted MP4 untouched.
+
+    Start/stop of the paint loop is decoupled from the hover code: a
+    MutationObserver watches the host's `class` attribute and toggles the
+    loop on `.is-active`. The hover/reverse methods don't need to know the
+    canvas exists — they already add/remove `.is-active` at the right
+    moments. Idle cards burn no CPU; only the hovered one paints at a time.
 */
 
 const INTENT_DELAY_MS = 80;
@@ -42,6 +57,66 @@ class ProductCardHoverVideo extends HTMLElement {
     this.reverseLastTs = 0;
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // --- Canvas paint setup (see header comment for why) ---
+    this.canvas = document.createElement('canvas');
+    this.ctx = this.canvas.getContext('2d');
+    Object.assign(this.canvas.style, {
+      display: 'block',
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+    });
+    // Hide the <video> without removing it from the DOM. Inline styles
+    // override the .product-card-video class rules.
+    Object.assign(this.video.style, {
+      position: 'absolute',
+      width: '1px',
+      height: '1px',
+      opacity: '0',
+      pointerEvents: 'none',
+    });
+    this.insertBefore(this.canvas, this.video);
+
+    this.handleLoadedMetadata = () => {
+      this.canvas.width = this.video.videoWidth;
+      this.canvas.height = this.video.videoHeight;
+      if (this.video.readyState >= 2) {
+        this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+      }
+    };
+    this.video.addEventListener('loadedmetadata', this.handleLoadedMetadata);
+
+    this.paintTimeout = null;
+    this.isPainting = false;
+    this.paintFrame = () => {
+      if (!this.isPainting) return;
+      if (!document.hidden && this.video.readyState >= 2 && this.canvas.width > 0) {
+        this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+      }
+      // ~33fps; lighter than rAF for this use.
+      this.paintTimeout = setTimeout(this.paintFrame, 30);
+    };
+
+    // MutationObserver toggles the paint loop off `.is-active` so the hover
+    // and reverse logic below stays untouched. .is-active is set by
+    // startPlay() and removed by reverseStep() at frame 0 — exactly the
+    // window in which the canvas needs to be painting.
+    this.classObserver = new MutationObserver(() => {
+      if (this.classList.contains('is-active')) {
+        if (!this.isPainting) {
+          this.isPainting = true;
+          this.paintFrame();
+        }
+      } else if (this.isPainting) {
+        this.isPainting = false;
+        if (this.paintTimeout) {
+          clearTimeout(this.paintTimeout);
+          this.paintTimeout = null;
+        }
+      }
+    });
+    this.classObserver.observe(this, { attributes: true, attributeFilter: ['class'] });
+
     this.handleEnter = this.handleEnter.bind(this);
     this.handleLeave = this.handleLeave.bind(this);
     this.reverseStep = this.reverseStep.bind(this);
@@ -54,6 +129,9 @@ class ProductCardHoverVideo extends HTMLElement {
     this.card?.removeEventListener('mouseleave', this.handleLeave);
     if (this.intentTimeout) clearTimeout(this.intentTimeout);
     this.stopReverse();
+    this.classObserver?.disconnect();
+    if (this.paintTimeout) clearTimeout(this.paintTimeout);
+    this.video?.removeEventListener('loadedmetadata', this.handleLoadedMetadata);
   }
 
   handleEnter() {
