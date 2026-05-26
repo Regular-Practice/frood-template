@@ -12,7 +12,7 @@
     "hero": {
       "type": "hero",
       "settings": {
-        "overlay_opacity": 10,
+        "overlay_opacity": 15,
         "product": "swedish-meatball-box",
         "attributes": "Rich • Tangy • Tasty"
       }
