@@ -59,8 +59,20 @@
           {%- endif -%}
         </div>
         {%- if render_video != blank -%}
-          <product-render-video class="hero-frood-product-render" loop-delay="10000">
-            {{ render_video | video_tag: autoplay: true, muted: true, controls: false, playsinline: true }}
+          <product-render-video
+            class="hero-frood-product-render"
+            loop-delay="10000"
+            defer-first-play-until=".hero-frood-product"
+          >
+            {{
+              render_video
+              | video_tag:
+                autoplay: true,
+                muted: true,
+                controls: false,
+                playsinline: true,
+                preload: 'auto'
+            }}
           </product-render-video>
         {%- elsif feat_product.featured_image -%}
           <div class="hero-frood-product-render">

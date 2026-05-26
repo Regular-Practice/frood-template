@@ -1395,3 +1395,13 @@ accordion-list[data-enhanced] .accordion-content-inner {
     transition: none;
   }
 }
+
+/* ========== 25. Product Render Video ========== */
+/* <product-render-video> paints its inner <video> into a <canvas> to fix
+   macOS <video> colour-management drift (see assets/product-render-video.js).
+   The host needs to render as block (so the 100% sized canvas fills it) and
+   establish a positioning context (so the hidden 1px <video> stays inside). */
+product-render-video {
+  display: block;
+  position: relative;
+}
