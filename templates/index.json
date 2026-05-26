@@ -63,18 +63,6 @@
       ],
       "settings": {}
     },
-    "quote": {
-      "type": "quote",
-      "settings": {
-        "eyebrow": "Our solution",
-        "heading": "We built a way to cook that fits your life: real ingredients, real flavour, less effort.",
-        "button_text": "",
-        "button_link": "",
-        "use_card": true,
-        "card_bg": "accent",
-        "card_color": "text"
-      }
-    },
     "bundle_builder_mNULHm": {
       "type": "bundle-builder",
       "name": "Bundle builder",
@@ -99,6 +87,18 @@
         "quote_heading": "",
         "quote_button_text": "",
         "quote_button_link": ""
+      }
+    },
+    "quote": {
+      "type": "quote",
+      "settings": {
+        "eyebrow": "Our solution",
+        "heading": "We built a way to cook that fits your life: real ingredients, real flavour, less effort.",
+        "button_text": "",
+        "button_link": "",
+        "use_card": true,
+        "card_bg": "accent",
+        "card_color": "text"
       }
     },
     "feature_card": {
@@ -148,8 +148,8 @@
     "featured_collection",
     "media_tabs",
     "bundle_builder_mNULHm",
-    "quote",
     "fullbleed",
+    "quote",
     "feature_card",
     "text_image_split_Yx6jAX"
   ]
