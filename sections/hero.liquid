@@ -1,47 +1,29 @@
 {%- comment -%}
-  Frood Hero — full-bleed image/video background with the Frood logo centered in accent yellow.
+  Frood Hero — full-bleed background video with the Frood logo centered in accent yellow.
   100vh tall, fills page width. Logo is the inline SVG snippet logo-frood (recolorable via currentColor).
-  Background: video wins if set, else image, else falls back to dummy.jpg.
+  Video is bundled in the theme (assets/frood-hero.mp4) so Shopify's HLS transcoder doesn't
+  re-encode it. The background image acts as the poster + still fallback (defaults to dummy.jpg).
   See CLAUDE.md → "Frood Hero section" for design rules.
 {%- endcomment -%}
 
 <section class="hero-frood">
-  {%- if section.settings.background_video != blank -%}
-    {{
-      section.settings.background_video
-      | video_tag:
-        class: 'hero-frood-bg',
-        controls: false,
-        autoplay: true,
-        loop: true,
-        muted: true,
-        playsinline: true
-    }}
-  {%- elsif section.settings.background_image != blank -%}
-    {%- assign hero_img = section.settings.background_image -%}
-    {{
-      hero_img
-      | image_url: width: 2400
-      | image_tag:
-        class: 'hero-frood-bg',
-        loading: 'eager',
-        fetchpriority: 'high',
-        sizes: '100vw',
-        widths: '600, 900, 1200, 1800, 2400',
-        alt: hero_img.alt | default: '',
-        width: hero_img.width,
-        height: hero_img.height
-    }}
+  {%- if section.settings.background_image != blank -%}
+    {%- assign hero_poster = section.settings.background_image | image_url: width: 2400 -%}
   {%- else -%}
-    <img
-      class="hero-frood-bg"
-      src="{{ 'dummy.jpg' | asset_url }}"
-      alt=""
-      loading="eager"
-      width="2400"
-      height="1600"
-    >
+    {%- assign hero_poster = 'dummy.jpg' | asset_url -%}
   {%- endif -%}
+
+  <video
+    class="hero-frood-bg"
+    src="{{ 'frood-hero.mp4' | asset_url }}"
+    poster="{{ hero_poster }}"
+    autoplay
+    loop
+    muted
+    playsinline
+    width="1920"
+    height="1080"
+  ></video>
 
   <div class="hero-frood-logo">
     {% render 'logo-frood' %}
@@ -279,13 +261,8 @@
     {
       "type": "image_picker",
       "id": "background_image",
-      "label": "Background image"
-    },
-    {
-      "type": "video",
-      "id": "background_video",
-      "label": "Background video",
-      "info": "If both image and video are set, video wins. Falls back to a placeholder if both are empty."
+      "label": "Poster image",
+      "info": "Shown before the video loads and as a still fallback. The hero video itself lives in the theme (assets/frood-hero.mp4) — ask a dev to swap it."
     },
     {
       "type": "header",
