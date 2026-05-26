@@ -28,6 +28,41 @@
         "mobile_layout": "grid"
       }
     },
+    "media_tabs": {
+      "type": "media-tabs",
+      "blocks": {
+        "tab_1": {
+          "type": "tab",
+          "settings": {
+            "heading": "Fresh ingredients, preserved.",
+            "description": "<p>Whole produce is gently dehydrated to keep nutrients, flavour and shelf-life.</p>",
+            "video": "shopify://files/videos/bolo-cut.mov"
+          }
+        },
+        "tab_2": {
+          "type": "tab",
+          "settings": {
+            "heading": "Just add, mix, cook, and enjoy.",
+            "description": "<p>Add a protein, water or milk and cook or bake. Frood cuts out prep so you can make real food, fast.</p>",
+            "video": "shopify://files/videos/swed-cut.mov"
+          }
+        },
+        "tab_3": {
+          "type": "tab",
+          "settings": {
+            "heading": "Versatile for every kind of cook.",
+            "description": "<p>From vegan to meat-eater, dairy-free to picky kids - our blends work for every diet, dish and kitchen.</p>",
+            "video": "shopify://files/videos/curry-cut.mov"
+          }
+        }
+      },
+      "block_order": [
+        "tab_1",
+        "tab_2",
+        "tab_3"
+      ],
+      "settings": {}
+    },
     "quote": {
       "type": "quote",
       "settings": {
@@ -106,51 +141,16 @@
         "button_link": "shopify://pages/recipes",
         "text_vertical_alignment": "top"
       }
-    },
-    "media_tabs": {
-      "type": "media-tabs",
-      "blocks": {
-        "tab_1": {
-          "type": "tab",
-          "settings": {
-            "heading": "Fresh ingredients, preserved.",
-            "description": "<p>Whole produce is gently dehydrated to keep nutrients, flavour and shelf-life.</p>",
-            "video": "shopify://files/videos/bolo-cut.mov"
-          }
-        },
-        "tab_2": {
-          "type": "tab",
-          "settings": {
-            "heading": "Just add, mix, cook, and enjoy.",
-            "description": "<p>Add a protein, water or milk and cook or bake. Frood cuts out prep so you can make real food, fast.</p>",
-            "video": "shopify://files/videos/swed-cut.mov"
-          }
-        },
-        "tab_3": {
-          "type": "tab",
-          "settings": {
-            "heading": "Versatile for every kind of cook.",
-            "description": "<p>From vegan to meat-eater, dairy-free to picky kids - our blends work for every diet, dish and kitchen.</p>",
-            "video": "shopify://files/videos/curry-cut.mov"
-          }
-        }
-      },
-      "block_order": [
-        "tab_1",
-        "tab_2",
-        "tab_3"
-      ],
-      "settings": {}
     }
   },
   "order": [
     "hero",
     "featured_collection",
-    "quote",
+    "media_tabs",
     "bundle_builder_mNULHm",
+    "quote",
     "fullbleed",
     "feature_card",
-    "text_image_split_Yx6jAX",
-    "media_tabs"
+    "text_image_split_Yx6jAX"
   ]
 }
