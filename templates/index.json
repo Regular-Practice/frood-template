@@ -87,6 +87,16 @@
         "full_screen": true
       }
     },
+    "feature_card": {
+      "type": "feature-card",
+      "settings": {
+        "featured_entry": "25-05-2026",
+        "link_text": "Link",
+        "heading": "Whether it's events, new recipes or the latest from the Frood kitchen, keep up to date!",
+        "card_bg": "text",
+        "card_color": "bg"
+      }
+    },
     "fullbleed": {
       "type": "fullbleed",
       "settings": {
@@ -101,16 +111,6 @@
         "quote_heading": "",
         "quote_button_text": "",
         "quote_button_link": ""
-      }
-    },
-    "feature_card": {
-      "type": "feature-card",
-      "settings": {
-        "featured_entry": "25-05-2026",
-        "link_text": "Link",
-        "heading": "Whether it's events, new recipes or the latest from the Frood kitchen, keep up to date!",
-        "card_bg": "text",
-        "card_color": "bg"
       }
     },
     "text_image_split_Yx6jAX": {
@@ -151,8 +151,8 @@
     "quote",
     "media_tabs",
     "bundle_builder_mNULHm",
-    "fullbleed",
     "feature_card",
+    "fullbleed",
     "text_image_split_Yx6jAX"
   ]
 }
