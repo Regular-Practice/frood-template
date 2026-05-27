@@ -197,7 +197,9 @@
     "email_placeholder": "Your email address",
     "submit": "submit",
     "success": "Thanks for subscribing!",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "consent_text": "By clicking Submit, you agree to receive news and offers from Frood Ltd.",
+    "privacy_link_label": "Privacy Policy"
   },
   "password": {
     "general": {

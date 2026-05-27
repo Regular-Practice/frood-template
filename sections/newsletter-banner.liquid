@@ -25,7 +25,14 @@
       </header>
     {%- endif -%}
 
-    {% render 'newsletter-form' %}
+    <div class="newsletter-banner-form-group">
+      {% render 'newsletter-form' %}
+
+      <p class="newsletter-banner-consent text-body">
+        {{ 'newsletter.consent_text' | t }}
+        {%- if section.settings.privacy_policy != blank %} <a class="inline-link" href="{{ section.settings.privacy_policy }}">{{ 'newsletter.privacy_link_label' | t }}</a>{%- endif -%}
+      </p>
+    </div>
   </div>
 </section>
 
@@ -79,6 +86,20 @@
     background-color: var(--color-accent);
     color: var(--color-text);
   }
+
+  /* Tight stack for the form + GDPR consent line — the parent --spacing-l gap
+     between the header and this group is intentional; consent sits close to the
+     input it's about. */
+  .newsletter-banner-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .newsletter-banner-consent {
+    margin: 0;
+    max-width: 50ch;
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -99,6 +120,12 @@
       "label": "Heading (h3)",
       "info": "Press Enter to add a line break.",
       "default": "Be the first to hear about new ingredients, recipes, and limited drops."
+    },
+    {
+      "type": "url",
+      "id": "privacy_policy",
+      "label": "Privacy policy URL",
+      "info": "Linked from the GDPR consent line beneath the form. Pick a page (typically Privacy Policy) or paste an external URL. Leave empty to hide the link — the consent text still shows."
     }
   ],
   "presets": [
