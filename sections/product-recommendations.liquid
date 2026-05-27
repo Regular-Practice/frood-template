@@ -20,24 +20,56 @@
     {%- if recommendations.products_count > 0 -%}
       {{ lockup_header }}
 
-      <div class="product-recommendations-grid grid grid-{{ section.settings.grid_columns }}">
-        {%- for product in recommendations.products -%}
-          {% render 'product-card', product: product %}
-        {%- endfor -%}
-      </div>
+      <product-recommendations-carousel>
+        <div class="product-recommendations-viewport">
+          <div class="product-recommendations-container grid-{{ section.settings.grid_columns }}">
+            {%- for product in recommendations.products -%}
+              <div class="product-recommendations-slide">
+                {% render 'product-card', product: product %}
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+        <button
+          class="product-recommendations-arrow product-recommendations-arrow-prev"
+          type="button"
+          data-direction="prev"
+          aria-label="{{ 'general.accessibility.previous_slide' | t: default: 'Previous slide' }}"
+          hidden
+        >
+          {% render 'icon-arrow' %}
+        </button>
+        <button
+          class="product-recommendations-arrow product-recommendations-arrow-next"
+          type="button"
+          data-direction="next"
+          aria-label="{{ 'general.accessibility.next_slide' | t: default: 'Next slide' }}"
+          hidden
+        >
+          {% render 'icon-arrow' %}
+        </button>
+      </product-recommendations-carousel>
     {%- endif -%}
   {%- else -%}
     {%- comment -%} Skeleton placeholders shown until JS fetches recommendations {%- endcomment -%}
     {{ lockup_header }}
 
-    <div class="product-recommendations-grid grid grid-{{ section.settings.grid_columns }}">
-      {%- for i in (1..section.settings.products_to_show) -%}
-        <div class="placeholder-card" aria-hidden="true"></div>
-      {%- endfor -%}
-    </div>
+    <product-recommendations-carousel>
+      <div class="product-recommendations-viewport">
+        <div class="product-recommendations-container grid-{{ section.settings.grid_columns }}">
+          {%- for i in (1..section.settings.products_to_show) -%}
+            <div class="product-recommendations-slide">
+              <div class="placeholder-card" aria-hidden="true"></div>
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+    </product-recommendations-carousel>
   {%- endif -%}
 </product-recommendations>
 
+<script src="{{ 'embla-carousel.umd.js' | asset_url }}" defer></script>
+<script src="{{ 'product-recommendations-carousel.js' | asset_url }}" defer></script>
 <script type="module" src="{{ 'product-recommendations.js' | asset_url }}"></script>
 
 {% stylesheet %}
@@ -46,7 +78,6 @@
     padding: var(--spacing-xs);
     color: var(--color-text);
     background-color: var(--color-bg);
-    overflow: hidden;
   }
 
   @media (min-width: 900px) {
@@ -63,23 +94,116 @@
     max-width: 36ch;
   }
 
-  .product-recommendations-grid {
-    display: grid;
-    gap: var(--spacing-base);
-    grid-template-columns: repeat(2, 1fr);
+  /* ───── Carousel (mobile + tablet) ───── */
+
+  product-recommendations-carousel {
+    display: block;
+    position: relative;
+  }
+
+  .product-recommendations-viewport {
+    overflow: hidden;
+    margin-left: calc(-1 * var(--spacing-xs));
+    margin-right: calc(-1 * var(--spacing-xs));
+  }
+
+  .product-recommendations-container {
+    display: flex;
+    touch-action: pan-y pinch-zoom;
+  }
+
+  product-recommendations-carousel.is-initialized .product-recommendations-viewport {
+    cursor: grab;
+  }
+
+  product-recommendations-carousel.is-initialized .product-recommendations-viewport:active {
+    cursor: grabbing;
+  }
+
+  .product-recommendations-slide {
+    flex: 0 0 75%;
+    min-width: 0;
   }
 
   @media (min-width: 600px) {
-    .product-recommendations-grid {
-      grid-template-columns: repeat(3, 1fr);
+    .product-recommendations-slide {
+      flex: 0 0 40%;
     }
   }
 
+  /* Arrows — square accent-yellow background, dark arrow icon.
+     Hidden via [hidden] when there's nothing more to scroll. */
+  .product-recommendations-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--rad-s);
+    background: var(--color-accent);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+  }
+
+  .product-recommendations-arrow[hidden] {
+    display: none;
+  }
+
+  .product-recommendations-arrow:hover {
+    background: var(--color-text);
+    color: var(--color-accent);
+  }
+
+  .product-recommendations-arrow-prev {
+    left: var(--spacing-xs);
+  }
+
+  .product-recommendations-arrow-next {
+    right: var(--spacing-xs);
+  }
+
+  .product-recommendations-arrow-prev svg {
+    transform: scaleX(-1);
+  }
+
+  /* ───── Grid (desktop) ───── */
+
   @media (min-width: 900px) {
-    .product-recommendations-grid.grid-4 {
+    .product-recommendations-viewport {
+      overflow: visible;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    .product-recommendations-container {
+      display: grid;
+      gap: var(--spacing-base);
+      grid-template-columns: repeat(3, 1fr);
+      /* Clear Embla's inline transform when the carousel deactivates. */
+      transform: none !important;
+    }
+
+    .product-recommendations-container.grid-4 {
       grid-template-columns: repeat(4, 1fr);
     }
+
+    .product-recommendations-slide {
+      flex: initial;
+    }
+
+    .product-recommendations-arrow {
+      display: none;
+    }
   }
+
+  /* ───── Shared ───── */
 
   .placeholder-card {
     aspect-ratio: 3 / 4;
@@ -132,6 +256,7 @@
       "type": "select",
       "id": "grid_columns",
       "label": "Grid columns (desktop)",
+      "info": "Mobile and tablet show a drag-and-slide carousel.",
       "options": [
         { "value": "3", "label": "3 columns" },
         { "value": "4", "label": "4 columns" }
