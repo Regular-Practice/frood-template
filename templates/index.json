@@ -87,22 +87,6 @@
         "full_screen": true
       }
     },
-    "fullbleed": {
-      "type": "fullbleed",
-      "settings": {
-        "image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-8.jpg",
-        "height": "75",
-        "keep_ratio": false,
-        "margins": true,
-        "caption_heading": "The ultimate kitchen hack",
-        "caption_body": "<p>We all want to eat better. But between busy schedules and long ingredient lists, cooking from scratch demands time we just don’t have. </p>",
-        "add_quote": false,
-        "quote_eyebrow": "",
-        "quote_heading": "",
-        "quote_button_text": "",
-        "quote_button_link": ""
-      }
-    },
     "text_image_split_Yx6jAX": {
       "type": "text-image-split",
       "blocks": {
@@ -143,6 +127,22 @@
         "card_bg": "text",
         "card_color": "bg"
       }
+    },
+    "fullbleed": {
+      "type": "fullbleed",
+      "settings": {
+        "image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-8.jpg",
+        "height": "75",
+        "keep_ratio": false,
+        "margins": true,
+        "caption_heading": "The ultimate kitchen hack",
+        "caption_body": "<p>We all want to eat better. But between busy schedules and long ingredient lists, cooking from scratch demands time we just don’t have. </p>",
+        "add_quote": false,
+        "quote_eyebrow": "",
+        "quote_heading": "",
+        "quote_button_text": "",
+        "quote_button_link": ""
+      }
     }
   },
   "order": [
@@ -152,7 +152,7 @@
     "media_tabs",
     "bundle_builder_mNULHm",
     "text_image_split_Yx6jAX",
-    "fullbleed",
-    "feature_card"
+    "feature_card",
+    "fullbleed"
   ]
 }
