@@ -11,14 +11,30 @@
     - title             multi-line text
     - date              single line text
     - location          single line text (optional — em-dashed after date when present)
-    - news_image        file (image)
+    - news_image        file (image)        ← media: image OR video (not both)
+    - news_video        video                ← merchant convention is to fill one OR the other
     - news_description  rich text
     - news_link         URL
+
+  Media precedence: news_video wins if both are set (defensive — merchant rule is
+  to use one or the other). Falls back to image, then to a beige placeholder.
 {%- endcomment -%}
 
 <article class="news-card">
   <div class="news-card-image">
-    {%- if news.news_image != blank -%}
+    {%- if news.news_video != blank -%}
+      {{
+        news.news_video
+        | video_tag:
+          class: 'news-card-video',
+          autoplay: true,
+          muted: true,
+          loop: true,
+          controls: false,
+          playsinline: true,
+          preload: 'metadata'
+      }}
+    {%- elsif news.news_image != blank -%}
       {{
         news.news_image
         | image_url: width: 1600
@@ -74,7 +90,8 @@
     border-radius: var(--rad-s);
   }
 
-  .news-card-image img {
+  .news-card-image img,
+  .news-card-image video {
     display: block;
     width: 100%;
     height: auto;
