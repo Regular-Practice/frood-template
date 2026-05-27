@@ -35,17 +35,17 @@
         "tab_1": {
           "type": "tab",
           "settings": {
-            "heading": "Fresh ingredients, preserved.",
+            "heading": "#1",
             "description": "<p>Whole produce is gently dehydrated to keep nutrients, flavour and shelf-life.</p>",
-            "video": "shopify://files/videos/bolo-cut.mov"
+            "video": "shopify://files/videos/IMG_8249.MOV"
           }
         },
         "tab_2": {
           "type": "tab",
           "settings": {
-            "heading": "Just add, mix, cook, and enjoy.",
+            "heading": "#2",
             "description": "<p>Add a protein, water or milk and cook or bake. Frood cuts out prep so you can make real food, fast.</p>",
-            "video": "shopify://files/videos/swed-cut.mov"
+            "video": "shopify://files/videos/IMG_8196.MOV"
           }
         },
         "tab_3": {
@@ -53,7 +53,7 @@
           "settings": {
             "heading": "Versatile for every kind of cook.",
             "description": "<p>From vegan to meat-eater, dairy-free to picky kids - our blends work for every diet, dish and kitchen.</p>",
-            "video": "shopify://files/videos/curry-cut.mov"
+            "video": "shopify://files/videos/Table Spread.mov"
           }
         }
       },
