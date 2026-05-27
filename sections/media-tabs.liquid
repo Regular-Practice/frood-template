@@ -1,21 +1,28 @@
 {%- comment -%}
-  Frood Media Tabs — full-bleed video background with a vertical stack of tabs on the
-  left-center. Each tab has an h1, a body description, and an attached video. Active tab
-  reveals its description and plays its video full-bleed. When the video ends, the next
-  tab is activated automatically (looping back to the first). Tabs can also be clicked.
+  Frood Media Tabs — three side-by-side cards. Each card has an h2 label at the top,
+  a step SVG icon centered, and a description at the bottom. The active card crossfades
+  its icon out and its video in (video plays as the card background). When the video
+  ends, the next card auto-activates (looping). Cards are also clickable.
+
+  Step icons are theme assets named `step-1.svg`, `step-2.svg`, `step-3.svg` (etc.) —
+  auto-derived from the block index. If you add a 4th block, drop a `step-4.svg` next
+  to the others.
 {%- endcomment -%}
 
 <section class="media-tabs-section">
   <media-tabs class="media-tabs">
-    <div class="media-tabs-videos" aria-hidden="true">
-      {%- for block in section.blocks -%}
-        <div
-          class="media-tabs-video{% if forloop.first %} is-active{% endif %}"
-          data-video-index="{{ forloop.index0 }}"
-        >
+    {%- for block in section.blocks -%}
+      <button
+        type="button"
+        class="media-tab{% if forloop.first %} is-active{% endif %}"
+        data-tab-index="{{ forloop.index0 }}"
+        aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
+        {{ block.shopify_attributes }}
+      >
+        <div class="media-tab-bg" aria-hidden="true">
           {%- if block.settings.video != blank -%}
             <video
-              class="media-tabs-video-el"
+              class="media-tab-video"
               muted
               playsinline
               preload="metadata"
@@ -24,38 +31,30 @@
                 <source src="{{ source.url }}" type="{{ source.mime_type }}">
               {%- endfor -%}
             </video>
-          {%- else -%}
-            <div class="media-tabs-video-placeholder"></div>
           {%- endif -%}
         </div>
-      {%- endfor -%}
-    </div>
 
-    <div class="media-tabs-overlay">
-      <ul class="media-tabs-list">
-        {%- for block in section.blocks -%}
-          <li {{ block.shopify_attributes }}>
-            <button
-              type="button"
-              class="media-tab-button{% if forloop.first %} is-active{% endif %}"
-              data-tab-index="{{ forloop.index0 }}"
-              aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
+        <div class="media-tab-content">
+          {%- if block.settings.heading != blank -%}
+            <h2 class="text-h2 media-tab-heading">{{ block.settings.heading }}</h2>
+          {%- endif -%}
+
+          <div class="media-tab-icon-wrap" aria-hidden="true">
+            <img
+              class="media-tab-icon"
+              src="{{ 'step-' | append: forloop.index | append: '.svg' | asset_url }}"
+              alt=""
+              width="200"
+              height="234"
             >
-              {%- if block.settings.heading != blank -%}
-                <h2 class="text-h1 media-tab-heading">{{ block.settings.heading }}</h2>
-              {%- endif -%}
-              {%- if block.settings.description != blank -%}
-                <div class="media-tab-description-wrap">
-                  <div class="media-tab-description-clip">
-                    <div class="text-body media-tab-description">{{ block.settings.description }}</div>
-                  </div>
-                </div>
-              {%- endif -%}
-            </button>
-          </li>
-        {%- endfor -%}
-      </ul>
-    </div>
+          </div>
+
+          {%- if block.settings.description != blank -%}
+            <div class="text-h3 media-tab-description">{{ block.settings.description }}</div>
+          {%- endif -%}
+        </div>
+      </button>
+    {%- endfor -%}
   </media-tabs>
 </section>
 
@@ -63,141 +62,116 @@
 
 {% stylesheet %}
   .media-tabs-section {
-    color: var(--color-text);
     background-color: var(--color-bg);
+    color: var(--color-text);
+    padding: var(--spacing-xs);
+  }
+
+  @media (min-width: 900px) {
+    .media-tabs-section {
+      padding: var(--spacing-m);
+    }
   }
 
   .media-tabs {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xxxs);
+  }
+
+  @media (min-width: 900px) {
+    .media-tabs {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .media-tab {
     position: relative;
     display: block;
     width: 100%;
-    height: 100vh;
+    aspect-ratio: 4 / 5;
     overflow: hidden;
+    border-radius: var(--rad-s);
+    background-color: var(--color-bg-dark);
+    color: var(--color-bg);
+    border: 0;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
   }
 
-  .media-tabs-videos {
+  /* Video background: crossfades in on .is-active. Sits behind .media-tab-content. */
+  .media-tab-bg {
     position: absolute;
     inset: 0;
     z-index: 0;
-  }
-
-  .media-tabs-videos::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-color: var(--color-overlay);
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  .media-tabs-video {
-    position: absolute;
-    inset: 0;
     opacity: 0;
     transition: opacity var(--transition-fast);
   }
 
-  .media-tabs-video.is-active {
+  .media-tab.is-active .media-tab-bg {
     opacity: 1;
   }
 
-  .media-tabs-video-el,
-  .media-tabs-video-placeholder {
+  .media-tab-video {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  .media-tabs-video-placeholder {
-    background: var(--color-bg-dark);
-  }
-
-  .media-tabs-overlay {
-    position: relative;
-    z-index: 1;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding: var(--spacing-xs);
+  /* Scrim: --color-overlay (text @ 10%) over the video for legibility of the
+     overlaid heading + description. Sits inside .media-tab-bg so it inherits
+     the same opacity crossfade — invisible on inactive cards. */
+  .media-tab-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-overlay);
     pointer-events: none;
   }
 
-  @media (min-width: 900px) {
-    .media-tabs-overlay {
-      padding: var(--spacing-m);
-    }
-  }
-
-  .media-tabs-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  /* Content sits above the video and uses flex column with the icon as a flexible
+     middle spacer, so heading lands at the top and description at the bottom — the
+     icon claims whatever vertical space is left. */
+  .media-tab-content {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xxxs);
-    width: 100%;
-    pointer-events: auto;
-  }
-
-  @media (min-width: 600px) {
-    .media-tabs-list {
-      width: auto;
-      max-width: 320px;
-    }
-  }
-
-  .media-tab-button {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    background-color: var(--color-bg-dark);
-    color: var(--color-text);
-    padding: var(--spacing-xxs);
-    border: 0;
-    border-radius: var(--rad-s);
-    text-align: left;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity var(--transition-fast);
-    font: inherit;
-  }
-
-  .media-tab-button.is-active {
-    opacity: 1;
+    height: 100%;
+    padding: var(--spacing-s);
   }
 
   .media-tab-heading {
     margin: 0;
   }
 
-  {%- comment -%}
-    Smooth auto-height reveal (unknown richtext height): the size-driven wrapper
-    animates grid-template-rows 0fr↔1fr with opacity; the clip carries overflow only;
-    the body carries all spacing. Timing matches the video crossfade (--transition-fast)
-    so a tab switch reads as one coordinated motion.
-  {%- endcomment -%}
-  .media-tab-description-wrap {
-    display: grid;
-    grid-template-rows: 0fr;
-    opacity: 0;
-    transition:
-      grid-template-rows var(--transition-fast),
-      opacity var(--transition-fast);
-  }
-
-  .media-tab-button.is-active .media-tab-description-wrap {
-    grid-template-rows: 1fr;
+  .media-tab-icon-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Icon visible on inactive (over beige); fades out on active so the video shows */
     opacity: 1;
+    transition: opacity var(--transition-fast);
   }
 
-  .media-tab-description-clip {
-    overflow: hidden;
-    min-height: 0;
+  .media-tab.is-active .media-tab-icon-wrap {
+    opacity: 0;
+  }
+
+  .media-tab-icon {
+    display: block;
+    width: 35%;
+    max-width: 96px;
+    height: auto;
   }
 
   .media-tab-description {
     margin: 0;
-    padding-top: var(--spacing-m);
   }
 
   .media-tab-description p {
@@ -209,7 +183,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .media-tab-description-wrap {
+    .media-tab-bg,
+    .media-tab-icon-wrap {
       transition: none;
     }
   }
@@ -229,7 +204,8 @@
         {
           "type": "text",
           "id": "heading",
-          "label": "Heading (h1 — small uppercase label)"
+          "label": "Heading",
+          "info": "Shown as the large text at the top of the card (e.g. #1, #2, #3)."
         },
         {
           "type": "richtext",
@@ -239,7 +215,8 @@
         {
           "type": "video",
           "id": "video",
-          "label": "Video"
+          "label": "Video",
+          "info": "Plays full-bleed as the card background when this tab is active. When it ends, the next tab auto-activates."
         }
       ]
     }
