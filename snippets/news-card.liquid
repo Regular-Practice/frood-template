@@ -22,9 +22,9 @@
 
 <article class="news-card">
   <div class="news-card-image">
-    {%- if news.news_video != blank -%}
+    {%- if news.video != blank -%}
       {{
-        news.news_video
+        news.video
         | video_tag:
           class: 'news-card-video',
           autoplay: true,
