@@ -41,8 +41,11 @@ class FeaturedCollectionCarousel extends HTMLElement {
     this.embla = window.EmblaCarousel(this.viewport, {
       loop: false,
       watchDrag: true,
-      align: 'start',
-      containScroll: 'trimSnaps',
+      align: 'center',
+      containScroll: '',
+      breakpoints: {
+        '(min-width: 600px)': { align: 'start', containScroll: 'trimSnaps' },
+      },
     });
     this.classList.add('is-initialized');
 
