@@ -23,7 +23,7 @@
         "eyebrow": "Our collection",
         "heading": "Real food, made simple.\nMade for modern home cooks.",
         "button_text": "Our range",
-        "button_link": "",
+        "button_link": "shopify://collections/shop",
         "collection": "shop",
         "products_to_show": 5,
         "enable_carousel": true,
