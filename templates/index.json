@@ -89,6 +89,7 @@
     },
     "feature_card": {
       "type": "feature-card",
+      "disabled": true,
       "settings": {
         "featured_entry": "25-05-2026",
         "link_text": "Link",
