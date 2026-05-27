@@ -68,18 +68,17 @@
 
 {% stylesheet %}
   .feature-card-section {
-    padding: var(--spacing-xs);
+    padding: var(--spacing-s) var(--spacing-xs);
     background-color: var(--color-bg);
   }
 
   @media (min-width: 900px) {
     .feature-card-section {
-      padding: var(--spacing-m);
+      padding: var(--spacing-l) var(--spacing-m);
     }
   }
 
   .feature-card {
-    max-width: 1134px;
     padding: var(--spacing-xs);
     border-radius: var(--rad-s);
     display: flex;
@@ -89,9 +88,12 @@
     margin-inline: auto;
   }
 
+  /* Cap the width only on desktop (≥900px). Below that — tablet + mobile —
+     the card fills the available section width. */
   @media (min-width: 900px) {
     .feature-card {
       padding: var(--spacing-m);
+      max-width: 960px;
     }
   }
 
@@ -136,6 +138,7 @@
 
   .feature-card-entry-title {
     margin-top: var(--spacing-xxs);
+    max-width: 36ch;
   }
 
   .feature-card-entry-link {
