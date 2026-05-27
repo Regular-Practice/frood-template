@@ -13,9 +13,11 @@
       "type": "main-recipes",
       "settings": {
         "eyebrow": "Recipes",
-        "heading": "What we cook with our packs."
+        "heading": "How to get creative with Frood:"
       }
     }
   },
-  "order": ["main"]
+  "order": [
+    "main"
+  ]
 }

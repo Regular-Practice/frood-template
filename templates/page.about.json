@@ -37,14 +37,14 @@
         "media_WnTt3g": {
           "type": "media",
           "settings": {
-            "video": "shopify://files/videos/988e895365b447f3ac64374b4ca3569d.mp4",
+            "video": "shopify://files/videos/Tuesday Shoot BTS.MOV",
             "caption": ""
           }
         },
         "media_rC9M6a": {
           "type": "media",
           "settings": {
-            "image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-7.jpg",
+            "image": "shopify://shop_images/IMG_0496.jpg",
             "caption": ""
           }
         }
@@ -67,7 +67,7 @@
       "name": "Center section",
       "settings": {
         "eyebrow": "About us",
-        "heading": "Over the years, Frida has built a deeply engaged community who turn to her for honest guidance on parenting, health, and home life.",
+        "heading": "The core concept from day one was to redefine convenience food, to help people whip things up easily, but it's still delicious and good for you.",
         "video": "shopify://files/videos/Frood_Red_Bolognese_video_1596a32e-3b0d-4328-a441-120a11848e36.mp4"
       }
     },
@@ -75,12 +75,12 @@
       "type": "fullbleed",
       "name": "Full-bleed",
       "settings": {
-        "image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-17.jpg",
+        "image": "shopify://shop_images/FOOD_DEC_LOWRESJPG-78.jpg",
         "height": "75",
         "keep_ratio": false,
         "margins": false,
-        "caption_heading": "Team Work",
-        "caption_body": "<p>She shares this journey with her husband Jamie Redknapp, raising their big blended family with warmth and authenticity.</p>",
+        "caption_heading": "Family Support",
+        "caption_body": "<p>Raising their big blended family with warmth and authenticity, with her husband Jamie, dinner has never been so easy.</p>",
         "add_quote": false,
         "quote_eyebrow": "",
         "quote_heading": "",

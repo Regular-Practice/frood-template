@@ -11,7 +11,10 @@
   "sections": {
     "main": {
       "type": "main-news",
-      "settings": {}
+      "settings": {
+        "eyebrow": "News",
+        "heading": "What we're up to:"
+      }
     },
     "event_slider_WQdf4M": {
       "type": "event-slider",
