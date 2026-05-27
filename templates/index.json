@@ -30,6 +30,18 @@
         "mobile_layout": "grid"
       }
     },
+    "quote": {
+      "type": "quote",
+      "settings": {
+        "eyebrow": "Our solution",
+        "heading": "Real ingredients, real flavour, less effort.",
+        "button_text": "",
+        "button_link": "",
+        "use_card": false,
+        "card_bg": "accent",
+        "card_color": "text"
+      }
+    },
     "media_tabs": {
       "type": "media-tabs",
       "blocks": {
@@ -91,18 +103,6 @@
         "quote_button_link": ""
       }
     },
-    "quote": {
-      "type": "quote",
-      "settings": {
-        "eyebrow": "Our solution",
-        "heading": "Real ingredients, real flavour, less effort.",
-        "button_text": "",
-        "button_link": "",
-        "use_card": false,
-        "card_bg": "accent",
-        "card_color": "text"
-      }
-    },
     "feature_card": {
       "type": "feature-card",
       "settings": {
@@ -148,10 +148,10 @@
   "order": [
     "hero",
     "featured_collection",
+    "quote",
     "media_tabs",
     "bundle_builder_mNULHm",
     "fullbleed",
-    "quote",
     "feature_card",
     "text_image_split_Yx6jAX"
   ]
