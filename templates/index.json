@@ -84,7 +84,7 @@
         "box_product": "mixed-box",
         "eyebrow": "Build your box",
         "heading": "Create and customise your box from the Frood selection.",
-        "full_screen": false
+        "full_screen": true
       }
     },
     "fullbleed": {
