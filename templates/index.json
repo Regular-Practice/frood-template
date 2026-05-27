@@ -33,7 +33,7 @@
     "quote": {
       "type": "quote",
       "settings": {
-        "eyebrow": "Our solution",
+        "eyebrow": "We are about",
         "heading": "Real ingredients, real flavour, less effort.",
         "button_text": "",
         "button_link": "",
@@ -79,6 +79,7 @@
     },
     "feature_card": {
       "type": "feature-card",
+      "disabled": true,
       "settings": {
         "featured_entry": "25-05-2026",
         "link_text": "Link",
