@@ -122,14 +122,15 @@
     object-fit: cover;
   }
 
-  /* Scrim: --color-overlay (text @ 10%) over the video for legibility of the
-     overlaid heading + description. Sits inside .media-tab-bg so it inherits
-     the same opacity crossfade — invisible on inactive cards. */
+  /* Scrim: twice the --color-overlay token (text @ 20%, vs the token's 10%)
+     over the video for legibility of the overlaid heading + description. Sits
+     inside .media-tab-bg so it inherits the same opacity crossfade —
+     invisible on inactive cards. */
   .media-tab-bg::after {
     content: '';
     position: absolute;
     inset: 0;
-    background-color: var(--color-overlay);
+    background-color: color-mix(in srgb, var(--color-text) 20%, transparent);
     pointer-events: none;
   }
 
