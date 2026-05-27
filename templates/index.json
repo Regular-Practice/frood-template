@@ -36,7 +36,7 @@
           "type": "tab",
           "settings": {
             "heading": "#1",
-            "description": "<p>Whole produce is gently dehydrated to keep nutrients, flavour and shelf-life.</p>",
+            "description": "<p>Made from carefully selected dried vegetables, spices and natural seasonings.</p>",
             "video": "shopify://files/videos/IMG_8249.MOV"
           }
         },
@@ -51,7 +51,7 @@
         "tab_3": {
           "type": "tab",
           "settings": {
-            "heading": "Versatile for every kind of cook.",
+            "heading": "#3",
             "description": "<p>From vegan to meat-eater, dairy-free to picky kids - our blends work for every diet, dish and kitchen.</p>",
             "video": "shopify://files/videos/Table Spread.mov"
           }
@@ -81,7 +81,7 @@
         "height": "75",
         "keep_ratio": false,
         "margins": true,
-        "caption_heading": "The Problem",
+        "caption_heading": "The ultimate kitchen hack",
         "caption_body": "<p>We all want to eat better. But between busy schedules and long ingredient lists, cooking from scratch demands time we just don’t have. </p>",
         "add_quote": false,
         "quote_eyebrow": "",
@@ -94,10 +94,10 @@
       "type": "quote",
       "settings": {
         "eyebrow": "Our solution",
-        "heading": "We built a way to cook that fits your life: real ingredients, real flavour, less effort.",
+        "heading": "Real ingredients, real flavour, less effort.",
         "button_text": "",
         "button_link": "",
-        "use_card": true,
+        "use_card": false,
         "card_bg": "accent",
         "card_color": "text"
       }
@@ -107,7 +107,7 @@
       "settings": {
         "featured_entry": "11-05-2026",
         "link_text": "Link",
-        "heading": "There's always something happening at Frood — a dinner, a demo, a new collab, a little moment worth sharing. This is where I keep you in the loop. Scroll through, save the dates, and come say hi.",
+        "heading": "Whether its events, new recipes or all things Frood, keep up to date!",
         "card_bg": "text",
         "card_color": "bg"
       }
@@ -125,7 +125,7 @@
         "media_tAJbmY": {
           "type": "media",
           "settings": {
-            "image": "shopify://shop_images/1361694b5dc69ef0f1f9a6a4c440e8cb0841506f.png",
+            "image": "shopify://shop_images/IMG_9712.jpg",
             "caption": "<p>Delicious Tacos with toppings made with the Swedish Meatball Blend, <a href=\"/pages/recipes\" target=\"_blank\" title=\"Recipes\">see recipe here</a></p>"
           }
         }
@@ -136,9 +136,9 @@
       ],
       "name": "Text + image split",
       "settings": {
-        "eyebrow": "Our Solution",
-        "heading": "Nourishing recipes that don't ask too much of you. Simple ingredients, big flavour, the way eating well should feel.",
-        "button_text": "Recipes",
+        "eyebrow": "Recipes",
+        "heading": "Nourishing recipes that don't ask too much of you. Simple ingredients, big flavour, eating well the Frood way.",
+        "button_text": "Explore",
         "button_link": "shopify://pages/recipes",
         "text_vertical_alignment": "top"
       }
