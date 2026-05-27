@@ -37,7 +37,7 @@
         "media_WnTt3g": {
           "type": "media",
           "settings": {
-            "video": "shopify://files/videos/Tuesday Shoot BTS.MOV",
+            "video": "shopify://files/videos/Frida vid no photographer.mov",
             "caption": ""
           }
         },
@@ -98,6 +98,7 @@
         "button_link": "",
         "collection": "shop",
         "products_to_show": 4,
+        "enable_carousel": true,
         "mobile_layout": "carousel"
       }
     }
