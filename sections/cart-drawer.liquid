@@ -30,6 +30,10 @@
 
     <div class="cart-drawer-main" data-drawer-body>
       {%- if cart.item_count > 0 -%}
+        {%- if section.settings.free_shipping_enabled and section.settings.free_shipping_threshold > 0 -%}
+          {% render 'cart-shipping-progress', threshold: section.settings.free_shipping_threshold %}
+        {%- endif -%}
+
         <cart-items
           class="cart-drawer-items"
           data-error-stock="{{ 'cart.drawer.error_stock' | t }}"
@@ -431,6 +435,24 @@
 {
   "name": "Cart drawer",
   "class": "cart-drawer-section",
-  "settings": []
+  "settings": [
+    {
+      "type": "header",
+      "content": "Free shipping bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "free_shipping_enabled",
+      "label": "Show free shipping progress bar",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "free_shipping_threshold",
+      "label": "Free shipping threshold",
+      "info": "Amount in your store currency (e.g. 24 for £24). Match this to your free-shipping automatic discount's minimum — Shopify can't share that value with the theme, so keep them in sync. Set to 0 to hide the bar.",
+      "default": 24
+    }
+  ]
 }
 {% endschema %}

@@ -112,7 +112,10 @@
       "empty": "Your cart is empty!",
       "error_stock": "Not enough in stock",
       "error_generic": "Couldn't update — try again",
-      "upsell_heading": "You might also like"
+      "upsell_heading": "You might also like",
+      "shipping_progress_remaining": "You're {{ amount }} away from free shipping",
+      "shipping_progress_qualified": "You've unlocked free shipping!",
+      "shipping_progress_label": "Progress to free shipping"
     }
   },
   "search": {

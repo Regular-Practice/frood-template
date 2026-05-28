@@ -1,0 +1,120 @@
+{%- comment -%}
+  Free-shipping progress bar for the cart drawer.
+
+  A labelled progress bar showing how close the cart is to the free-shipping
+  threshold. Two states: "X away" (partial fill) and "unlocked" (full fill +
+  success message). Pure Liquid — it reads cart.total_price and is re-rendered
+  on every cart change because it lives inside the drawer's [data-drawer-body],
+  which cart-drawer.js swaps via the Section Rendering API. No client JS.
+
+  IMPORTANT: Shopify does not expose an automatic discount's threshold to Liquid
+  (free-shipping discounts are shipping-level, applied at checkout). So
+  `threshold` must be mirrored here from the discount config — the two can drift
+  if only one is changed.
+
+  Basis: matches against `cart.total_price` (cents, after line discounts, before
+  shipping/tax) — the closest cart object to Shopify's "minimum purchase amount"
+  rule. Verify against a real cart if line/cart discounts are in play.
+
+  Owned by sections/cart-drawer.liquid.
+
+  Expects:
+    - threshold: free-shipping minimum in the store's currency major unit
+      (e.g. 24 for £24). Bar is hidden when blank or <= 0.
+
+  Usage:
+    {% render 'cart-shipping-progress', threshold: section.settings.free_shipping_threshold %}
+{%- endcomment -%}
+
+{%- liquid
+  assign ship_threshold = threshold | times: 100 | round
+  assign cart_total = cart.total_price
+
+  assign qualified = false
+  if cart_total >= ship_threshold
+    assign qualified = true
+  endif
+
+  assign remaining = ship_threshold | minus: cart_total
+  assign remaining_money = remaining | money
+
+  assign percent = 0
+  if ship_threshold > 0
+    assign percent = cart_total | times: 100.00 | divided_by: ship_threshold
+    if percent > 100
+      assign percent = 100
+    endif
+  endif
+  assign percent_aria = percent | round
+-%}
+
+{%- if ship_threshold > 0 -%}
+  <div class="cart-shipping-progress{% if qualified %} is-qualified{% endif %}">
+    <p class="cart-shipping-progress-message text-ui">
+      {%- if qualified -%}
+        {{ 'cart.drawer.shipping_progress_qualified' | t }}
+      {%- else -%}
+        {{ 'cart.drawer.shipping_progress_remaining' | t: amount: remaining_money }}
+      {%- endif -%}
+    </p>
+    <div
+      class="cart-shipping-progress-track"
+      role="progressbar"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="{{ percent_aria }}"
+      aria-label="{{ 'cart.drawer.shipping_progress_label' | t }}"
+    >
+      <div class="cart-shipping-progress-fill" style="--fill: {{ percent }}%;"></div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .cart-shipping-progress {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+    padding: var(--spacing-xs);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .cart-shipping-progress-message {
+    color: var(--color-text);
+  }
+
+  .cart-shipping-progress.is-qualified .cart-shipping-progress-message {
+    color: #479d28;
+  }
+
+  .cart-shipping-progress-track {
+    height: 6px;
+    border-radius: var(--rad-s);
+    background: var(--color-border);
+    overflow: hidden;
+  }
+
+  .cart-shipping-progress-fill {
+    height: 100%;
+    width: var(--fill);
+    border-radius: inherit;
+    background: var(--color-accent);
+    animation: shipping-fill var(--transition-slow);
+  }
+
+  @keyframes shipping-fill {
+    from {
+      width: 0;
+    }
+    to {
+      width: var(--fill);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cart-shipping-progress-fill {
+      animation: none;
+    }
+  }
+{% endstylesheet %}
