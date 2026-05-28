@@ -1,23 +1,29 @@
 /*
-  <bundle-builder> — state + controls for the v3 "build your box" section.
+  <bundle-builder> — state + controls for the "build your box" section (Model B,
+  multi-box).
 
-  Owns ONE draft box: an ordered list of packs (one entry per pack), capped at
-  `capacity` (4). Each pack carries a stable session-local `key` so the
-  visualiser can keep its identity across add/remove. The newest pack is the
-  front of the visual stack. Order is add-order: box[0] oldest, box[last] newest.
+  Owns ONE flat, ordered list of packs (`this.packs` — one entry per pack), capped
+  at `maxBoxes × capacity`. The shopper mixes flavours freely via the per-flavour
+  steppers; the packs are auto-chunked into boxes of `capacity` (4) in ADD ORDER:
+  packs[0..3] = box 1, packs[4..7] = box 2, … The last chunk may be partial (the
+  in-progress box). Each pack carries a stable session-local `key` so the
+  visualiser can keep its identity across add/remove. Within a box the newest pack
+  is the front of the visual stack.
 
-  Unlike the old v2 store, there is NO multi-box draft, no discount tiers, and
-  no cross-page shared state — the box lives only here. When the box is full,
-  "Add to cart" POSTs the single box product to the NATIVE Shopify cart with the
-  chosen flavours as a line-item property, clears the draft, and fires
-  `cart:item-added` (+ a success toast) exactly like product-form.js. The native
-  <cart-drawer> / <cart-icon> pick that up — the bundle is never the cart.
+  "Add to cart" is gated on a VALID selection — at least one pack and the total
+  divisible by `capacity` (no half-built box). When valid, every complete box is
+  POSTed to the NATIVE Shopify cart as its own "Build Your Box" line item with the
+  chosen flavours as line-item properties; boxes with an identical flavour mix are
+  merged into one line with quantity N. It then clears the draft and fires
+  `cart:item-added` (+ a success toast) exactly like product-form.js — the native
+  <cart-drawer> / <cart-icon> pick that up (drawer does NOT auto-open). The bundle
+  is never the cart.
 
   ----------------------------------------------------------------------------
   Expected markup (produced by sections/bundle-builder.liquid):
 
     <bundle-builder
-      data-section-id  data-capacity="4"  data-box-variant-id
+      data-section-id  data-capacity="4"  data-max-boxes="6"  data-box-variant-id
       data-i18n-add  data-i18n-add-more  data-i18n-added  data-i18n-error>
 
       <script type="application/json" class="bundle-flavours">
@@ -29,24 +35,29 @@
           [data-qty="<id>"]                         (qty readout)
           [data-action="add"|"remove"][data-flavour-id]
       [data-add] > [data-add-label]                 (add-to-cart button)
+                 > [data-add-multiplier]            (× N boxes multiplier)
+      [data-hint]                                   (build-progress hint)
       [data-error]                                  (inline error, role=alert)
 
   ----------------------------------------------------------------------------
   Event contract — dispatched on `document`:
 
     'bundle:updated'  detail: {
-      box:      [{ key, id, image }, …],   // ordered, newest last
-      counts:   { [id]: qty },
-      filled:   number,
-      capacity: number,
-      isFull:   boolean
+      boxes:    [[{ key, id, image }, …], …],  // chunked, last may be partial
+      counts:   { [id]: qty },                 // totals across all packs
+      total:    number,                        // total packs
+      remainder:number,                        // packs in the in-progress box
+      completeBoxes: number,                   // full boxes
+      capacity: number,                        // packs per box (4)
+      maxBoxes: number,
+      isValid:  boolean                        // total > 0 && remainder === 0
     }
 
   Emitted on every mutation and on connect. <bundle-stage> renders from it.
   The store also answers 'bundle:request-state' by re-emitting — the handshake
   for <bundle-stage>, whose module may upgrade after this one.
 
-  localStorage: single key `frood.bundle.v3.<sectionId>` — stores flavour ids
+  localStorage: single key `frood.bundle.v4.<sectionId>` — stores flavour ids
   only (keys are ephemeral). Filtered to known flavours + capped on load.
 */
 
@@ -62,17 +73,20 @@ function toastThumb(url, size = 60) {
 class BundleBuilder extends HTMLElement {
   connectedCallback() {
     this.capacity = parseInt(this.dataset.capacity, 10) || 4;
+    this.maxBoxes = parseInt(this.dataset.maxBoxes, 10) || 4;
     this.boxVariantId = this.dataset.boxVariantId || null;
-    this.storageKey = `frood.bundle.v3.${this.dataset.sectionId || 'default'}`;
+    this.storageKey = `frood.bundle.v4.${this.dataset.sectionId || 'default'}`;
     this.keySeq = 0;
 
     this.flavours = this.parseFlavours();
-    this.box = this.loadDraft();
+    this.packs = this.loadDraft();
 
     this.addButton = this.querySelector('[data-add]');
     this.addLabel = this.querySelector('[data-add-label]');
+    this.addMultiplier = this.querySelector('[data-add-multiplier]');
     this.progressEl = this.querySelector('[data-progress]');
     this.progressFillEl = this.querySelector('[data-progress-fill]');
+    this.hintEl = this.querySelector('[data-hint]');
     this.errorEl = this.querySelector('[data-error]');
 
     this._onClick = (e) => this.handleClick(e);
@@ -91,6 +105,10 @@ class BundleBuilder extends HTMLElement {
   }
 
   // ---- Config / persistence --------------------------------------------
+
+  get cap() {
+    return this.maxBoxes * this.capacity;
+  }
 
   parseFlavours() {
     const map = {};
@@ -119,7 +137,7 @@ class BundleBuilder extends HTMLElement {
       if (!Array.isArray(ids)) return [];
       return ids
         .filter((id) => typeof id === 'string' && this.flavours[id])
-        .slice(0, this.capacity)
+        .slice(0, this.cap)
         .map((id) => ({ key: this.keySeq++, id }));
     } catch {
       return [];
@@ -128,7 +146,7 @@ class BundleBuilder extends HTMLElement {
 
   save() {
     try {
-      window.localStorage.setItem(this.storageKey, JSON.stringify(this.box.map((p) => p.id)));
+      window.localStorage.setItem(this.storageKey, JSON.stringify(this.packs.map((p) => p.id)));
     } catch {
       /* storage unavailable — non-fatal */
     }
@@ -136,34 +154,61 @@ class BundleBuilder extends HTMLElement {
 
   // ---- Derived ----------------------------------------------------------
 
-  get filled() {
-    return this.box.length;
+  get total() {
+    return this.packs.length;
   }
 
-  get isFull() {
-    return this.box.length >= this.capacity;
+  // Packs chunked into boxes of `capacity`, in add order. The last chunk may be
+  // partial (the in-progress box). Drives both the visualiser and the cart.
+  get boxes() {
+    const out = [];
+    for (let i = 0; i < this.packs.length; i += this.capacity) {
+      out.push(this.packs.slice(i, i + this.capacity));
+    }
+    return out;
+  }
+
+  get completeBoxes() {
+    return Math.floor(this.total / this.capacity);
+  }
+
+  // Packs sitting in the not-yet-full box (0 when the total divides cleanly).
+  get remainder() {
+    return this.total % this.capacity;
+  }
+
+  get isValid() {
+    return this.total > 0 && this.remainder === 0;
+  }
+
+  get atCap() {
+    return this.total >= this.cap;
+  }
+
+  countsFor(packs) {
+    const out = {};
+    for (const p of packs) out[p.id] = (out[p.id] || 0) + 1;
+    return out;
   }
 
   get counts() {
-    const out = {};
-    for (const p of this.box) out[p.id] = (out[p.id] || 0) + 1;
-    return out;
+    return this.countsFor(this.packs);
   }
 
   // ---- Mutations --------------------------------------------------------
 
   add(id) {
     if (!this.flavours[id]) return;
-    if (this.box.length >= this.capacity) return;
-    this.box.push({ key: this.keySeq++, id });
+    if (this.atCap) return;
+    this.packs.push({ key: this.keySeq++, id });
     this.commit();
   }
 
   // Removes the LAST-added pack of this flavour — drives the per-flavour stepper.
   remove(id) {
-    for (let i = this.box.length - 1; i >= 0; i--) {
-      if (this.box[i].id === id) {
-        this.box.splice(i, 1);
+    for (let i = this.packs.length - 1; i >= 0; i--) {
+      if (this.packs[i].id === id) {
+        this.packs.splice(i, 1);
         break;
       }
     }
@@ -180,15 +225,20 @@ class BundleBuilder extends HTMLElement {
     document.dispatchEvent(
       new CustomEvent('bundle:updated', {
         detail: {
-          box: this.box.map((p) => ({
-            key: p.key,
-            id: p.id,
-            image: this.flavours[p.id]?.image || ''
-          })),
+          boxes: this.boxes.map((box) =>
+            box.map((p) => ({
+              key: p.key,
+              id: p.id,
+              image: this.flavours[p.id]?.image || ''
+            }))
+          ),
           counts: this.counts,
-          filled: this.filled,
+          total: this.total,
+          remainder: this.remainder,
+          completeBoxes: this.completeBoxes,
           capacity: this.capacity,
-          isFull: this.isFull
+          maxBoxes: this.maxBoxes,
+          isValid: this.isValid
         }
       })
     );
@@ -204,14 +254,14 @@ class BundleBuilder extends HTMLElement {
       else if (action === 'remove') this.remove(flavourId);
       return;
     }
-    if (e.target.closest('[data-add]') && this.isFull) this.addToCart();
+    if (e.target.closest('[data-add]') && this.isValid) this.addToCart();
   }
 
   // ---- Rendering --------------------------------------------------------
 
   render() {
     const counts = this.counts;
-    const atCap = this.isFull;
+    const atCap = this.atCap;
 
     this.querySelectorAll('[data-flavour-card]').forEach((card) => {
       const id = card.dataset.flavourId;
@@ -225,22 +275,45 @@ class BundleBuilder extends HTMLElement {
       if (removeBtn) removeBtn.disabled = qty === 0;
     });
 
-    if (this.addButton) this.addButton.disabled = !atCap || !this.boxVariantId;
-    if (this.addLabel) {
-      this.addLabel.textContent = this.dataset.i18nAdd || 'Add to cart';
+    if (this.addButton) this.addButton.disabled = !this.isValid || !this.boxVariantId;
+    if (this.addLabel) this.addLabel.textContent = this.dataset.i18nAdd || 'Add to cart';
+
+    // × N multiplier next to the unit price — only when the order is a valid
+    // multi-box selection (no JS currency formatting; cart shows the real total).
+    if (this.addMultiplier) {
+      const show = this.isValid && this.completeBoxes > 1;
+      this.addMultiplier.textContent = show ? `× ${this.completeBoxes}` : '';
+      this.addMultiplier.hidden = !show;
     }
+
+    // Hint nudges the shopper to finish the in-progress box.
+    if (this.hintEl) {
+      if (this.remainder > 0) {
+        const tmpl = this.dataset.i18nAddMore || 'Add {count} more';
+        this.hintEl.textContent = tmpl.replace('{count}', String(this.capacity - this.remainder));
+      } else {
+        this.hintEl.textContent = '';
+      }
+    }
+
+    // Progress bar tracks the in-progress box (full + "complete" when valid).
     if (this.progressFillEl) {
-      const pct = Math.min(100, (this.filled / this.capacity) * 100);
+      const pct = this.isValid ? 100 : (this.remainder / this.capacity) * 100;
       this.progressFillEl.style.width = `${pct}%`;
     }
     if (this.progressEl) {
-      this.progressEl.setAttribute('aria-valuenow', String(this.filled));
+      this.progressEl.classList.toggle('is-complete', this.isValid);
+      this.progressEl.setAttribute(
+        'aria-valuenow',
+        String(this.isValid ? this.capacity : this.remainder)
+      );
     }
   }
 
   // ---- Add to cart (native Shopify cart) --------------------------------
 
-  // Builds the line-item properties for the box, ordered by the flavour list:
+  // Builds the line-item properties for one box from its per-flavour counts,
+  // ordered by the flavour list:
   //
   //   • One VISIBLE entry per flavour (key = flavour name, value = "× N") so the
   //     cart drawer, cart page, and native checkout all show a readable
@@ -249,8 +322,7 @@ class BundleBuilder extends HTMLElement {
   //     keep it off the customer-facing cart/checkout while still saving it on
   //     the order. It carries handle + name + qty + sku per flavour as JSON,
   //     the machine-readable payload for fulfilment / reconstruction.
-  buildProperties() {
-    const counts = this.counts;
+  buildProperties(counts) {
     const properties = {};
     const structured = [];
     for (const id of Object.keys(this.flavours)) {
@@ -264,17 +336,35 @@ class BundleBuilder extends HTMLElement {
     return properties;
   }
 
+  // One cart item per DISTINCT box composition; identical mixes merge to qty N.
+  buildItems() {
+    const variantId = parseInt(this.boxVariantId, 10);
+    const merged = new Map();
+    for (const box of this.boxes) {
+      if (box.length !== this.capacity) continue; // skip a partial box (shouldn't exist when valid)
+      const counts = this.countsFor(box);
+      const sig = JSON.stringify(
+        Object.keys(counts)
+          .sort()
+          .map((id) => [id, counts[id]])
+      );
+      const existing = merged.get(sig);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        merged.set(sig, { id: variantId, quantity: 1, properties: this.buildProperties(counts) });
+      }
+    }
+    return [...merged.values()];
+  }
+
   async addToCart() {
-    if (!this.isFull || !this.boxVariantId) return;
+    if (!this.isValid || !this.boxVariantId) return;
     this.clearError();
     this.addButton.classList.add('is-loading');
     this.addButton.disabled = true;
 
-    const item = {
-      id: parseInt(this.boxVariantId, 10),
-      quantity: 1,
-      properties: this.buildProperties()
-    };
+    const items = this.buildItems();
 
     try {
       const response = await fetch('/cart/add.js', {
@@ -283,7 +373,7 @@ class BundleBuilder extends HTMLElement {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
         },
-        body: JSON.stringify({ items: [item], sections: ['cart-drawer'] })
+        body: JSON.stringify({ items, sections: ['cart-drawer'] })
       });
 
       if (!response.ok) {
@@ -293,9 +383,9 @@ class BundleBuilder extends HTMLElement {
 
       const data = await response.json();
 
-      // Box is now in the native cart — drop the local draft so returning to
-      // the page doesn't re-add it.
-      this.box = [];
+      // Boxes are now in the native cart — drop the local draft so returning to
+      // the page doesn't re-add them.
+      this.packs = [];
       this.save();
       this.render();
       this.emit();
@@ -323,7 +413,7 @@ class BundleBuilder extends HTMLElement {
       this.showError(error.message);
     } finally {
       this.addButton.classList.remove('is-loading');
-      this.addButton.disabled = !this.isFull || !this.boxVariantId;
+      this.addButton.disabled = !this.isValid || !this.boxVariantId;
     }
   }
 

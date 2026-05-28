@@ -81,28 +81,36 @@ If field handles differ in the admin (Shopify lowercases + snake_cases field nam
 
 ## Bundle Builder Section
 
-`sections/bundle-builder.liquid` — an interactive "build your box" section (v3, box-first), ported
-from the Svelte prototype's `/v3`. The shopper fills ONE fixed box of **4 packs** (capacity locked,
-not a merchant setting) by mixing flavours, then adds the whole box to the **native Shopify cart** as
-a SINGLE line item at a flat price. There are **no discount tiers** and **no multi-box draft** — that
-was the old pouch-first v2, now fully removed (`bundle-store.js`, `bundle-cart-view.js`,
-`snippets/bundle-cart.liquid`, `box.glb`, `pouch.glb`, `box.webp` all deleted).
+`sections/bundle-builder.liquid` — an interactive "build your box" section (Model B, multi-box). The
+shopper mixes flavours freely via per-flavour steppers; the packs are auto-chunked into boxes of **4**
+(per-box capacity locked, not a merchant setting) in **add order**. The total must be a **multiple of
+4** (no half-built box) before "Add to cart" unlocks. Each full box is added to the **native Shopify
+cart** as its own "Build Your Box" line item at the flat box price — **boxes with an identical flavour
+mix merge to one line with quantity N**. There are **no discount tiers**. A `max_boxes` section
+setting (1–4, default 4) caps how many boxes can be built at once; capacity × max_boxes bounds the draft.
+The old pouch-first v2 (`bundle-store.js`, `bundle-cart-view.js`, `snippets/bundle-cart.liquid`,
+`box.glb`, `pouch.glb`, `box.webp`) is fully removed.
 
-**State is an ordered list:** `<bundle-builder>` holds `box: [{ key, id }, …]` — one entry per pack,
-capped at capacity, order-sensitive (`box[0]` oldest, `box[last]` newest). `id` is the flavour's
+**State is a flat ordered list:** `<bundle-builder>` holds `packs: [{ key, id }, …]` — one entry per
+pack, capped at `maxBoxes × capacity`, order-sensitive (`packs[0]` oldest). `id` is the flavour's
 metaobject handle; `key` is a stable session-local id so the visualiser keeps each pack's identity
-across add/remove. The newest pack renders at the FRONT of the visual stack. Per-flavour counts are
-derived for the steppers and the line-item property.
+across add/remove (incl. when a pack shifts box on removal). The `boxes` getter chunks `packs` into
+groups of 4 (last group may be partial = the in-progress box); the SAME chunking drives both the
+visualiser and the cart. Within each box the newest pack renders at the FRONT of the stack. Per-flavour
+counts are derived for the steppers; per-box counts build each line-item's properties.
 
 **Files:**
 
 - `sections/bundle-builder.liquid` — markup, co-located stylesheet, schema (box `product` picker,
-  header text, optional `box_back_image`/`box_front_image` overrides). No blocks.
-- `assets/bundle-builder.js` — `<bundle-builder>` web component: owns the ordered pack list,
-  localStorage persistence (`frood.bundle.v3.<sectionId>` — flavour ids only), steppers, and native
-  add-to-cart. Header comment documents the full expected-markup + event contract.
+  `max_boxes` range, header text, optional `box_back_image`/`box_front_image` overrides). No blocks.
+  The visualiser markup is a `[data-stage]` track + a `<template data-box-template>` the stage clones.
+- `assets/bundle-builder.js` — `<bundle-builder>` web component: owns the flat pack list,
+  localStorage persistence (`frood.bundle.v4.<sectionId>` — flavour ids only), steppers, the
+  divisible-by-4 gate, and native multi-item add-to-cart. Header comment documents the full
+  expected-markup + event contract.
 - `assets/bundle-stage.js` — `<bundle-stage>` web component: pure 2D PNG-compositing depth-stack
-  visualiser. **No three.js.** Reconciles a keyed `.bundle-slot` per pack with enter/exit transitions.
+  visualiser. **No three.js.** Renders one scene per box and reconciles keyed `.bundle-slot`s across
+  all scenes with enter/exit transitions.
 - `assets/box-back.png` + `assets/box-front.png` — committed placeholder box-layer renders (heavy —
   replace with optimised Blender exports). Overridable per-section via the image-picker settings.
 
@@ -113,16 +121,20 @@ be re-wired later. Don't remove them unless you're dropping 3D for good.
 
 **Two-component split:** `<bundle-builder>` (state) and `<bundle-stage>` (visual) are standalone per
 theme convention — they communicate only via `bundle:updated` on `document`, detail
-`{ box: [{ key, id, image }, …], counts, filled, capacity, isFull }`. The builder resolves each pack's
-image (from the flavour metaobject, via the `.bundle-flavours` JSON blob) into the event, so the stage
-needs no catalogue of its own. On connect the stage dispatches `bundle:request-state` and the builder
-re-emits — the handshake covering module-upgrade order.
+`{ boxes: [[{ key, id, image }, …], …], counts, total, remainder, completeBoxes, capacity, maxBoxes, isValid }`.
+The builder resolves each pack's image (from the flavour metaobject, via the `.bundle-flavours` JSON
+blob) into the event, so the stage needs no catalogue of its own. On connect the stage dispatches
+`bundle:request-state` and the builder re-emits — the handshake covering module-upgrade order.
 
-**Visualiser (PNG depth stack):** back→front the stage layers `box-back` (z 0), the packs (each
-`z = 100 − depth`), and `box-front` (z 200, occludes the pack bases). A pack at `depth` is the same
-full-frame render translated up-left by `depth × STACK.offset` (`STACK = { offsetX: -9.5, offsetY: -4,
-scaleStep: 0, rotateStep: 0 }`) — the renders are authored in-scale so it's translate-only by default.
-Append `?bundle-calibrate` to the URL for a dev slider overlay to retune `STACK` against real renders.
+**Visualiser (PNG depth stack, multi-box):** the stage renders **one box scene per box** (at least one,
+even when empty) in a wrapping row, each scene cloned from a server-rendered `<template data-box-template>`
+so the box-layer image URLs/dims stay in Liquid. Within a scene, back→front it layers `box-back` (z 0),
+the packs (each `z = 100 − depth`), and `box-front` (z 200, occludes the pack bases). A pack at `depth`
+is the same full-frame render translated up-left by `depth × STACK.offset`
+(`STACK = { offsetX: -9.5, offsetY: 0, scaleStep: 0, rotateStep: 0 }`) — renders are authored in-scale so
+it's translate-only by default. Pack slots are reconciled **by key across all scenes**, so a pack that
+shifts box (e.g. a middle pack removed) keeps its identity and moves scene. Append `?bundle-calibrate`
+to the URL for a dev slider overlay to retune `STACK`.
 
 **Flavours are curated per box product** via its `custom.included_flavours` metafield — a list of
 `flavour` metaobjects. The section reads `box_product.metafields.custom.included_flavours.value` (a
@@ -133,19 +145,24 @@ and `image` (file reference, image) — the pouch render for the stack. Missing 
 gracefully (`onerror`). The box capacity (4) is independent of how many flavours are included; no box
 product (or an empty metafield) → no flavours render and the add button stays disabled.
 
-**The box is a single product + flavour properties:** the section's `product` setting is the flat-priced
-"Build Your Box" product. When the box is full, the builder POSTs that product's variant to
-`/cart/add.js` with line-item properties built by `buildProperties()` — **one visible entry per flavour**
+**Each box is a single product + flavour properties:** the section's `product` setting is the flat-priced
+"Build Your Box" product. When the selection is valid (divisible by 4), the builder POSTs **one item per
+full box** to `/cart/add.js` in a single call. Each item's line-item properties are built by
+`buildProperties(counts)` from that box's per-flavour counts — **one visible entry per flavour**
 (key = flavour name, value = `× N`, e.g. `{ "Mexi Fiesta Blend": "× 2", "Golden Curry": "× 2" }`) so the
 cart drawer, cart page, and native checkout all show a readable per-flavour list, **plus a hidden
 `_bundle` entry** (leading `_` → saved on the order but suppressed from the customer cart/checkout)
 carrying `[{ handle, name, qty, sku }, …]` as JSON for fulfilment / reconstruction. The flavour `sku`
 comes from each flavour metaobject's `product_reference` variant, surfaced in the `.bundle-flavours`
-JSON blob. After the POST it clears the local draft, dispatches `cart:item-added` with the bundled
-section HTML, and fires a success `toast:show` — the same contract as `product-form.js` (the native
-`<cart-drawer>` refreshes but does **not** auto-open; it opens on cart-icon click). The bundle is never
-the cart — flavours have no SKU/inventory of their own; the box line carries them as properties only.
-Identical boxes merge to one line (quantity 2); different mixes stay separate lines.
+JSON blob. **`buildItems()` merges boxes with an identical mix client-side** (signature = sorted
+flavour counts) into one item with `quantity: N` before the POST. After the POST it clears the local
+draft, dispatches `cart:item-added` with the bundled section HTML, and fires a success `toast:show` —
+the same contract as `product-form.js` (the native `<cart-drawer>` refreshes but does **not** auto-open;
+it opens on cart-icon click). The bundle is never the cart — flavours have no SKU/inventory of their
+own; each box line carries them as properties only. The chunking is **add order**: with a free pack
+pool the shopper picks totals, not which physical box a pack lands in, so any valid partition honouring
+the totals is fine — `bundle-line-contents` renders each line (= one box) independently and needs no
+change.
 
 **Cart rendering — the bundle line is differentiated from normal line items.** Both `cart-item.liquid`
 (cart page) and `cart-drawer-item.liquid` (drawer) detect a bundle via its hidden `_bundle` property. A

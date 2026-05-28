@@ -1,32 +1,36 @@
 {%- comment -%}
-  Bundle Builder — interactive "build your box" section (v3, box-first).
+  Bundle Builder — interactive "build your box" section (Model B, multi-box).
 
-  The shopper fills ONE fixed box of BOX_CAPACITY (4) packs by mixing flavours,
-  then adds the whole box to the native Shopify cart as a SINGLE line item at a
-  flat price. There are no discount tiers and no multi-box draft — that was the
-  old pouch-first v2 model.
+  The shopper mixes flavours freely via per-flavour steppers. The packs are
+  auto-chunked into boxes of BOX_CAPACITY (4) in add order; the total must be a
+  multiple of 4 (no half-built box) before "Add to cart" unlocks. Each full box
+  is added to the native Shopify cart as its own "Build Your Box" line item at
+  the flat box price — boxes with an identical flavour mix merge into one line
+  with quantity N. No discount tiers.
 
   Two standalone web components, communicating only via `bundle:updated` on
   `document` (theme convention — see conventions/sections.md):
 
     <bundle-builder> (assets/bundle-builder.js)
-      Owns the draft box (ordered list of packs, capped at capacity) + its
-      localStorage persistence, the per-flavour steppers, and "Add to cart".
-      Reads the .bundle-flavours JSON blob below for flavour name/notes/image.
+      Owns the draft (flat ordered list of packs, capped at maxBoxes × capacity)
+      + its localStorage persistence, the per-flavour steppers, the divisible-by-4
+      gate, and "Add to cart". Reads the .bundle-flavours JSON blob below for
+      flavour name/notes/image.
 
     <bundle-stage> (assets/bundle-stage.js)
       Pure 2D PNG-compositing depth-stack visualiser (NO three.js). Listens for
-      `bundle:updated` and stacks the box-back layer, the packs (newest at the
-      front), and the box-front lip. Box-layer <img>s are server-rendered; pack
-      images ride along in the event detail.
+      `bundle:updated` and renders one box scene per box (last may be partial),
+      each stacking the box-back layer, the packs (newest at the front), and the
+      box-front lip. Box-layer <img>s are cloned from a server-rendered
+      <template>; pack images ride along in the event detail.
 
   ----------------------------------------------------------------------------
   DATA MODEL
 
   The box itself is ONE product (the "Build Your Box" product, priced at the
   flat box price) chosen in the section settings. On "Add to cart" the section
-  POSTs that product's variant to /cart/add.js with the chosen flavours as a
-  line-item property — the native cart treats it as any other line item.
+  POSTs one item per full box to /cart/add.js (with the box's flavours as
+  line-item properties) — the native cart treats each as any other line item.
 
   Flavours are CURATED PER BOX PRODUCT: the box product's
   `custom.included_flavours` metafield (a list of `flavour` metaobjects) sets
@@ -45,8 +49,9 @@
   settings; if unset they fall back to the committed placeholder theme assets
   (assets/box-back.png / box-front.png) pending the real Blender renders.
 
-  Box capacity is locked at 4 (not a merchant setting) — the visualiser stack
-  offsets are tuned for a 4-pack box.
+  Per-box capacity is locked at 4 (not a merchant setting) — the visualiser stack
+  offsets are tuned for a 4-pack box. The number of boxes a shopper can build is
+  capped by the `max_boxes` section setting (1–4, default 4).
 {%- endcomment -%}
 
 {%- assign capacity = 4 -%}
@@ -85,8 +90,10 @@
   class="bundle-builder{% if section.settings.full_screen %} full-screen{% endif %}"
   data-section-id="{{ section.id }}"
   data-capacity="{{ capacity }}"
+  data-max-boxes="{{ section.settings.max_boxes | default: 4 }}"
   {% if box_variant %}data-box-variant-id="{{ box_variant.id }}"{% endif %}
   data-i18n-add="{{ 'sections.bundle_builder.add_to_cart' | t }}"
+  data-i18n-add-more="{{ 'sections.bundle_builder.add_more' | t }}"
   data-i18n-added="{{ 'sections.bundle_builder.added' | t: product: box_product.title }}"
   data-i18n-error="{{ 'sections.bundle_builder.checkout_error' | t }}"
 >
@@ -183,6 +190,7 @@
           <span class="bundle-add-inner">
             <span class="bundle-add-label" data-add-label>{{ 'sections.bundle_builder.add_to_cart' | t }}</span>
             <span class="bundle-add-end">
+              <span class="bundle-add-multiplier" data-add-multiplier hidden></span>
               {%- if box_variant -%}
                 <span class="bundle-add-price">{{ box_variant.price | money }}</span>
               {%- endif -%}
@@ -190,6 +198,8 @@
             </span>
           </span>
         </button>
+
+        <p class="bundle-hint" data-hint aria-live="polite"></p>
 
         <div class="bundle-progress" data-progress role="progressbar" aria-valuemin="0" aria-valuemax="{{ capacity }}" aria-valuenow="0">
           <div class="bundle-progress-fill" data-progress-fill></div>
@@ -201,10 +211,17 @@
 
     <div class="bundle-visualiser">
       <bundle-stage class="bundle-stage" data-capacity="{{ capacity }}">
-        <div class="bundle-scene" data-scene>
-          <img class="bundle-layer bundle-box-back" src="{{ box_back_url }}" alt="" loading="lazy" width="{{ box_back_w }}" height="{{ box_back_h }}" data-box-back-img>
-          <img class="bundle-layer bundle-box-front" src="{{ box_front_url }}" alt="" loading="lazy" width="{{ box_front_w }}" height="{{ box_front_h }}" data-box-front-img>
-        </div>
+        <div class="bundle-stage-track" data-stage></div>
+        {%- comment -%}
+          One box scene per box, cloned from this template by bundle-stage.js so
+          the box-layer image URLs / dimensions stay server-rendered here.
+        {%- endcomment -%}
+        <template data-box-template>
+          <div class="bundle-scene" data-scene>
+            <img class="bundle-layer bundle-box-back" src="{{ box_back_url }}" alt="" loading="lazy" width="{{ box_back_w }}" height="{{ box_back_h }}">
+            <img class="bundle-layer bundle-box-front" src="{{ box_front_url }}" alt="" loading="lazy" width="{{ box_front_w }}" height="{{ box_front_h }}">
+          </div>
+        </template>
       </bundle-stage>
     </div>
   </div>
@@ -417,10 +434,26 @@
     gap: var(--spacing-xs);
   }
 
-  /* Progress bar — thin track + fill that grows to capacity. Anchored to the
-     panel's outer left/right/bottom edges so it sits as a flush bar on the
-     container, ignoring the panel's inner padding. The fill width is set
-     inline by bundle-builder.js render() from filled / capacity. */
+  /* "× N" boxes multiplier next to the unit price (shown by JS only when the
+     order is a valid multi-box selection). */
+  .bundle-add-multiplier[hidden] {
+    display: none;
+  }
+
+  /* Build hint — nudges the shopper to finish the in-progress box. Reserves a
+     line so the footer doesn't jump as the text toggles on/off. */
+  .bundle-hint {
+    margin: 0;
+    min-height: 1.2em;
+    font-size: var(--type-mini-size);
+    color: var(--color-text-accent);
+  }
+
+  /* Progress bar — thin track + fill that tracks the IN-PROGRESS box (the
+     partial last box), so it fills 0→100% per box. Anchored to the panel's
+     outer left/right/bottom edges so it sits as a flush bar on the container,
+     ignoring the panel's inner padding. The fill width is set inline by
+     bundle-builder.js render() from remainder / capacity. */
   .bundle-progress {
     position: absolute;
     left: 0;
@@ -436,6 +469,12 @@
     height: 100%;
     background-color: var(--color-text);
     transition: width var(--transition-slow);
+  }
+
+  /* Valid selection (every box full) — fill is pinned to 100% and shifts to the
+     brand accent to signal "ready to add". */
+  .bundle-progress.is-complete .bundle-progress-fill {
+    background-color: var(--color-accent);
   }
 
   /* Visualiser */
@@ -457,13 +496,42 @@
     isolation: isolate;
   }
 
+  /* Grid of box scenes — one per box in the draft. A fixed 2-column grid (rather
+     than flex-wrap) keeps every box the SAME size no matter which row it lands
+     on; flex-grow would let a lone wrapped box swell to fill its row. */
+  .bundle-stage-track {
+    --box-max: 300px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    justify-items: center;
+    gap: var(--spacing-s);
+    width: 100%;
+  }
+
   /* Square frame matching the authoring render. overflow visible so packs
      shifted up-left in the stack aren't clipped. */
   .bundle-scene {
     position: relative;
     width: 100%;
+    max-width: var(--box-max);
     aspect-ratio: 1 / 1;
     overflow: visible;
+  }
+
+  /* A lone box spans both columns and gets more room (hero when building one). */
+  .bundle-scene:only-child {
+    grid-column: 1 / -1;
+    max-width: 460px;
+  }
+
+  /* Exactly three boxes: center the orphaned third under the gap while holding
+     it to the same size as the two above it (its grid cell width, capped to the
+     per-box max). */
+  .bundle-stage-track:has(.bundle-scene:nth-child(3):last-child) .bundle-scene:nth-child(3) {
+    grid-column: 1 / -1;
+    justify-self: center;
+    max-width: min(var(--box-max), calc((100% - var(--spacing-s)) / 2));
   }
 
   .bundle-layer,
@@ -536,9 +604,14 @@
       max-width: none;
     }
 
-    .bundle-stage {
-      max-width: 600px;
-      margin-inline: auto;
+    /* Roomier box scenes on desktop, where the visualiser has the width. Bumping
+       --box-max flows through to the per-box cap and the three-box orphan rule. */
+    .bundle-stage-track {
+      --box-max: 340px;
+    }
+
+    .bundle-scene:only-child {
+      max-width: 560px;
     }
 
     /* Full-screen toggle (in section settings): adds extra vertical breathing
@@ -615,7 +688,17 @@
     },
     {
       "type": "paragraph",
-      "content": "Flavours come from this product's 'Included flavours' metafield (custom.included_flavours) — a list of flavour metaobjects. Reorder there to reorder the cards. Each flavour needs a name, optional attributes, and an image. The box always holds 4 packs."
+      "content": "Flavours come from this product's 'Included flavours' metafield (custom.included_flavours) — a list of flavour metaobjects. Reorder there to reorder the cards. Each flavour needs a name, optional attributes, and an image. Each box always holds 4 packs."
+    },
+    {
+      "type": "range",
+      "id": "max_boxes",
+      "label": "Maximum boxes",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 4,
+      "info": "How many 4-pack boxes a shopper can build in one go. The total packs must be a multiple of 4 before they can add to cart; each full box is added as its own line item (identical mixes merge to one line)."
     },
     {
       "type": "header",
