@@ -46,6 +46,20 @@
             "question": "Will Frood pouches keep me fuller for longer?",
             "answer": "<p>Frood pouches are made with a blend of plant-based ingredients including vegetables, fibres and, in some recipes, protein sources such as faba bean protein or wholegrain oats. These nutrients can help support satiety (feeling fuller for longer) as part of a balanced diet.</p><p>Frood recipes also provide a good source of fibre (typically around 12–17g per 100g in the dry blend), which can further contribute to a feeling of fullness.</p><p>As with all foods, how filling a meal is will depend on portion size and what you prepare it with.</p>"
           }
+        },
+        "question_jddaAQ": {
+          "type": "question",
+          "settings": {
+            "question": "Is Frood suitable for a low salt diet?",
+            "answer": "<p>Frood products are made with mindful levels of salt, but whether they are suitable for a low salt diet depends on your specific dietary needs. We recommend checking the nutritional information on each pouch and consulting a healthcare professional if you are following a medically prescribed low sodium diet.</p>"
+          }
+        },
+        "question_aQpENF": {
+          "type": "question",
+          "settings": {
+            "question": "Where are Frood products manufactured?",
+            "answer": "<p>All Frood products are manufactured in the United Kingdom.</p>"
+          }
         }
       },
       "block_order": [
@@ -53,7 +67,9 @@
         "question_arQhrK",
         "question_eTfDHz",
         "question_DBFhB3",
-        "question_UmnnqP"
+        "question_UmnnqP",
+        "question_jddaAQ",
+        "question_aQpENF"
       ],
       "settings": {
         "eyebrow": "FAQ",
