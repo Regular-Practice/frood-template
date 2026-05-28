@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Your Box — fulfilment approaches</title>
+  <style>
+    :root {
+      --text: #36262B;
+      --text-accent: #979193;
+      --bg: #FFFEF9;
+      --bg-dark: #DFDCD4;
+      --accent: #FFE74B;
+      --accent-light: #F7F0C1;
+      --border: rgba(54, 38, 43, 0.12);
+      --code-bg: #2B2226;
+      --code-text: #F2EEE6;
+      --ok: #16a34a;
+      --warn: #b8860b;
+      --bad: #dc2626;
+      --radius: 4px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 96px;
+    }
+
+    header.page { margin-bottom: 40px; }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      color: var(--text-accent);
+      margin: 0 0 8px;
+    }
+
+    h1 { font-size: 34px; margin: 0 0 12px; font-weight: 600; }
+
+    .lede { max-width: 72ch; margin: 0; }
+    .lede strong { background: var(--accent-light); padding: 0 3px; }
+
+    /* Summary table */
+    .summary {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 32px 0 56px;
+      font-size: 14px;
+    }
+    .summary th, .summary td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .summary thead th {
+      background: var(--bg-dark);
+      font-weight: 600;
+      border-bottom: 2px solid var(--text);
+    }
+    .summary .model-cell {
+      font-weight: 600;
+      background: #fff;
+      border-right: 1px solid var(--border);
+      width: 150px;
+    }
+    .summary .model-cell small { display:block; font-weight:400; color:var(--text-accent); margin-top:4px; }
+    .summary td.appcol { font-weight: 600; }
+    .summary tr.fam-b td { border-top: 2px solid var(--text); }
+
+    .pill {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .pill.ok   { background: #e3f5e9; color: var(--ok); }
+    .pill.warn { background: #fbf2da; color: var(--warn); }
+    .pill.bad  { background: #fbe0e0; color: var(--bad); }
+    .pill.none { background: var(--bg-dark); color: var(--text-accent); }
+
+    /* Family grouping */
+    .family {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 44px;
+      overflow: hidden;
+      background: var(--bg-dark);
+    }
+    .family-head { padding: 22px 24px 20px; }
+    .family-tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--text);
+      color: var(--bg);
+      padding: 3px 10px;
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+    }
+    .family-head h2 { font-size: 23px; margin: 0 0 8px; font-weight: 600; }
+    .family-head p { margin: 0 0 4px; max-width: 80ch; font-size: 14.5px; }
+    .family-gap {
+      margin-top: 12px !important;
+      padding: 10px 14px;
+      background: #fff;
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 14px;
+    }
+
+    /* Cards */
+    .card {
+      background: #fff;
+      margin: 0 16px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      scroll-margin-top: 24px;
+    }
+    .card.enhancement { border-color: var(--accent); border-width: 1.5px; }
+
+    .connector {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      padding: 4px 0 14px;
+    }
+    .connector span {
+      display:inline-block;
+      background: var(--accent);
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 16px 22px;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+    }
+    .card.enhancement .card-head { background: var(--accent-light); }
+    .card-num {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      background: var(--accent);
+      border-radius: var(--radius);
+      padding: 2px 9px;
+    }
+    .card-head h3.card-title {
+      font-size: 18px;
+      margin: 0;
+      font-weight: 600;
+      flex: 1 1 auto;
+    }
+    .builds-on {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--text);
+      border-radius: 999px;
+      padding: 2px 9px;
+    }
+    .card-head .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .card-body { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    @media (max-width: 820px) { .card-body { grid-template-columns: 1fr; } }
+
+    .col-json { padding: 22px 24px; border-right: 1px solid var(--border); }
+    @media (max-width: 820px) {
+      .col-json { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+    .col-setup { padding: 22px 24px; }
+
+    .col-label {
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-accent);
+      margin: 0 0 10px;
+    }
+
+    pre {
+      margin: 0;
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 16px;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      font-size: 12px;
+      line-height: 1.55;
+      font-family: "SF Mono", "Fira Code", Menlo, Consolas, monospace;
+      tab-size: 2;
+    }
+    pre .c { color: #8b8088; }
+    pre b  { color: var(--accent); font-weight: 600; }
+
+    .json-note {
+      margin: 12px 0 0;
+      font-size: 13px;
+      padding: 10px 12px;
+      background: var(--accent-light);
+      border-radius: var(--radius);
+    }
+    .json-note.delta { background: #e3f5e9; border-left: 3px solid var(--ok); border-radius: 0 var(--radius) var(--radius) 0; }
+
+    .req { margin: 0 0 18px; }
+    .req:last-child { margin-bottom: 0; }
+    .req h4 { font-size: 14px; margin: 0 0 6px; font-weight: 600; }
+    .req h4 .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 7px;
+      vertical-align: middle;
+    }
+    .dot.shopify { background: #95BF47; }
+    .dot.theme   { background: #36262B; }
+    .dot.app     { background: var(--accent); border: 1px solid var(--text); }
+    .req ul { margin: 0; padding-left: 18px; font-size: 13.5px; }
+    .req li { margin: 3px 0; }
+    .req li.add { color: var(--ok); font-weight: 600; }
+    .req .nope { color: var(--text-accent); font-style: italic; padding-left: 18px; font-size: 13.5px; }
+    .req .same { color: var(--text-accent); padding-left: 18px; font-size: 13.5px; }
+
+    .verdict {
+      margin: 0;
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13.5px;
+    }
+    .verdict b { font-weight: 600; }
+
+    .ruledout {
+      border: 1px dashed var(--text-accent);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      opacity: 0.8;
+      margin-bottom: 32px;
+    }
+    .ruledout h3 { margin: 0 0 6px; font-size: 17px; }
+    .ruledout p { margin: 0; font-size: 14px; }
+
+    footer.page {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-accent);
+    }
+    code.inline {
+      background: var(--bg-dark);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page">
+    <p class="eyebrow">Frood · Build Your Box</p>
+    <h1>Bundle fulfilment approaches</h1>
+    <p class="lede">There are really <strong>two data models</strong>, and each has an optional app that closes its one weakness. <strong>Model A</strong> sells the box as a single product (flat price, clean checkout — but no component stock); an app can bolt on component stock. <strong>Model B</strong> adds each pouch as its own line (native component stock — but no flat price); an app can bolt on the bundle price. Example throughout: a box of <strong>2× Mexi Fiesta, 1× Smoky Maple, 1× Classic Original</strong>. Singles £7.50; box sells flat at £24.00 (a £6 / 20% saving).</p>
+  </header>
+
+  <table class="summary">
+    <thead>
+      <tr>
+        <th>Data model</th>
+        <th>Approach</th>
+        <th>Component stock</th>
+        <th>Flat / bundle price</th>
+        <th>Checkout</th>
+        <th>Custom app</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="model-cell" rowspan="2">A · Box is one product <small>flat price &amp; clean checkout, but no component stock</small></td>
+        <td><b>1</b> · Box + properties <em>(live today)</em></td>
+        <td><span class="pill bad">Box SKU only</span></td>
+        <td><span class="pill ok">Native</span></td>
+        <td><span class="pill ok">One line</span></td>
+        <td><span class="pill none">None</span></td>
+      </tr>
+      <tr>
+        <td><b>4</b> · &nbsp;↳ + inventory-sync app</td>
+        <td><span class="pill warn">Post-hoc, oversell risk</span></td>
+        <td><span class="pill ok">Native</span></td>
+        <td><span class="pill ok">One line</span></td>
+        <td class="appcol"><span class="pill warn">Webhook app</span></td>
+      </tr>
+      <tr class="fam-b">
+        <td class="model-cell" rowspan="2">B · Each pouch a line <small>native component stock, but priced as sum of singles</small></td>
+        <td><b>2</b> · Individual lines (theme only)</td>
+        <td><span class="pill ok">Native, real-time</span></td>
+        <td><span class="pill warn">Sum of singles</span></td>
+        <td><span class="pill warn">4 lines</span></td>
+        <td><span class="pill none">None</span></td>
+      </tr>
+      <tr>
+        <td><b>3</b> · &nbsp;↳ + discount-function app</td>
+        <td><span class="pill ok">Native, real-time</span></td>
+        <td><span class="pill ok">Enforced by app</span></td>
+        <td><span class="pill warn">4 lines + discount</span></td>
+        <td class="appcol"><span class="pill warn">Discount fn</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ===================== FAMILY A ===================== -->
+  <section class="family" id="familyA">
+    <div class="family-head">
+      <span class="family-tag">Model A</span>
+      <h2>The box is one Shopify product</h2>
+      <p>The box is sold as a single product/line; the chosen flavours ride along as line-item properties. Flat price and a clean one-line checkout come for free.</p>
+      <p class="family-gap"><b>The gap:</b> Shopify only knows the box SKU, so the single packs are never decremented. <b>Approach 4's app closes exactly this gap</b> — same order shape, plus a background job that adjusts component stock.</p>
+    </div>
+
+    <!-- Approach 1 (base) -->
+    <article class="card base" id="a1">
+      <div class="card-head">
+        <span class="card-num">1</span>
+        <h3 class="card-title">Box + line-item properties — base, live today</h3>
+        <div class="tags"><span class="pill none">No app</span><span class="pill bad">Box SKU stock only</span></div>
+      </div>
+      <div class="card-body">
+        <div class="col-json">
+          <p class="col-label">Order — line_items</p>
+          <pre>{
+  "line_items": [
+    {
+      "title": "Build Your Box",
+      "sku": <b>"BOX-BUILD"</b>,
+      "quantity": 1,
+      "price": "24.00",
+      "properties": [
+        { "name": "Mexi Fiesta Blend",  "value": "× 2" },
+        { "name": "Smoky Maple",        "value": "× 1" },
+        { "name": "Classic Original",   "value": "× 1" },
+        { "name": <b>"_bundle"</b>, "value":
+          "[{\"handle\":\"mexi-fiesta-blend\",
+             \"name\":\"Mexi Fiesta Blend\",
+             \"qty\":2,\"sku\":\"PACK-MEX\"}, …]" }
+      ]
+    }
+  ]
+}</pre>
+          <p class="json-note">Inventory decrements <code class="inline">BOX-BUILD</code> only. The single packs are never touched by Shopify.</p>
+        </div>
+        <div class="col-setup">
+          <div class="req">
+            <h4><span class="dot shopify"></span>Shopify backend</h4>
+            <ul>
+              <li>One "Build Your Box" product, flat price £24, its own SKU.</li>
+              <li>Flavour metaobjects with <code class="inline">product_reference</code> → single packs <em>(done)</em>.</li>
+            </ul>
+          </div>
+          <div class="req">
+            <h4><span class="dot theme"></span>Theme</h4>
+            <ul>
+              <li>As shipped — <code class="inline">bundle-builder.js</code> posts the box variant + flavours as properties.</li>
+              <li><code class="inline">bundle-line-contents</code> renders the single box line in the cart.</li>
+            </ul>
+          </div>
+          <div class="req">
+            <h4><span class="dot app"></span>Custom app</h4>
+            <p class="nope">None.</p>
+          </div>
+        </div>
+      </div>
+      <p class="verdict"><b>Verdict:</b> Simplest, flat price, clean checkout — but Shopify never decrements the single packs, so the 3PL must read <code class="inline">_bundle</code> and do dynamic kitting per order.</p>
+    </article>
+
+    <div class="connector"><span>+ add an app to close the stock gap ↓</span></div>
+
+    <!-- Approach 4 (enhancement) -->
+    <article class="card enhancement" id="a4">
+      <div class="card-head">
+        <span class="card-num">4</span>
+        <h3 class="card-title">+ inventory-sync webhook app</h3>
+        <span class="builds-on">↳ builds on Approach 1</span>
+        <div class="tags"><span class="pill ok">One line</span><span class="pill warn">Oversell risk</span></div>
+      </div>
+      <div class="card-body">
+        <div class="col-json">
+          <p class="col-label">Order — identical to Approach 1, plus async work</p>
+          <pre>{
+  "line_items": [
+    { "title": "Build Your Box", "sku": "BOX-BUILD",
+      "quantity": 1, "price": "24.00",
+      "properties": [ …, { "name": <b>"_bundle"</b>, "value":
+        "[{…\"sku\":\"PACK-MEX\",\"qty\":2}, …]" } ] }
+  ]
+}
+
+<span class="c">// then, async, the app does:</span>
+inventoryAdjustQuantities({
+  changes: [
+    { sku: <b>"PACK-MEX"</b>,  delta: -2 },
+    { sku: <b>"PACK-MAP"</b>,  delta: -1 },
+    { sku: <b>"PACK-ORIG"</b>, delta: -1 }
+  ]
+})</pre>
+          <p class="json-note delta"><b>Delta vs Approach 1:</b> the order is byte-for-byte the same — the only change is the app reading <code class="inline">_bundle</code> after the order and decrementing component SKUs.</p>
+        </div>
+        <div class="col-setup">
+          <div class="req">
+            <h4><span class="dot shopify"></span>Shopify backend</h4>
+            <ul>
+              <li>Everything from Approach 1, <em>and:</em></li>
+              <li class="add">+ Box product inventory tracking <b>off</b> (treat as untracked).</li>
+              <li class="add">+ Install app; grant inventory write scope; register <code class="inline">orders/paid</code> webhook.</li>
+            </ul>
+          </div>
+          <div class="req">
+            <h4><span class="dot theme"></span>Theme</h4>
+            <p class="same">Unchanged from Approach 1.</p>
+          </div>
+          <div class="req">
+            <h4><span class="dot app"></span>Custom app <span style="font-weight:400;color:var(--text-accent);">— the added piece</span></h4>
+            <ul>
+              <li>Hosted backend (server / serverless) subscribed to <code class="inline">orders/paid</code>.</li>
+              <li>Parses <code class="inline">_bundle</code> and calls the Inventory API to decrement each component SKU at the right location.</li>
+              <li>Needs hosting + retry / error handling.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <p class="verdict"><b>Verdict:</b> Keeps the clean one-line checkout and flat price, and gets component stock <em>roughly</em> right — but it's eventually-consistent (<b>oversell risk</b>) and the 3PL still reads <code class="inline">_bundle</code> for picking.</p>
+    </article>
+  </section>
+
+  <!-- ===================== FAMILY B ===================== -->
+  <section class="family" id="familyB">
+    <div class="family-head">
+      <span class="family-tag">Model B</span>
+      <h2>Each pouch is its own line</h2>
+      <p>The 4 pouches are added as individual line items, grouped by a shared <code class="inline">_bundle_id</code>. Component stock is tracked natively and in real time, and the 3PL just picks normal lines — no kitting.</p>
+      <p class="family-gap"><b>The gap:</b> the order totals the sum of the singles — there's no built-in way to apply the flat / discounted box price. <b>Approach 3's app closes exactly this gap</b> — same line items, plus a server-side discount.</p>
+    </div>
+
+    <!-- Approach 2 (base) -->
+    <article class="card base" id="a2">
+      <div class="card-head">
+        <span class="card-num">2</span>
+        <h3 class="card-title">Individual pouch lines — base, theme only</h3>
+        <div class="tags"><span class="pill none">No app</span><span class="pill ok">Native stock</span></div>
+      </div>
+      <div class="card-body">
+        <div class="col-json">
+          <p class="col-label">Order — line_items</p>
+          <pre>{
+  "line_items": [
+    { "title": "Mexi Fiesta Blend", "sku": <b>"PACK-MEX"</b>,
+      "quantity": 2, "price": "7.50",
+      "properties": [
+        { "name": <b>"_bundle_id"</b>, "value": "k3f9a2" },
+        { "name": "_box", "value": "Build Your Box" } ] },
+
+    { "title": "Smoky Maple", "sku": <b>"PACK-MAP"</b>,
+      "quantity": 1, "price": "7.50",
+      "properties": [ { "name": "_bundle_id", "value": "k3f9a2" } ] },
+
+    { "title": "Classic Original", "sku": <b>"PACK-ORIG"</b>,
+      "quantity": 1, "price": "7.50",
+      "properties": [ { "name": "_bundle_id", "value": "k3f9a2" } ] }
+  ],
+  <span class="c">// subtotal = 4 × 7.50 = 30.00 — no discount</span>
+  "total_price": "30.00"
+}</pre>
+          <p class="json-note">Each SKU decrements <b>natively &amp; in real time</b>. But the order totals <b>£30</b>, not £24.</p>
+        </div>
+        <div class="col-setup">
+          <div class="req">
+            <h4><span class="dot shopify"></span>Shopify backend</h4>
+            <ul>
+              <li>Each single pack a real product/variant with SKU + inventory tracking <em>(done)</em>.</li>
+              <li>"Build Your Box" product retired as a sellable line (price reference only).</li>
+            </ul>
+          </div>
+          <div class="req">
+            <h4><span class="dot theme"></span>Theme</h4>
+            <ul>
+              <li>Emit each flavour's <code class="inline">variant_id</code> in the flavours JSON blob.</li>
+              <li>Rewrite <code class="inline">addToCart()</code> to POST N lines sharing a unique <code class="inline">_bundle_id</code>.</li>
+              <li>Group lines into one visual box in the cart; lock per-line qty; group removal.</li>
+            </ul>
+          </div>
+          <div class="req">
+            <h4><span class="dot app"></span>Custom app</h4>
+            <p class="nope">None.</p>
+          </div>
+        </div>
+      </div>
+      <p class="verdict"><b>Verdict:</b> Accurate stock and zero app — but <b>no way to discount</b>. Use as-is only if the box price equals 4× a single.</p>
+    </article>
+
+    <div class="connector"><span>+ add an app to close the price gap ↓</span></div>
+
+    <!-- Approach 3 (enhancement) -->
+    <article class="card enhancement" id="a3">
+      <div class="card-head">
+        <span class="card-num">3</span>
+        <h3 class="card-title">+ discount-function app</h3>
+        <span class="builds-on">↳ builds on Approach 2</span>
+        <div class="tags"><span class="pill ok">Native stock</span><span class="pill ok">Flat price</span><span class="pill warn">Any plan</span></div>
+      </div>
+      <div class="card-body">
+        <div class="col-json">
+          <p class="col-label">Order — same lines as Approach 2, plus a discount</p>
+          <pre>{
+  "line_items": [
+    { "title": "Mexi Fiesta Blend", "sku": <b>"PACK-MEX"</b>,
+      "quantity": 2, "price": "7.50",
+      "properties": [ { "name": "_bundle_id", "value": "k3f9a2" } ],
+      "discount_allocations": [
+        { "amount": "3.00", "discount_application_index": 0 } ] },
+
+    { "title": "Smoky Maple",      "sku": "PACK-MAP",  … },
+    { "title": "Classic Original", "sku": "PACK-ORIG", … }
+  ],
+  "discount_applications": [
+    { "type": <b>"automatic"</b>,
+      "title": "Build Your Box bundle",
+      "value_type": "percentage", "value": "20.0" }
+  ],
+  <span class="c">// 30.00 − 20% = 24.00</span>
+  "total_price": "24.00"
+}</pre>
+          <p class="json-note delta"><b>Delta vs Approach 2:</b> identical line items — the function just adds the <code class="inline">discount_applications</code> / <code class="inline">discount_allocations</code> that pull £30 down to the flat £24.</p>
+        </div>
+        <div class="col-setup">
+          <div class="req">
+            <h4><span class="dot shopify"></span>Shopify backend</h4>
+            <ul>
+              <li>Everything from Approach 2, <em>and:</em></li>
+              <li class="add">+ Install the app; it registers an <b>automatic discount</b> backed by the function.</li>
+              <li class="add">+ No Shopify Plus needed — discount Functions run on all plans.</li>
+            </ul>
+          </div>
+          <div class="req">
+            <h4><span class="dot theme"></span>Theme</h4>
+            <p class="same">Same as Approach 2 (individual grouped lines).</p>
+          </div>
+          <div class="req">
+            <h4><span class="dot app"></span>Custom app <span style="font-weight:400;color:var(--text-accent);">— the added piece</span></h4>
+            <ul>
+              <li>Shopify app with one <b>product-discount Function</b> extension.</li>
+              <li>Reads each line's <code class="inline">_bundle_id</code>, groups them, computes the discount to hit the flat box price.</li>
+              <li>Runs inside checkout (server-side, tamper-proof). Deployed via Shopify CLI.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <p class="verdict"><b>Verdict:</b> Best fit for "track stock accurately" — the only non-Plus option that prevents overselling <b>and</b> keeps the bundle price. Trade-off: checkout shows 4 lines + a discount. <em>(Watch for clashes with other automatic discounts.)</em></p>
+    </article>
+  </section>
+
+  <!-- RULED OUT -->
+  <div class="ruledout" id="a5">
+    <h3>✕ Cart Transform Function (expand) — Shopify Plus only, ruled out</h3>
+    <p>The theoretical best-of-all-worlds: add one box line that Shopify <em>expands</em> into component lines at checkout — native component stock, flat price, <em>and</em> a single grouped box row at checkout. Cart Transform Functions require Shopify Plus, so it's off the table on the current plan. Listed only so the comparison is complete and the reason is on record.</p>
+  </div>
+
+  <footer class="page">
+    Reference doc — not part of the theme. Generated for the Frood "Build Your Box" fulfilment discussion. Example figures (£7.50 single / £24 box) are illustrative; swap in real prices when scoping.
+  </footer>
+
+</div>
+</body>
+</html>
