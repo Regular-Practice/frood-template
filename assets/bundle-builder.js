@@ -68,6 +68,8 @@ class BundleBuilder extends HTMLElement {
 
     this.flavours = this.parseFlavours();
     this.box = this.loadDraft();
+    this.hasTrackedStart = this.box.length > 0;
+    this.hasTrackedCompletion = this.isFull;
 
     this.addButton = this.querySelector('[data-add]');
     this.addLabel = this.querySelector('[data-add-label]');
@@ -83,6 +85,12 @@ class BundleBuilder extends HTMLElement {
 
     this.render();
     this.emit();
+    this.track('bundle_builder_viewed', {
+      capacity: this.capacity,
+      flavour_count: Object.keys(this.flavours).length,
+      filled: this.filled,
+      has_draft: this.filled > 0
+    });
   }
 
   disconnectedCallback() {
@@ -150,24 +158,90 @@ class BundleBuilder extends HTMLElement {
     return out;
   }
 
+  get composition() {
+    const counts = this.counts;
+    return Object.keys(this.flavours)
+      .filter((id) => counts[id])
+      .map((id) => `${id}:${counts[id]}`)
+      .join('|');
+  }
+
+  track(eventName, data = {}) {
+    const payload = {
+      section_id: this.dataset.sectionId || 'default',
+      box_variant_id: this.boxVariantId || '',
+      ...data
+    };
+
+    if (window.froodTrack) {
+      window.froodTrack(eventName, payload);
+      return;
+    }
+
+    if (window.umami?.track) {
+      window.umami.track(eventName, payload);
+    }
+
+    if (new URLSearchParams(window.location.search).has('umami-debug')) {
+      console.info('[umami]', eventName, payload);
+    }
+  }
+
   // ---- Mutations --------------------------------------------------------
 
   add(id) {
     if (!this.flavours[id]) return;
     if (this.box.length >= this.capacity) return;
+    const wasEmpty = this.box.length === 0;
     this.box.push({ key: this.keySeq++, id });
     this.commit();
+
+    if (!this.hasTrackedStart && wasEmpty) {
+      this.hasTrackedStart = true;
+      this.track('bundle_builder_started', {
+        capacity: this.capacity
+      });
+    }
+
+    this.track('bundle_pack_added', {
+      flavour_id: id,
+      flavour_name: this.flavours[id]?.name || '',
+      filled: this.filled,
+      capacity: this.capacity,
+      composition: this.composition
+    });
+
+    if (!this.hasTrackedCompletion && this.isFull) {
+      this.hasTrackedCompletion = true;
+      this.track('bundle_builder_completed', {
+        capacity: this.capacity,
+        flavour_count: Object.keys(this.counts).length,
+        composition: this.composition
+      });
+    }
   }
 
   // Removes the LAST-added pack of this flavour — drives the per-flavour stepper.
   remove(id) {
+    let removed = false;
     for (let i = this.box.length - 1; i >= 0; i--) {
       if (this.box[i].id === id) {
         this.box.splice(i, 1);
+        removed = true;
         break;
       }
     }
     this.commit();
+
+    if (removed) {
+      this.track('bundle_pack_removed', {
+        flavour_id: id,
+        flavour_name: this.flavours[id]?.name || '',
+        filled: this.filled,
+        capacity: this.capacity,
+        composition: this.composition
+      });
+    }
   }
 
   commit() {
@@ -204,7 +278,23 @@ class BundleBuilder extends HTMLElement {
       else if (action === 'remove') this.remove(flavourId);
       return;
     }
-    if (e.target.closest('[data-add]') && this.isFull) this.addToCart();
+
+    const flavourLink = e.target.closest('.bundle-flavour-link');
+    if (flavourLink && this.contains(flavourLink)) {
+      const card = flavourLink.closest('[data-flavour-card]');
+      const id = card?.dataset.flavourId || '';
+      this.track('bundle_flavour_link_clicked', {
+        flavour_id: id,
+        flavour_name: this.flavours[id]?.name || '',
+        filled: this.filled,
+        capacity: this.capacity
+      });
+      return;
+    }
+
+    if (e.target.closest('[data-add]')) {
+      this.addToCart();
+    }
   }
 
   // ---- Rendering --------------------------------------------------------
@@ -264,11 +354,36 @@ class BundleBuilder extends HTMLElement {
     return properties;
   }
 
+  addFailureReason(message = '') {
+    const lower = message.toLowerCase();
+    if (lower.includes('sold') || lower.includes('stock') || lower.includes('available')) {
+      return 'out_of_stock';
+    }
+    if (lower.includes('network') || lower.includes('fetch')) {
+      return 'network_error';
+    }
+    if (message) {
+      return 'shopify_error';
+    }
+    return 'unknown';
+  }
+
   async addToCart() {
-    if (!this.isFull || !this.boxVariantId) return;
+    if (!this.isFull || !this.boxVariantId) {
+      this.track('bundle_add_validation_failed', {
+        reason: this.isFull ? 'missing_box_variant' : 'not_full',
+        filled: this.filled,
+        capacity: this.capacity,
+        composition: this.composition
+      });
+      return;
+    }
+
     this.clearError();
     this.addButton.classList.add('is-loading');
     this.addButton.disabled = true;
+    const trackedComposition = this.composition;
+    const trackedFlavourCount = Object.keys(this.counts).length;
 
     const item = {
       id: parseInt(this.boxVariantId, 10),
@@ -293,9 +408,17 @@ class BundleBuilder extends HTMLElement {
 
       const data = await response.json();
 
+      this.track('bundle_added_to_cart', {
+        capacity: this.capacity,
+        flavour_count: trackedFlavourCount,
+        composition: trackedComposition
+      });
+
       // Box is now in the native cart — drop the local draft so returning to
       // the page doesn't re-add it.
       this.box = [];
+      this.hasTrackedStart = false;
+      this.hasTrackedCompletion = false;
       this.save();
       this.render();
       this.emit();
@@ -320,6 +443,12 @@ class BundleBuilder extends HTMLElement {
         );
       }
     } catch (error) {
+      this.track('bundle_add_failed', {
+        reason: this.addFailureReason(error.message),
+        filled: this.filled,
+        capacity: this.capacity,
+        composition: trackedComposition
+      });
       this.showError(error.message);
     } finally {
       this.addButton.classList.remove('is-loading');

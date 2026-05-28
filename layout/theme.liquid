@@ -57,6 +57,19 @@
 
   {{ 'base.css' | asset_url | stylesheet_tag }}
 
+  <script defer src="https://umami-n8okok8ow0k488wsogkcgsss.rgpr.app/script.js" data-website-id="ba131a14-e8f1-4c27-bc12-811c753f67f3"></script>
+  <script>
+    window.froodTrack = function(eventName, data) {
+      var payload = data || {};
+      if (window.umami && window.umami.track) {
+        window.umami.track(eventName, payload);
+      }
+      if (new URLSearchParams(window.location.search).has('umami-debug')) {
+        console.info('[umami]', eventName, payload);
+      }
+    };
+  </script>
+
   {{ content_for_header }}
 </head>
 <body data-cart-type="{{ settings.cart_type }}">
