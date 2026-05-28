@@ -2,8 +2,11 @@
   Free-shipping progress bar for the cart drawer.
 
   A labelled progress bar showing how close the cart is to the free-shipping
-  threshold. Two states: "X away" (partial fill) and "unlocked" (full fill +
-  success message). Pure Liquid — it reads cart.total_price and is re-rendered
+  threshold. Two states: a goal prompt ("buy two boxes" / "buy another box"
+  once one box is in, partial fill) and "unlocked" (full fill + success
+  message). The bar fills by cart subtotal vs the threshold; the copy frames
+  the goal as boxes (the threshold = two boxes), pluralised on boxes-needed.
+  Pure Liquid — it reads cart.total_price and is re-rendered
   on every cart change because it lives inside the drawer's [data-drawer-body],
   which cart-drawer.js swaps via the Section Rendering API. No client JS.
 
@@ -35,8 +38,11 @@
     assign qualified = true
   endif
 
+  # Boxes still needed, for the "buy another box" / "buy two boxes" copy.
+  # The threshold IS two boxes, so a box is worth half of it; round up so a
+  # part-filled box still counts as one to buy. Always >= 1 in this branch.
   assign remaining = ship_threshold | minus: cart_total
-  assign remaining_money = remaining | money
+  assign boxes_needed = remaining | times: 2.0 | divided_by: ship_threshold | ceil
 
   assign percent = 0
   if ship_threshold > 0
@@ -54,7 +60,7 @@
       {%- if qualified -%}
         {{ 'cart.drawer.shipping_progress_qualified' | t }}
       {%- else -%}
-        {{ 'cart.drawer.shipping_progress_remaining' | t: amount: remaining_money }}
+        {{ 'cart.drawer.shipping_progress_remaining' | t: count: boxes_needed }}
       {%- endif -%}
     </p>
     <div
