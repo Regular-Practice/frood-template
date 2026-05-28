@@ -92,6 +92,16 @@
     }
   }
 
+  /* Mobile (<600px): force full-bleed even if the merchant turned margins on.
+     Phones have little horizontal room — margins around a hero/feature media
+     just rob it of impact. Tablet (≥600px) and desktop (≥900px) still honour
+     the .has-margins setting. */
+  @media (max-width: 599.98px) {
+    .fullbleed-section.has-margins {
+      padding: 0;
+    }
+  }
+
   .fullbleed-frame {
     position: relative;
     width: 100%;

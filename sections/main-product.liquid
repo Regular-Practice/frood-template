@@ -1,54 +1,6 @@
 <section class="main-product">
   {% render 'json-ld-product', product: product %}
 
-  {%- comment -%}
-    Background slider: product.media from index 1 onwards. media[0] is reserved
-    for Box 1's product render, so the slider picks up every media item after it.
-  {%- endcomment -%}
-  {%- if product.media.size > 1 -%}
-    <product-bg-slider class="product-bg-slider" aria-hidden="true">
-      <div class="product-bg-slider-viewport">
-        <div class="product-bg-slider-container">
-          {%- for media in product.media offset: 1 -%}
-            <div class="product-bg-slider-slide">
-              {%- case media.media_type -%}
-                {%- when 'image' -%}
-                  {{ media | image_url: width: 2400 | image_tag:
-                    loading: 'lazy',
-                    alt: '',
-                    width: media.width,
-                    height: media.height
-                  }}
-                {%- when 'video' -%}
-                  {{ media | video_tag: autoplay: true, loop: true, muted: true, controls: false, playsinline: true }}
-                {%- when 'external_video' -%}
-                  {%- if media.host == 'youtube' -%}
-                    <iframe
-                      src="https://www.youtube.com/embed/{{ media.external_id }}?autoplay=1&mute=1&loop=1&controls=0&playlist={{ media.external_id }}"
-                      allow="autoplay; encrypted-media"
-                      allowfullscreen
-                      loading="lazy"
-                      title=""
-                    ></iframe>
-                  {%- elsif media.host == 'vimeo' -%}
-                    <iframe
-                      src="https://player.vimeo.com/video/{{ media.external_id }}?autoplay=1&muted=1&loop=1&controls=0"
-                      allow="autoplay; encrypted-media"
-                      allowfullscreen
-                      loading="lazy"
-                      title=""
-                    ></iframe>
-                  {%- endif -%}
-                {%- when 'model' -%}
-                  {{ media | model_viewer_tag }}
-              {%- endcase -%}
-            </div>
-          {%- endfor -%}
-        </div>
-      </div>
-    </product-bg-slider>
-  {%- endif -%}
-
   <product-form
     class="product-boxes"
     data-section-id="{{ section.id }}"
@@ -225,6 +177,69 @@
       </div>
     {%- endform -%}
   </product-form>
+
+  {%- comment -%}
+    Background slider: product.media from index 1 onwards. media[0] is reserved
+    for Box 1's product render, so the slider picks up every media item after it.
+  {%- endcomment -%}
+  {%- if product.media.size > 1 -%}
+    <product-bg-slider class="product-bg-slider">
+      <div class="product-bg-slider-viewport">
+        <div class="product-bg-slider-container">
+          {%- for media in product.media offset: 1 -%}
+            <div class="product-bg-slider-slide">
+              {%- case media.media_type -%}
+                {%- when 'image' -%}
+                  {{ media | image_url: width: 2400 | image_tag:
+                    loading: 'lazy',
+                    alt: '',
+                    width: media.width,
+                    height: media.height
+                  }}
+                {%- when 'video' -%}
+                  {{ media | video_tag: autoplay: true, loop: true, muted: true, controls: false, playsinline: true }}
+                {%- when 'external_video' -%}
+                  {%- if media.host == 'youtube' -%}
+                    <iframe
+                      src="https://www.youtube.com/embed/{{ media.external_id }}?autoplay=1&mute=1&loop=1&controls=0&playlist={{ media.external_id }}"
+                      allow="autoplay; encrypted-media"
+                      allowfullscreen
+                      loading="lazy"
+                      title=""
+                    ></iframe>
+                  {%- elsif media.host == 'vimeo' -%}
+                    <iframe
+                      src="https://player.vimeo.com/video/{{ media.external_id }}?autoplay=1&muted=1&loop=1&controls=0"
+                      allow="autoplay; encrypted-media"
+                      allowfullscreen
+                      loading="lazy"
+                      title=""
+                    ></iframe>
+                  {%- endif -%}
+                {%- when 'model' -%}
+                  {{ media | model_viewer_tag }}
+              {%- endcase -%}
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+
+      {%- comment -%}
+        Slider nav — prev/next pills pinned to the bottom-right of the slider
+        container. Hidden via CSS until embla initialises (.is-initialized),
+        so they don't show when there's only one slide and embla bails.
+        Styling mirrors the recipe video play/pause pill (.recipe-control-pill).
+      {%- endcomment -%}
+      <div class="product-bg-slider-nav">
+        <button type="button" class="product-bg-slider-btn product-bg-slider-prev" aria-label="Previous slide">
+          {% render 'icon-arrow' %}
+        </button>
+        <button type="button" class="product-bg-slider-btn product-bg-slider-next" aria-label="Next slide">
+          {% render 'icon-arrow' %}
+        </button>
+      </div>
+    </product-bg-slider>
+  {%- endif -%}
 </section>
 
 <script src="{{ 'product-form.js' | asset_url }}" defer></script>
@@ -290,6 +305,50 @@
     aspect-ratio: 16 / 9;
     border: 0;
     display: block;
+  }
+
+  /* Slider nav — prev/next pills anchored to the bottom-right of the slider
+     container. Styling mirrors .recipe-control-pill (snippets/video.liquid):
+     beige bg, dark burgundy icon, pale-yellow on hover, --rad-s rounded,
+     --spacing-xxs padding. Hidden until embla initialises so single-slide
+     products don't show dead controls. */
+  .product-bg-slider-nav {
+    position: absolute;
+    bottom: var(--spacing-xs);
+    right: var(--spacing-xs);
+    z-index: 2;
+    display: none;
+    gap: var(--spacing-xxs);
+  }
+
+  .product-bg-slider.is-initialized .product-bg-slider-nav {
+    display: flex;
+  }
+
+  .product-bg-slider-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xxs);
+    background-color: var(--color-bg-dark);
+    color: var(--color-text);
+    border: 0;
+    border-radius: var(--rad-s);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+  }
+
+  .product-bg-slider-btn:hover {
+    background-color: var(--color-accent-light);
+  }
+
+  .product-bg-slider-btn svg {
+    display: block;
+  }
+
+  /* icon-arrow points right by default; flip 180° for the prev button. */
+  .product-bg-slider-prev svg {
+    transform: rotate(180deg);
   }
 
   /* Boxes column — left-aligned, sits on top of slider. The actual flex
@@ -702,9 +761,10 @@
     }
   }
 
-  /* Mobile only (<600px): break the desktop/tablet overlay layout — the bg
-     slider and boxes column stack vertically in normal block flow instead of
-     the slider sitting behind a fixed/floating boxes column.
+  /* Mobile only (<600px): break the desktop/tablet overlay layout — the
+     product boxes and bg slider stack vertically in normal block flow.
+     DOM order is boxes first, then slider, so the boxes sit at the top of
+     the section and the slider sits below them.
 
      This block MUST come after the .product-boxes base rule (which sets
      position: fixed + max-width: 386px) so the cascade lets these overrides
@@ -718,22 +778,10 @@
       min-height: 0;
     }
 
-    /* Slider sits in-flow at the top of the section, 85svh tall so the fixed
-       header overlays it (svh, not dvh, keeps the height stable as mobile
-       browser chrome collapses). Negative inline + top margins pull it out of
-       the section's --spacing-xs padding so it runs full-bleed edge-to-edge. */
-    .product-bg-slider {
-      position: static;
-      height: 85svh;
-      margin-top: calc(-1 * var(--spacing-xs));
-      margin-inline: calc(-1 * var(--spacing-xs));
-    }
-
-    /* Boxes flow below the slider, full section width — drops the 386px cap
-       and the fixed positioning used on desktop. margin-top opens the gap
-       between slider and boxes; matches the mobile section padding
-       (--spacing-xs) so the slider→boxes gap reads the same as the section's
-       edge inset. */
+    /* Boxes flow at the top of the section, full section width — drops the
+       386px cap and the fixed positioning used on desktop. padding-top equals
+       the fixed header's height plus xs of breathing room, so the title sits
+       just below the header with a small gap. */
     .product-boxes {
       position: static;
       width: 100%;
@@ -741,7 +789,21 @@
       top: auto;
       left: auto;
       right: auto;
-      margin-top: var(--spacing-xs);
+      padding-top: var(--header-height);
+    }
+
+    /* Slider sits in-flow below the boxes, 85svh tall (svh, not dvh, keeps
+       the height stable as mobile browser chrome collapses). Negative inline
+       margins pull it out of the section's --spacing-xs padding so it runs
+       full-bleed edge-to-edge. margin-top adds a clear gap from the buy row
+       above so the slider doesn't visually butt up against / "cut into" the
+       boxes. position: relative (not static) keeps the slider in flow but
+       still acts as a positioning context for the absolute nav inside. */
+    .product-bg-slider {
+      position: relative;
+      height: 85svh;
+      margin-top: var(--spacing-m);
+      margin-inline: calc(-1 * var(--spacing-xs));
     }
 
     /* Compact form on mobile: once the user has scrolled past the static

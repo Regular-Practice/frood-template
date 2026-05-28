@@ -94,6 +94,13 @@
     background-color: var(--color-bg);
   }
 
+  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
+  @media (max-width: 599.98px) {
+    .featured-collection {
+      padding-block: var(--spacing-m);
+    }
+  }
+
   @media (min-width: 900px) {
     .featured-collection {
       padding: var(--spacing-m);

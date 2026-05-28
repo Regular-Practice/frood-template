@@ -227,7 +227,7 @@ summary::-webkit-details-marker {
   --type-h1-spacing: 0.01em;
   --type-h1-weight: 400;
 
-  --type-h2-size: 36px;
+  --type-h2-size: 32px;
   --type-h2-height: 1.1em;
   --type-h2-spacing: 0em;
   --type-h2-weight: 500;
@@ -274,6 +274,9 @@ summary::-webkit-details-marker {
 
 @media (min-width: 900px) {
   :root {
+    /* Mobile/tablet keep h2 at 32px; desktop bumps it to the 36px Figma spec. */
+    --type-h2-size: 36px;
+
     --type-base-size: 14px;
     --type-base-height: 16px;
 
@@ -383,6 +386,18 @@ body {
   line-height: var(--type-h3-height);
   letter-spacing: var(--type-h3-spacing);
   font-weight: var(--type-h3-weight);
+}
+
+/* Richtext fields rendered inside .text-h2 / .text-h3 wrappers output <p> tags,
+   and the global reset (§above) directly sets font-weight: normal on <p>. That
+   direct rule beats inheritance from the wrapping div, so without this override
+   <p> children render at 400 instead of the utility's 500. Same applies to any
+   <h1>–<h6> inside the wrapper. */
+.text-h2 p,
+.text-h2 :is(h1, h2, h3, h4, h5, h6),
+.text-h3 p,
+.text-h3 :is(h1, h2, h3, h4, h5, h6) {
+  font-weight: inherit;
 }
 
 .text-body {

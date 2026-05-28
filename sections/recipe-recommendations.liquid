@@ -44,6 +44,13 @@
     background-color: var(--color-bg);
   }
 
+  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
+  @media (max-width: 599.98px) {
+    .recipe-recommendations {
+      padding-block: var(--spacing-m);
+    }
+  }
+
   @media (min-width: 900px) {
     .recipe-recommendations {
       padding: var(--spacing-m);
@@ -51,7 +58,13 @@
   }
 
   .recipe-recommendations-header {
-    margin-bottom: var(--spacing-l);
+    margin-bottom: var(--spacing-m);
+  }
+
+  @media (min-width: 900px) {
+    .recipe-recommendations-header {
+      margin-bottom: var(--spacing-l);
+    }
   }
 
   .recipe-recommendations-header h3 {

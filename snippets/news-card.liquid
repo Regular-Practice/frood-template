@@ -63,7 +63,7 @@
     {%- endif -%}
 
     {%- if news.news_link != blank -%}
-      <a class="button" href="{{ news.news_link }}">
+      <a class="button" href="{{ news.news_link }}" target="_blank" rel="noopener noreferrer">
         {{ 'news.card.link' | t }}
       </a>
     {%- endif -%}

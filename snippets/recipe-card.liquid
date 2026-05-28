@@ -147,10 +147,16 @@
     flex-direction: row;
     align-items: center;
     gap: var(--spacing-s);
-    padding: var(--spacing-xxs);
+    padding: 0;
     text-align: left;
     border-radius: var(--rad-s);
     transition: background-color var(--transition-fast);
+  }
+
+  @media (min-width: 900px) {
+    .recipe-card {
+      padding: var(--spacing-xxs);
+    }
   }
 
   .recipe-card:hover {
@@ -191,7 +197,25 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-xxxs);
+  }
+
+  @media (min-width: 900px) {
+    .recipe-card-info {
+      gap: var(--spacing-xs);
+    }
+  }
+
+  /* Hide the description on mobile/tablet; reveal it at desktop where there's
+     room for the longer copy alongside the image. */
+  .recipe-card-description {
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    .recipe-card-description {
+      display: block;
+    }
   }
 
   /* Watch → trigger: .text-h1 typography (small uppercase) + inline arrow.

@@ -44,6 +44,13 @@
     padding: var(--spacing-xs);
   }
 
+  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
+  @media (max-width: 599.98px) {
+    .newsletter-banner {
+      padding-block: var(--spacing-m);
+    }
+  }
+
   @media (min-width: 900px) {
     .newsletter-banner {
       padding: var(--spacing-m);
@@ -93,12 +100,16 @@
   .newsletter-banner-form-group {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-xxs);
   }
 
   .newsletter-banner-consent {
     margin: 0;
     max-width: 80ch;
+    /* Typographic exception — fine-print sized at 10px, smaller than the
+       global .text-body 14px. Local to the consent line; doesn't change the
+       token. */
+    font-size: 10px;
   }
 {% endstylesheet %}
 

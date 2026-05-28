@@ -82,6 +82,7 @@
       "name": "Bundle builder",
       "settings": {
         "box_product": "mixed-box",
+        "max_boxes": 4,
         "eyebrow": "Build your box",
         "heading": "Create and customise your box from the Frood selection.",
         "full_screen": true

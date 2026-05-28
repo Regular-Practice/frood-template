@@ -112,7 +112,13 @@
       "empty": "Your cart is empty!",
       "error_stock": "Not enough in stock",
       "error_generic": "Couldn't update — try again",
-      "upsell_heading": "You might also like"
+      "upsell_heading": "You might also like",
+      "shipping_progress_remaining": {
+        "one": "Buy another box to unlock free shipping",
+        "other": "Buy two boxes to unlock free shipping"
+      },
+      "shipping_progress_qualified": "You've unlocked free shipping!",
+      "shipping_progress_label": "Progress to free shipping"
     }
   },
   "search": {
@@ -256,7 +262,7 @@
     "bundle_builder": {
       "price": "Price",
       "add_to_cart": "Add to cart",
-      "add_more": "Add {count} more",
+      "add_more": "Add {count} more to complete this box",
       "added": "Added {{ product }} to cart!",
       "caption": "A box of {{ count }} — mix any flavours.",
       "empty_stage": "Add packs to fill your box",

@@ -69,6 +69,13 @@
     color: var(--color-text);
   }
 
+  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
+  @media (max-width: 599.98px) {
+    .faq {
+      padding-block: var(--spacing-m);
+    }
+  }
+
   /* When FAQ leads a page it sits under the fixed, floating header (~52px).
      Clear it the way main-page / the index pages do — header height plus
      editorial breathing room. Scoped to :first-child so a mid-page FAQ keeps
