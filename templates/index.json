@@ -144,6 +144,21 @@
         "card_bg": "text",
         "card_color": "bg"
       }
+    },
+    "image_carousel": {
+      "type": "image-carousel",
+      "blocks": {
+        "img_1": { "type": "image", "settings": {} },
+        "img_2": { "type": "image", "settings": {} },
+        "img_3": { "type": "image", "settings": {} },
+        "img_4": { "type": "image", "settings": {} }
+      },
+      "block_order": ["img_1", "img_2", "img_3", "img_4"],
+      "settings": {
+        "eyebrow": "In the wild",
+        "heading": "Frood in the real world.",
+        "autoplay_interval": 4
+      }
     }
   },
   "order": [
@@ -154,6 +169,7 @@
     "bundle_builder_mNULHm",
     "text_image_split_Yx6jAX",
     "fullbleed",
-    "feature_card"
+    "feature_card",
+    "image_carousel"
   ]
 }

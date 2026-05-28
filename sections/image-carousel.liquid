@@ -1,0 +1,202 @@
+{%- comment -%}
+  Frood Image Carousel — section-lockup (h1 eyebrow + h3 heading) above an
+  Embla infinite-loop carousel that autoplays through image blocks and
+  supports drag-and-slide. Pauses on hover, focus, hidden tab, and
+  prefers-reduced-motion.
+{%- endcomment -%}
+
+<section class="image-carousel-section">
+  {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+    <header class="image-carousel-header section-lockup">
+      {%- if section.settings.eyebrow != blank -%}
+        <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+      {%- endif -%}
+    </header>
+  {%- endif -%}
+
+  <image-carousel data-interval="{{ section.settings.autoplay_interval | times: 1000 }}">
+    <div class="image-carousel-viewport">
+      <div class="image-carousel-container">
+        {%- for block in section.blocks -%}
+          <div class="image-carousel-slide" {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank -%}
+              {{
+                block.settings.image
+                | image_url: width: 1200
+                | image_tag:
+                  loading: 'lazy',
+                  sizes: '(min-width: 900px) 25vw, (min-width: 600px) 40vw, 65vw',
+                  width: block.settings.image.width,
+                  height: block.settings.image.height,
+                  class: 'image-carousel-image'
+              }}
+            {%- else -%}
+              <div class="image-carousel-placeholder" aria-hidden="true"></div>
+            {%- endif -%}
+          </div>
+        {%- else -%}
+          {%- for i in (1..4) -%}
+            <div class="image-carousel-slide">
+              <div class="image-carousel-placeholder" aria-hidden="true"></div>
+            </div>
+          {%- endfor -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </image-carousel>
+</section>
+
+<script src="{{ 'embla-carousel.umd.js' | asset_url }}" defer></script>
+<script src="{{ 'image-carousel.js' | asset_url }}" defer></script>
+
+{% stylesheet %}
+  .image-carousel-section {
+    padding: var(--spacing-xs);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+
+  @media (min-width: 900px) {
+    .image-carousel-section {
+      padding: var(--spacing-m);
+    }
+  }
+
+  /* Gap between the lockup and the carousel — m, as requested. */
+  .image-carousel-header {
+    margin-bottom: var(--spacing-m);
+  }
+
+  .image-carousel-header h3 {
+    max-width: 36ch;
+  }
+
+  /* Bleed past the section's horizontal padding so the rail meets both screen
+     edges and the looping motion reads as continuous. */
+  image-carousel {
+    display: block;
+    position: relative;
+  }
+
+  .image-carousel-viewport {
+    overflow: hidden;
+    margin-left: calc(-1 * var(--spacing-xs));
+    margin-right: calc(-1 * var(--spacing-xs));
+  }
+
+  @media (min-width: 900px) {
+    .image-carousel-viewport {
+      margin-left: calc(-1 * var(--spacing-m));
+      margin-right: calc(-1 * var(--spacing-m));
+    }
+  }
+
+  .image-carousel-container {
+    display: flex;
+    gap: var(--spacing-xs);
+    touch-action: pan-y pinch-zoom;
+  }
+
+  image-carousel.is-initialized .image-carousel-viewport {
+    cursor: grab;
+  }
+
+  image-carousel.is-initialized .image-carousel-viewport:active {
+    cursor: grabbing;
+  }
+
+  /* Slide widths — mobile-first peek pattern. */
+  .image-carousel-slide {
+    flex: 0 0 65%;
+    min-width: 0;
+  }
+
+  @media (min-width: 600px) {
+    .image-carousel-slide {
+      flex: 0 0 40%;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .image-carousel-slide {
+      flex: 0 0 calc((100% - 3 * var(--spacing-xs)) / 4);
+    }
+  }
+
+  /* Slide content — 4:5 portrait frame, image fills via object-fit cover so
+     mixed-aspect-ratio source images still read as a uniform rail. */
+  .image-carousel-image,
+  .image-carousel-placeholder {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--rad-s);
+  }
+
+  .image-carousel-placeholder {
+    background: var(--color-border);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Carousel section",
+  "tag": "section",
+  "class": "image-carousel-section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "default": "In the wild"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break.",
+      "default": "Frood in the real world."
+    },
+    {
+      "type": "range",
+      "id": "autoplay_interval",
+      "label": "Autoplay interval",
+      "info": "Seconds between automatic slides.",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 4
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 20,
+  "presets": [
+    {
+      "name": "Carousel section",
+      "blocks": [
+        { "type": "image" },
+        { "type": "image" },
+        { "type": "image" },
+        { "type": "image" }
+      ]
+    }
+  ]
+}
+{% endschema %}

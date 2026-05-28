@@ -4,7 +4,7 @@
     <summary class="header-mobile-toggle text-ui">Menu</summary>
     <nav class="header-mobile-panel" aria-label="{{ 'header.navigation' | t }}">
       {%- for link in linklists[section.settings.menu].links -%}
-        <a href="{{ link.url }}" class="nav-link text-ui">{{ link.title }}</a>
+        <a href="{{ link.url }}" class="nav-link text-h3">{{ link.title }}</a>
       {%- endfor -%}
     </nav>
   </details>
@@ -89,14 +89,14 @@
     }
   }
 
-  /* Mobile (<600px) only: bump the Menu toggle, Cart pill, and the nav links
-     inside the dropdown panel from .text-ui (14px) up to 16px for stronger
-     thumb-friendly targets. Tablet+ keeps .text-ui since the bento nav and
-     fixed cart pill sit in a denser composition. */
+  /* Mobile (<600px) only: bump the Menu toggle and Cart pill from .text-ui
+     (14px) up to 16px for stronger thumb-friendly targets. The mobile dropdown
+     nav links use .text-h3 instead of .text-ui, so they're sized by the h3
+     token (no manual override needed). Tablet+ keeps .text-ui since the bento
+     nav and fixed cart pill sit in a denser composition. */
   @media (max-width: 599.98px) {
     .header-mobile-toggle,
-    .header-cart,
-    .header-mobile-panel .nav-link {
+    .header-cart {
       font-size: 16px;
     }
   }
@@ -161,14 +161,14 @@
     width: calc(100vw - var(--spacing-xxs) * 2);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-s);
     /* Same bento card styling as .nav-link / .header-mobile-toggle */
     background-color: var(--color-nav);
     backdrop-filter: blur(var(--blur));
     -webkit-backdrop-filter: blur(var(--blur));
     border: 1px solid var(--color-border);
     border-radius: var(--rad-s);
-    padding: var(--spacing-xxs);
+    padding: var(--spacing-xs);
     /* Fade in/out tied to <details> [open] — pairs with base.css's
        block-size 0→auto tween on ::details-content (0.3s) so the panel
        both slides AND fades in on open, then both reverses on close. */
