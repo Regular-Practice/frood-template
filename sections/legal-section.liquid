@@ -1,0 +1,69 @@
+{%- comment -%}
+  Legal section — renders the page's title + content from Shopify admin
+  (Pages → [page] → Title / Content). Designed for legal/policy pages
+  (Privacy Policy, Terms of Service, etc.) where the merchant edits the
+  body text directly in the admin richtext editor.
+
+  Padding mirrors `sections/faq-section.liquid` / `sections/main-news.liquid`:
+    - Mobile (<600px):  top l, inline xs, bottom m
+    - Tablet (≥600px):  top steps up to xl
+    - Desktop (≥900px): inline steps up to m
+{%- endcomment -%}
+
+<section class="legal-section">
+  {%- if page.title != blank -%}
+    <h1 class="text-h2 legal-section-title">{{ page.title }}</h1>
+  {%- endif -%}
+
+  {%- if page.content != blank -%}
+    <div class="legal-section-content typeset">
+      {{ page.content }}
+    </div>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+  .legal-section {
+    padding-top: var(--spacing-l);
+    padding-inline: var(--spacing-xs);
+    padding-bottom: var(--spacing-m);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+
+  @media (min-width: 600px) {
+    .legal-section {
+      padding-top: var(--spacing-xl);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .legal-section {
+      padding-inline: var(--spacing-m);
+    }
+  }
+
+  .legal-section-title {
+    margin: 0 0 var(--spacing-l);
+    text-align: center;
+  }
+
+  /* Long-form body capped at a readable 60ch and centered in the section.
+     .typeset (base.css §6) handles paragraph + heading rhythm inside. */
+  .legal-section-content {
+    max-width: 60ch;
+    margin-inline: auto;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Legal content",
+  "tag": "section",
+  "class": "legal-section-wrapper",
+  "settings": [],
+  "presets": [
+    { "name": "Legal content" }
+  ]
+}
+{% endschema %}

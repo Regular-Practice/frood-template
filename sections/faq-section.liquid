@@ -1,0 +1,260 @@
+{%- comment -%}
+  FAQ section — section-lockup header (optional h1 eyebrow + h3 heading) above a
+  vertical stack of question blocks. Each block becomes a collapsible <details>
+  via <accordion-list> (assets/accordion.js + base.css §24 mechanics).
+
+  Padding mirrors `sections/main-news.liquid`:
+    - Mobile (<600px):  top l, inline xs, bottom m
+    - Tablet (≥600px):  top steps up to xl
+    - Desktop (≥900px): inline steps up to m
+{%- endcomment -%}
+
+<section class="faq-section">
+  {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+    <header class="faq-section-header section-lockup">
+      {%- if section.settings.eyebrow != blank -%}
+        <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+      {%- endif -%}
+    </header>
+  {%- endif -%}
+
+  {%- if section.blocks.size > 0 -%}
+    <accordion-list class="faq-section-list">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'subheader' -%}
+            <h3 class="text-h1 faq-section-subheader" {{ block.shopify_attributes }}>
+              {{ block.settings.text }}
+            </h3>
+          {%- when 'question' -%}
+            <details class="faq-section-item" {{ block.shopify_attributes }}>
+              <summary class="faq-section-question text-ui">
+                <span class="faq-section-question-text">{{ block.settings.question | newline_to_br }}</span>
+                <span class="faq-section-icon" aria-hidden="true">+</span>
+              </summary>
+              {%- comment -%}
+                Three-div structure for the smooth grid-rows close animation:
+                .accordion-content (size-driven grid wrapper), -inner (clips
+                overflow, no padding), .faq-section-answer (carries all padding).
+                See assets/accordion.js for the contract.
+              {%- endcomment -%}
+              <div class="accordion-content">
+                <div class="accordion-content-inner">
+                  <div class="faq-section-answer typeset">
+                    {{ block.settings.answer }}
+                  </div>
+                </div>
+              </div>
+            </details>
+        {%- endcase -%}
+      {%- endfor -%}
+    </accordion-list>
+  {%- endif -%}
+</section>
+
+<script type="module" src="{{ 'accordion.js' | asset_url }}"></script>
+
+{% stylesheet %}
+  .faq-section {
+    padding-top: var(--spacing-l);
+    padding-inline: var(--spacing-xs);
+    padding-bottom: var(--spacing-m);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+
+  @media (min-width: 600px) {
+    .faq-section {
+      padding-top: var(--spacing-xl);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .faq-section {
+      padding-inline: var(--spacing-m);
+    }
+  }
+
+  /* Override .section-lockup's left-aligned defaults → centered for this section. */
+  .faq-section-header {
+    margin-bottom: var(--spacing-l);
+    align-items: center;
+    text-align: center;
+  }
+
+  .faq-section-header h3 {
+    max-width: 36ch;
+  }
+
+  /* FAQ question stack capped at 600px and centered in the section. */
+  .faq-section-list {
+    display: block;
+    max-width: 600px;
+    margin-inline: auto;
+  }
+
+  /* Enclosed ledger: hairline above the first item of each group + below every
+     item. A subheader resets the group, so the first item AFTER a subheader
+     also gets a top border. --color-border (text @ 10%) stays light over a
+     long list. */
+  .faq-section-item {
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color var(--transition-fast);
+  }
+
+  .faq-section-item:first-child,
+  .faq-section-subheader + .faq-section-item {
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* Pale-yellow background on hover (signals clickability) and while open
+     (persists the active state). Transition is on .faq-section-item so the
+     bg fades both in and out. */
+  .faq-section-item:hover,
+  .faq-section-item[open] {
+    background-color: var(--color-accent-light);
+  }
+
+  /* Subheader (h3) sits between question groups as a section divider. Inherits
+     .text-h3 sizing; centered + symmetric m padding-block for clean rhythm. */
+  .faq-section-subheader {
+    margin: 0;
+    padding-block: var(--spacing-m);
+    text-align: center;
+  }
+
+  .faq-section-subheader:first-child {
+    padding-top: 0;
+  }
+
+  .faq-section-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-s);
+    padding: var(--spacing-xs);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .faq-section-question::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Rotating + icon — weight 400 hairline against the text-ui 500 question. */
+  .faq-section-icon {
+    flex-shrink: 0;
+    font-size: 1.5em;
+    font-weight: 400;
+    line-height: 1;
+    transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  /* No-JS baseline: native [open] drives the icon rotation. */
+  details[open] .faq-section-icon {
+    transform: rotate(45deg);
+  }
+
+  .faq-section-answer {
+    padding: 0 0 var(--spacing-s) 0;
+    max-width: 80ch;
+  }
+
+  /* Match the .faq-section-question's xs horizontal padding so the answer text
+     aligns with the question text instead of hugging the bg-colour edge.
+     Scoped to .faq-section so the global .accordion-content-inner rule
+     (base.css §24) stays as-is on the PDP accordions. */
+  .faq-section .accordion-content-inner {
+    padding-inline: var(--spacing-xs);
+  }
+
+  /* Enhanced (JS): re-add summary→body gap inside the animated body so it
+     tweens with the open, and drive the icon off .is-open (set at the start
+     of the tween) rather than [open] which lingers through the close. */
+  accordion-list[data-enhanced] .faq-section-answer {
+    padding-top: var(--spacing-xs);
+  }
+
+  accordion-list[data-enhanced] details:not(.is-open) .faq-section-icon {
+    transform: rotate(0deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-section-icon {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "FAQ section",
+  "tag": "section",
+  "class": "faq-section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "info": "Leave blank to hide.",
+      "default": "FAQ"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break. Leave blank to hide.",
+      "default": "Everything you\nneed to know."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "subheader",
+      "name": "Question subheader",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Subheader (h1 — small uppercase label)",
+          "info": "Sits as a divider between question groups (e.g. Shipping, Returns). Renders in --color-text-accent (warm grey) — brand rule.",
+          "default": "Section title"
+        }
+      ]
+    },
+    {
+      "type": "question",
+      "name": "Question",
+      "limit": 30,
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "question",
+          "label": "Question",
+          "info": "Press Enter to add a line break.",
+          "default": "What is your return policy?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>We offer a 30-day return policy on all items. Products must be in their original condition and packaging.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ section",
+      "blocks": [
+        { "type": "question" },
+        { "type": "question" }
+      ]
+    }
+  ]
+}
+{% endschema %}

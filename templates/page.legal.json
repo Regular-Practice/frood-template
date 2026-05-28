@@ -9,10 +9,10 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "main-page",
+    "legal": {
+      "type": "legal-section",
       "settings": {}
     }
   },
-  "order": ["main"]
+  "order": ["legal"]
 }

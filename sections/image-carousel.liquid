@@ -100,6 +100,12 @@
     touch-action: pan-y pinch-zoom;
   }
 
+  @media (min-width: 600px) {
+    .image-carousel-container {
+      gap: 0;
+    }
+  }
+
   image-carousel.is-initialized .image-carousel-viewport {
     cursor: grab;
   }
@@ -122,7 +128,7 @@
 
   @media (min-width: 900px) {
     .image-carousel-slide {
-      flex: 0 0 calc((100% - 3 * var(--spacing-xs)) / 4);
+      flex: 0 0 25%;
     }
   }
 

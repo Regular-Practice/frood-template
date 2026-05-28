@@ -9,10 +9,10 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "main-page",
+    "faq": {
+      "type": "faq-section",
       "settings": {}
     }
   },
-  "order": ["main"]
+  "order": ["faq"]
 }
