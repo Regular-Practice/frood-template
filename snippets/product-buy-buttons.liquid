@@ -17,7 +17,10 @@
     {% unless product.selected_or_first_available_variant.available %}disabled{% endunless %}
   >
     {%- if product.selected_or_first_available_variant.available -%}
-      {{ 'products.product.add_to_cart' | t }}
+      <span class="buy-button-inner">
+        <span class="buy-button-label">{{ 'products.product.add_to_cart' | t }}</span>
+        <span class="buy-button-price">{{ product.selected_or_first_available_variant.price | money }}</span>
+      </span>
     {%- else -%}
       {{ 'products.product.sold_out' | t }}
     {%- endif -%}

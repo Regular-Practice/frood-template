@@ -532,6 +532,17 @@
     text-transform: none;
   }
 
+  /* Label on the left, price on the right, pushed apart. Inner flex wrapper
+     because .button itself stays inline-block (see CLAUDE.md — flexing the
+     button defeats the text-box trim). */
+  .buy-button-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-xs);
+    width: 100%;
+  }
+
   .product-buy-add .buy-buttons {
     flex: 1;
     min-width: 0;

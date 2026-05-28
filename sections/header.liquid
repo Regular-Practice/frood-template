@@ -169,6 +169,21 @@
     border: 1px solid var(--color-border);
     border-radius: var(--rad-s);
     padding: var(--spacing-xxs);
+    /* Fade in/out tied to <details> [open] — pairs with base.css's
+       block-size 0→auto tween on ::details-content (0.3s) so the panel
+       both slides AND fades in on open, then both reverses on close. */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .header-mobile-menu[open] .header-mobile-panel {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header-mobile-panel {
+      transition: none;
+    }
   }
 
   /* Inside the dropdown, links are bare rows — no individual pill chrome. The
