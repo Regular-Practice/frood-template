@@ -105,7 +105,7 @@
           "name": {{ flavour.name.value | json }},
           "attributes": {{ flavour.atrributes.value | default: '' | json }},
           "image": {% if flavour.image.value != blank %}{{ flavour.image.value | image_url: width: 1500 | json }}{% else %}""{% endif %},
-          "sku": {{ flavour.product_reference.value.selected_or_first_available_variant.sku | default: '' | json }}
+          "sku": {{ flavour.product_reference.value.variants.first.sku | default: '' | json }}
         }{%- unless forloop.last -%},{%- endunless -%}
       {%- endfor -%}
     ]
