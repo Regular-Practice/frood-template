@@ -36,11 +36,13 @@ class SearchDrawer extends HTMLElement {
     this.debounceTimer = null;
 
     this.handleKeydown = this.handleKeydown.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
 
     this.closeBtn?.addEventListener('click', () => this.close());
     this.overlay?.addEventListener('click', () => this.close());
 
     this.input?.addEventListener('input', () => this.onInput());
+    this.querySelector('form')?.addEventListener('submit', this.handleSubmit);
 
     // Wire up the trigger button in the header
     this.trigger = document.querySelector('[aria-controls="search-drawer"]');
@@ -54,6 +56,7 @@ class SearchDrawer extends HTMLElement {
 
   disconnectedCallback() {
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    this.querySelector('form')?.removeEventListener('submit', this.handleSubmit);
   }
 
   get isOpen() {
@@ -78,6 +81,16 @@ class SearchDrawer extends HTMLElement {
       this.input.focus();
       this.input.select();
     }
+
+    window.froodTrack?.('search_opened');
+  }
+
+  handleSubmit() {
+    const query = this.input?.value.trim() || '';
+    window.froodTrack?.('search_submitted', {
+      q_length: query.length,
+      has_query: query.length > 0
+    });
   }
 
   close() {

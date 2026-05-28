@@ -118,6 +118,10 @@ class CartDrawer extends HTMLElement {
 
     document.addEventListener('keydown', this.handleKeydown);
     this.trapFocus();
+
+    window.froodTrack?.('cart_drawer_opened', {
+      has_items: !!this.querySelector('.cart-drawer-item')
+    });
   }
 
   close() {
