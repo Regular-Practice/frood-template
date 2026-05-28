@@ -300,10 +300,19 @@
     -webkit-backdrop-filter: blur(var(--blur));
     border: 1px solid var(--color-border);
     border-radius: var(--rad-s);
-    /* Match the nav-link chip: xxs all sides + 1px extra on the bottom. */
-    padding: var(--spacing-xxs) var(--spacing-xxs) calc(var(--spacing-xxs) + 1px);
+    /* Mobile: xxs all sides so the cart pill matches the Menu pill height. */
+    padding: var(--spacing-xxs);
     color: var(--color-text);
     transition: background-color var(--transition-fast);
+  }
+
+  /* Tablet+: align with the bento .nav-link chips (xxs all sides + 1px extra
+     on the bottom). The Menu pill is hidden here, so the mobile equality no
+     longer needs to hold. */
+  @media (min-width: 600px) {
+    .header-cart {
+      padding: var(--spacing-xxs) var(--spacing-xxs) calc(var(--spacing-xxs) + 1px);
+    }
   }
 
   .header-cart:hover {

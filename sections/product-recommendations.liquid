@@ -1,76 +1,78 @@
-<product-recommendations
-  class="product-recommendations"
-  data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.products_to_show }}&intent=related"
->
-  {%- capture lockup_header -%}
-    {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
-      <header class="product-recommendations-header section-lockup">
-        {%- if section.settings.eyebrow != blank -%}
-          <h2 class="text-h1">{{ section.settings.eyebrow }}</h2>
-        {%- endif -%}
+{%- comment -%}
+  Product recommendations — pulls from a merchant-picked collection (typically
+  "Shop") and excludes the product the visitor is currently viewing (when on a
+  PDP). No Shopify ML recommendations API; just a curated collection feed,
+  rendered at request time. Carousel on mobile + tablet, grid on desktop.
+{%- endcomment -%}
 
-        {%- if section.settings.heading != blank -%}
-          <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
-        {%- endif -%}
-      </header>
-    {%- endif -%}
-  {%- endcapture -%}
+{%- assign source_collection = section.settings.collection -%}
 
-  {%- if recommendations.performed? -%}
-    {%- if recommendations.products_count > 0 -%}
-      {{ lockup_header }}
+<section class="product-recommendations">
+  {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+    <header class="product-recommendations-header section-lockup">
+      {%- if section.settings.eyebrow != blank -%}
+        <h2 class="text-h1">{{ section.settings.eyebrow }}</h2>
+      {%- endif -%}
 
-      <product-recommendations-carousel>
-        <div class="product-recommendations-viewport">
-          <div class="product-recommendations-container grid-{{ section.settings.grid_columns }}">
-            {%- for product in recommendations.products -%}
-              <div class="product-recommendations-slide">
-                {% render 'product-card', product: product %}
-              </div>
-            {%- endfor -%}
-          </div>
-        </div>
-        <button
-          class="product-recommendations-arrow product-recommendations-arrow-prev"
-          type="button"
-          data-direction="prev"
-          aria-label="{{ 'general.accessibility.previous_slide' | t: default: 'Previous slide' }}"
-          hidden
-        >
-          {% render 'icon-arrow' %}
-        </button>
-        <button
-          class="product-recommendations-arrow product-recommendations-arrow-next"
-          type="button"
-          data-direction="next"
-          aria-label="{{ 'general.accessibility.next_slide' | t: default: 'Next slide' }}"
-          hidden
-        >
-          {% render 'icon-arrow' %}
-        </button>
-      </product-recommendations-carousel>
-    {%- endif -%}
-  {%- else -%}
-    {%- comment -%} Skeleton placeholders shown until JS fetches recommendations {%- endcomment -%}
-    {{ lockup_header }}
+      {%- if section.settings.heading != blank -%}
+        <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+      {%- endif -%}
+    </header>
+  {%- endif -%}
 
+  {%- comment -%}
+    Count how many candidates the source collection has after excluding the
+    current product, so we can skip the carousel entirely if there's nothing
+    to show. The actual exclusion happens inside the render loop below.
+  {%- endcomment -%}
+  {%- assign candidate_count = source_collection.products_count | default: 0 -%}
+  {%- if product != blank and source_collection.products contains product -%}
+    {%- assign candidate_count = candidate_count | minus: 1 -%}
+  {%- endif -%}
+
+  {%- if candidate_count > 0 -%}
     <product-recommendations-carousel>
       <div class="product-recommendations-viewport">
         <div class="product-recommendations-container grid-{{ section.settings.grid_columns }}">
-          {%- for i in (1..section.settings.products_to_show) -%}
+          {%- assign shown = 0 -%}
+          {%- for p in source_collection.products -%}
+            {%- if product != blank and p.id == product.id -%}
+              {%- continue -%}
+            {%- endif -%}
+            {%- if shown >= section.settings.products_to_show -%}
+              {%- break -%}
+            {%- endif -%}
             <div class="product-recommendations-slide">
-              <div class="placeholder-card" aria-hidden="true"></div>
+              {% render 'product-card', product: p %}
             </div>
+            {%- assign shown = shown | plus: 1 -%}
           {%- endfor -%}
         </div>
       </div>
+      <button
+        class="product-recommendations-arrow product-recommendations-arrow-prev"
+        type="button"
+        data-direction="prev"
+        aria-label="{{ 'general.accessibility.previous_slide' | t: default: 'Previous slide' }}"
+        hidden
+      >
+        {% render 'icon-arrow' %}
+      </button>
+      <button
+        class="product-recommendations-arrow product-recommendations-arrow-next"
+        type="button"
+        data-direction="next"
+        aria-label="{{ 'general.accessibility.next_slide' | t: default: 'Next slide' }}"
+        hidden
+      >
+        {% render 'icon-arrow' %}
+      </button>
     </product-recommendations-carousel>
   {%- endif -%}
-</product-recommendations>
+</section>
 
 <script src="{{ 'embla-carousel.umd.js' | asset_url }}" defer></script>
 <script src="{{ 'product-recommendations-carousel.js' | asset_url }}" defer></script>
-<script type="module" src="{{ 'product-recommendations.js' | asset_url }}"></script>
 
 {% stylesheet %}
   .product-recommendations {
@@ -209,26 +211,6 @@
       display: none;
     }
   }
-
-  /* ───── Shared ───── */
-
-  .placeholder-card {
-    aspect-ratio: 3 / 4;
-    background: var(--color-border, #e5e5e5);
-    border-radius: var(--rad-s);
-    animation: placeholder-pulse 1.5s ease-in-out infinite;
-  }
-
-  @keyframes placeholder-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .placeholder-card {
-      animation: none;
-    }
-  }
 {% endstylesheet %}
 
 {% schema %}
@@ -237,6 +219,12 @@
   "tag": "section",
   "class": "product-recommendations-section",
   "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Source collection",
+      "info": "Products from this collection are shown as recommendations. Typically the Shop collection. The currently-viewed product is automatically excluded."
+    },
     {
       "type": "text",
       "id": "eyebrow",
