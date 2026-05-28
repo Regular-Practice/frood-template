@@ -43,6 +43,13 @@
     gap: var(--spacing-l);
   }
 
+  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
+  @media (max-width: 599.98px) {
+    .footer {
+      padding-block: var(--spacing-m);
+    }
+  }
+
   /* On wider viewports: brand left, links + newsletter right, with space between. */
   @media (min-width: 900px) {
     .footer {

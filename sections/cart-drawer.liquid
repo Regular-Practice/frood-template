@@ -284,36 +284,43 @@
     color: var(--color-text);
   }
 
-  /* Compact white-segmented stepper — drawer only. The base .quantity-selector
-     (off-white, larger) is left intact for the PDP and cart page. */
+  /* Bundle-style stepper — drawer only. Dark 24×24 buttons that mirror the
+     bundle-builder's per-flavour stepper (assets/bundle-builder.liquid §stepper).
+     Base .quantity-selector (warm-beige slab) is left intact for the PDP and
+     cart page. */
   .cart-drawer .quantity-selector {
-    border: none;
-    /* Solid white pill: fills any sub-pixel seams between segments so the
-       beige panel never shows through. Dividers come from the input borders. */
-    background: #fff;
-    overflow: hidden;
-    align-items: stretch;
+    background: transparent;
+    border-radius: 0;
+    gap: var(--spacing-xxxs);
     font-size: 12px;
   }
 
   .cart-drawer .quantity-selector button {
-    width: auto;
-    min-width: 25px;
-    padding: var(--spacing-xxs);
-    background: #fff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    width: 24px;
+    height: 24px;
+    aspect-ratio: auto;
+    padding: 0;
+    background: var(--color-text);
+    color: var(--color-bg);
+    border-radius: var(--rad-s);
   }
 
   .cart-drawer .quantity-selector button:hover {
-    background: var(--color-accent-light);
+    background: var(--color-text);
+  }
+
+  .cart-drawer .quantity-selector button:disabled {
+    background: var(--color-bg-dark);
+    color: var(--color-text);
+    cursor: default;
   }
 
   .cart-drawer .quantity-selector input {
-    width: 32px;
-    padding: var(--spacing-xxs);
-    background: #fff;
+    width: auto;
+    min-width: 24px;
+    padding: 0;
+    background: transparent;
+    color: var(--color-text);
   }
 
   /* ---- Footer totals ---- */

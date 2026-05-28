@@ -89,6 +89,18 @@
     }
   }
 
+  /* Mobile (<600px) only: bump the Menu toggle, Cart pill, and the nav links
+     inside the dropdown panel from .text-ui (14px) up to 16px for stronger
+     thumb-friendly targets. Tablet+ keeps .text-ui since the bento nav and
+     fixed cart pill sit in a denser composition. */
+  @media (max-width: 599.98px) {
+    .header-mobile-toggle,
+    .header-cart,
+    .header-mobile-panel .nav-link {
+      font-size: 16px;
+    }
+  }
+
 
   /* Mobile menu disclosure — "Menu" summary + dropdown panel.
      position: relative so the panel below positions itself against this

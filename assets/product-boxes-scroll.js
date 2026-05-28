@@ -4,18 +4,19 @@
      50% of its height past the top of the viewport. The boxes column is
      `position: fixed` on desktop, so it never leaves the viewport on its
      own; we key off the section's scroll progress instead.
-   - Tablet / mobile (<900px): activates when the .product-boxes column's
+   - Tablet (600–899px): activates when the .product-boxes column's
      bottom edge has scrolled above the top of the viewport (i.e. the column
      has fully left the viewport going up).
+   - Phones (<600px): compact state is DISABLED. No sticky add-to-cart bar
+     on phones — the boxes scroll naturally with the page.
 
    - Compact behaviour per breakpoint is defined in main-product.liquid:
        Desktop:  stays fixed top-left, collapses render/accordions/variants.
        Tablet:   switches from absolute (anchored to the section's bottom)
                  to fixed (anchored to the viewport's bottom), same slim
                  form, but keeps the render visible (tablet-only override).
-       Mobile:   switches from static (in normal flow under the slider) to
-                 fixed at the viewport bottom — sticky add-to-cart bar,
-                 with a slide-up entry animation.
+       Phones:   compact state never applies — the boxes flow in document
+                 order without a sticky bar.
 
   Deactivation: latch the scrollY at the moment of activation; remove the
   class only once the user has scrolled back above that latched position.
@@ -32,6 +33,9 @@ const boxes = section?.querySelector('.product-boxes');
 if (section && boxes) {
   let activationScrollY = null;
   const desktopQuery = window.matchMedia('(min-width: 900px)');
+  // Compact state is disabled on phones — also handles cases where a resize
+  // shrinks the viewport into the phone range while .is-compact was active.
+  const phoneQuery = window.matchMedia('(max-width: 599.98px)');
 
   const shouldActivate = () => {
     if (desktopQuery.matches) {
@@ -43,6 +47,15 @@ if (section && boxes) {
   };
 
   const update = () => {
+    // Phones: never activate; strip the class if a resize left it lingering.
+    if (phoneQuery.matches) {
+      if (boxes.classList.contains('is-compact')) {
+        boxes.classList.remove('is-compact');
+        activationScrollY = null;
+      }
+      return;
+    }
+
     if (boxes.classList.contains('is-compact')) {
       if (activationScrollY !== null && window.scrollY < activationScrollY) {
         boxes.classList.remove('is-compact');

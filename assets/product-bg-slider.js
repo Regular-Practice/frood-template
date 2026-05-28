@@ -39,9 +39,21 @@ class ProductBgSlider extends HTMLElement {
       duration: 30,
     });
     this.classList.add('is-initialized');
+
+    // Nav buttons — pills pinned to the bottom-right of the slider, styled
+    // like the recipe video play/pause pill. Only wired once embla is up so
+    // a single-slide slider (where embla bails) doesn't get dead controls.
+    this.prevBtn = this.querySelector('.product-bg-slider-prev');
+    this.nextBtn = this.querySelector('.product-bg-slider-next');
+    this._onPrev = () => this.embla.scrollPrev();
+    this._onNext = () => this.embla.scrollNext();
+    this.prevBtn?.addEventListener('click', this._onPrev);
+    this.nextBtn?.addEventListener('click', this._onNext);
   }
 
   disconnectedCallback() {
+    this.prevBtn?.removeEventListener('click', this._onPrev);
+    this.nextBtn?.removeEventListener('click', this._onNext);
     if (this.embla) {
       this.embla.destroy();
     }

@@ -71,6 +71,13 @@
     color: var(--color-text);
   }
 
+  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
+  @media (max-width: 599.98px) {
+    .text-image-split {
+      padding-block: var(--spacing-m);
+    }
+  }
+
   /* Text side — matches featured-collection's section-lockup pattern.
      Vertical alignment is a per-section schema setting (top / middle / bottom)
      and only takes visual effect on tablet+ where the text column shares the
@@ -91,14 +98,8 @@
   /* Media side — up to 2 media items side by side, each with caption underneath */
   .text-image-split-media {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-
-  @media (min-width: 600px) {
-    .text-image-split-media {
-      flex-direction: row;
-    }
+    flex-direction: row;
+    gap: var(--spacing-xxs);
   }
 
   .text-image-split-media-item {

@@ -43,6 +43,13 @@
     background-color: var(--color-bg);
   }
 
+  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
+  @media (max-width: 599.98px) {
+    .center-section {
+      padding-block: var(--spacing-m);
+    }
+  }
+
   .center-section-inner {
     display: flex;
     flex-direction: column;

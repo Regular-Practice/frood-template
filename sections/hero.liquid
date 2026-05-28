@@ -163,6 +163,15 @@
     gap: var(--spacing-xxxs);
   }
 
+  /* Hidden on mobile (<600px). The product feature pill is decoration for
+     tablet+ — at phone widths it competes with the wordmark for the same
+     screen real estate. */
+  @media (max-width: 599.98px) {
+    .hero-frood-feature {
+      display: none;
+    }
+  }
+
   /* Mobile + tablet: product render (left) sits next to the text column
      (right). Desktop (≥900px) reverts to the original stacked column. */
   .hero-frood-product {
