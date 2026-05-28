@@ -123,7 +123,10 @@
     -webkit-backdrop-filter: blur(var(--blur));
     border: 1px solid var(--color-border);
     border-radius: var(--rad-s);
-    padding: var(--spacing-xxs);
+    /* xxs top + sides, xxxs (4px) bottom — matches .header-cart so the two
+       pills sit at the same height in the mobile flex row, AND applies the
+       same optical centring fudge for the all-caps "MENU" label. */
+    padding: var(--spacing-xxs) var(--spacing-xxs) var(--spacing-xxxs);
     text-align: left;
     color: var(--color-text);
     transition: background-color var(--transition-fast);
