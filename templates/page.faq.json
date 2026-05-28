@@ -11,8 +11,57 @@
   "sections": {
     "faq": {
       "type": "faq-section",
-      "settings": {}
+      "blocks": {
+        "question_9c3fTr": {
+          "type": "question",
+          "settings": {
+            "question": "Is Frood vegan?",
+            "answer": "<p>Absolutely! Frood’s savoury range is formulated with dehydrated plant based ingredients and herbs and is suitable for vegans. Each pack details a variety of handy tips including different proteins that can be added to your dish.</p>"
+          }
+        },
+        "question_arQhrK": {
+          "type": "question",
+          "settings": {
+            "question": "How are Frood products high fibre?",
+            "answer": "<p>Frood products are naturally high in fibre due to their ingredient composition. Across the range, recipes include<br/><br/><br/>Dehydrated vegetables such as carrot, tomato, onion, peppers and spinach</p><p>Plant-based ingredients like wholegrain oats, linseed, and faba bean protein</p><p>Herbs and spices, which also contribute small amounts of fibre</p><p>These ingredients result in fibre levels typically ranging from around 12g to 17g per 100g (dry product) across the range.</p><p>Fibre plays an important role in digestive health and can also help you feel fuller for longer.</p>"
+          }
+        },
+        "question_eTfDHz": {
+          "type": "question",
+          "settings": {
+            "question": "What accreditations do your manufacturers products hold?",
+            "answer": "<p>Our manufacturing partner operates to high food safety and quality standards and holds a BRCGS (Brand Reputation Compliance Global Standards) Food Safety certification at AA+ grade, which is the highest rating available and achieved through unannounced audits.<br/><br/>In addition, the site holds a number of recognised certifications and standards, including:</p><ul><li>RSPO (Roundtable on Sustainable Palm Oil)</li><li>Halal certification</li><li>SEDEX / SMETA (ethical trade and supply chain standards)</li><li>Gluten Free certification and controls</li><li>Compliance with FSMA (Food Safety Modernization Act) standards</li></ul><p>These accreditations ensure strong controls across food safety, quality, sustainability, and ethical practices.</p>"
+          }
+        },
+        "question_DBFhB3": {
+          "type": "question",
+          "settings": {
+            "question": "What are the allergens in Frood products?",
+            "answer": "<p>Please see a list of our existing products allergens.This list will be updated as regularly as possible, however for absolute certainty on product allergens please always refer to the back of the pouch information. <strong><br/><br/><br/><br/>Swedish Meatball Blend<br/></strong>Wheat & Barley: Risk of cross-contamination.<br/>Contains Wholegrain Oatmeal<br/>Gluten:  Risk of cross-contamination.<br/>Contains Mustard Powder<br/>Contains Brown Linseed<br/>Contains Garlic Powder</p><p><strong>Golden Curry Blend<br/></strong>There is a risk of gluten<br/>There is a risk of soya <br/>Contains Yeast Extract<br/>Mustard: Potential cross contamination within the supply chain.<br/>Contains Faba Bean Protein<br/>Contains Celery Root Powder<br/>Contains Garlic Powder</p><p><strong>Bella Bollognese Blend<br/></strong>Contains Yeast Extract (Flavouring Preparation)<br/>Contains Dehydrated Celery Root Powder<br/>Contains Garlic Powder</p><p><strong>Mexi Fiesta Blend </strong>Gluten: Risk of wheat gluten contamination<br/>Onion<br/>Contains Yeast Extract<br/>Contains Dehydrated Celery Root<br/>Contains Garlic Powder</p>"
+          }
+        },
+        "question_UmnnqP": {
+          "type": "question",
+          "settings": {
+            "question": "Will Frood pouches keep me fuller for longer?",
+            "answer": "<p>Frood pouches are made with a blend of plant-based ingredients including vegetables, fibres and, in some recipes, protein sources such as faba bean protein or wholegrain oats. These nutrients can help support satiety (feeling fuller for longer) as part of a balanced diet.</p><p>Frood recipes also provide a good source of fibre (typically around 12–17g per 100g in the dry blend), which can further contribute to a feeling of fullness.</p><p>As with all foods, how filling a meal is will depend on portion size and what you prepare it with.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "question_9c3fTr",
+        "question_arQhrK",
+        "question_eTfDHz",
+        "question_DBFhB3",
+        "question_UmnnqP"
+      ],
+      "settings": {
+        "eyebrow": "FAQ",
+        "heading": "Everything you need to know."
+      }
     }
   },
-  "order": ["faq"]
+  "order": [
+    "faq"
+  ]
 }
