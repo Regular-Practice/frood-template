@@ -60,6 +60,88 @@
             "question": "Where are Frood products manufactured?",
             "answer": "<p>All Frood products are manufactured in the United Kingdom.</p>"
           }
+        },
+        "subheader_bzEbWE": {
+          "type": "subheader",
+          "settings": {
+            "text": "Orders & Delivery"
+          }
+        },
+        "question_Bfdagw": {
+          "type": "question",
+          "settings": {
+            "question": "Where is my order?",
+            "answer": "<p>Once your order has been shipped, you will receive a shipping confirmation email with tracking details. Frood deliveries are mailbox friendly and therefore do not require signatures upon delivery. Please ensure you follow your order journey via the Royal Mail tracking link, and update the carrier of any special delivery requests directly. </p>"
+          }
+        },
+        "question_4e8BQ3": {
+          "type": "question",
+          "settings": {
+            "question": "Need help with an order?",
+            "answer": "<p>If you have any questions about your order, please contact our customer experience team at Hello@Frood.com with your Order Number. We aim to respond to all messages within 24 hours Monday- Friday, although from time to time, it may take us a little longer.</p>"
+          }
+        },
+        "question_b7w7AY": {
+          "type": "question",
+          "settings": {
+            "question": "Is there a minimum order quantity?",
+            "answer": "<p>The minimum order quantity is any four Frood Products. Orders with eight or more products qualify for free shipping. </p>"
+          }
+        },
+        "question_KGcqcG": {
+          "type": "question",
+          "settings": {
+            "question": "Do you offer refunds?",
+            "answer": "<p>As your purchase is a perishable food item, it is exempt from the 14-day statutory cooling-off period under the Consumer Contracts Regulations 2013. This means we’re unable to offer a refund unless the product is faulty, not as described, or unfit for consumption.</p><p>If you believe the item is faulty or there is an issue with its quality, please let us know and provide details (and photos if possible), and we’ll be happy to review this for you.</p><p>Thank you for your understanding.</p>"
+          }
+        },
+        "question_Xp4e96": {
+          "type": "question",
+          "settings": {
+            "question": "Where do you deliver to?",
+            "answer": "<p>Mainland UK only.</p>"
+          }
+        },
+        "question_QfARK7": {
+          "type": "question",
+          "settings": {
+            "question": "How long will my delivery take?",
+            "answer": "<p>Orders placed before 2pm Monday to Friday are processed the same day. </p><p>Orders placed outside of this time, or over the weekend/ Bank Holidays will be processed on the next working day. <br/><br/>Royal Mail Tracked 24 Standard Service is a next day delivery service charged at £4.99 per order. <br/><br/><br/>Royal Mail Tracked 48 Standard Service is a two day service charged at £3.99 per order. </p>"
+          }
+        },
+        "question_perHdf": {
+          "type": "question",
+          "settings": {
+            "question": "Order amendments, cancellations and redirections?",
+            "answer": "<p>As orders are picked and dispatched swiftly, we are unable to cancel orders once they have been placed. If you need support with an order, please contact  our customer experience team as soon as possible and we will try to assist.</p>"
+          }
+        },
+        "question_xbzDdd": {
+          "type": "question",
+          "settings": {
+            "question": "Are your products recyclable?",
+            "answer": "<p>Yes, all our packaging is recyclable including the packaging your order is shipped in.</p>"
+          }
+        },
+        "subheader_MwtpAt": {
+          "type": "subheader",
+          "settings": {
+            "text": "Other"
+          }
+        },
+        "question_7mQfTF": {
+          "type": "question",
+          "settings": {
+            "question": "How can I partnership with Frood?",
+            "answer": "<p>If you’re interested in working with us — whether as a stockist, distributor or brand partner — please get in touch with a short overview of your business, your audience, and the type of partnership you have in mind. Our team will review your enquiry and get back to you with next steps.</p>"
+          }
+        },
+        "question_qkJcJa": {
+          "type": "question",
+          "settings": {
+            "question": "Career opportunities",
+            "answer": "<p>We’re a growing food brand with a big appetite for doing things differently. That means getting stuck in, working collaboratively, and being part of a team that cares about great food and smart ideas.</p><p>Roles can span everything from product and marketing to operations and sales — and as we grow, so do the opportunities.</p><p>Keep an eye on our current vacancies via our website or social platforms. See something you like? Apply there.</p><p>Don’t see the perfect role just yet? We’re always keen to hear from passionate people — send us your CV and a quick intro, and we’ll keep you in mind for future opportunities.</p>"
+          }
         }
       },
       "block_order": [
@@ -69,7 +151,19 @@
         "question_DBFhB3",
         "question_UmnnqP",
         "question_jddaAQ",
-        "question_aQpENF"
+        "question_aQpENF",
+        "subheader_bzEbWE",
+        "question_Bfdagw",
+        "question_4e8BQ3",
+        "question_b7w7AY",
+        "question_KGcqcG",
+        "question_Xp4e96",
+        "question_QfARK7",
+        "question_perHdf",
+        "question_xbzDdd",
+        "subheader_MwtpAt",
+        "question_7mQfTF",
+        "question_qkJcJa"
       ],
       "settings": {
         "eyebrow": "FAQ",
