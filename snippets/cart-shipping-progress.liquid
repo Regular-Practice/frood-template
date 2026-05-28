@@ -101,26 +101,22 @@
     overflow: hidden;
   }
 
+  /* Width animates via transition (not @keyframes) so a cart update slides the
+     fill from its current position to the new target. cart-drawer.js carries
+     the outgoing width onto the freshly-swapped element to make that work — a
+     bare transition alone can't, because the body innerHTML swap mounts a new
+     fill node each refresh. */
   .cart-shipping-progress-fill {
     height: 100%;
     width: var(--fill);
     border-radius: inherit;
     background: var(--color-accent);
-    animation: shipping-fill var(--transition-slow);
-  }
-
-  @keyframes shipping-fill {
-    from {
-      width: 0;
-    }
-    to {
-      width: var(--fill);
-    }
+    transition: width var(--transition-slow);
   }
 
   @media (prefers-reduced-motion: reduce) {
     .cart-shipping-progress-fill {
-      animation: none;
+      transition: none;
     }
   }
 {% endstylesheet %}

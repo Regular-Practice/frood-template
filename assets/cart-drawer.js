@@ -73,7 +73,26 @@ class CartDrawer extends HTMLElement {
     if (!html || !this.body) return;
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const fresh = doc.querySelector('[data-drawer-body]');
-    if (fresh) this.body.innerHTML = fresh.innerHTML;
+    if (fresh) {
+      // The body innerHTML swap mounts a brand-new shipping-progress fill each
+      // refresh, so its `transition: width` has nothing to animate from and the
+      // bar would jump straight to the new value. Carry the outgoing fill's
+      // current rendered width onto the incoming one, force a reflow to lock it
+      // in, then clear the override so it transitions from where it actually was
+      // to the new target (CSS `width: var(--fill)`). No-op when the bar is
+      // absent (feature off / empty cart). Falls back to 0 → fill on first show.
+      const oldFill = this.body.querySelector('.cart-shipping-progress-fill');
+      const carryWidth = oldFill ? getComputedStyle(oldFill).width : null;
+
+      this.body.innerHTML = fresh.innerHTML;
+
+      const newFill = this.body.querySelector('.cart-shipping-progress-fill');
+      if (newFill) {
+        newFill.style.width = carryWidth ?? '0px';
+        void newFill.offsetWidth;
+        newFill.style.width = '';
+      }
+    }
     // Public hook — bubbles to `document`, no detail. No internal listener;
     // an extension point for analytics/integrations to re-init after a swap.
     this.dispatchEvent(new CustomEvent('content:loaded', { bubbles: true }));
