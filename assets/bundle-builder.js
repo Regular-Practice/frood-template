@@ -80,6 +80,8 @@ class BundleBuilder extends HTMLElement {
 
     this.flavours = this.parseFlavours();
     this.packs = this.loadDraft();
+    this.hasTrackedStart = this.total > 0;
+    this.hasTrackedCompletion = this.isValid;
 
     this.addButton = this.querySelector('[data-add]');
     this.addLabel = this.querySelector('[data-add-label]');
@@ -97,6 +99,13 @@ class BundleBuilder extends HTMLElement {
 
     this.render();
     this.emit();
+    this.track('bundle_builder_viewed', {
+      capacity: this.capacity,
+      max_boxes: this.maxBoxes,
+      flavour_count: Object.keys(this.flavours).length,
+      filled: this.total,
+      has_draft: this.total > 0
+    });
   }
 
   disconnectedCallback() {
@@ -195,24 +204,91 @@ class BundleBuilder extends HTMLElement {
     return this.countsFor(this.packs);
   }
 
+  get composition() {
+    const counts = this.counts;
+    return Object.keys(this.flavours)
+      .filter((id) => counts[id])
+      .map((id) => `${id}:${counts[id]}`)
+      .join('|');
+  }
+
+  track(eventName, data = {}) {
+    const payload = {
+      section_id: this.dataset.sectionId || 'default',
+      box_variant_id: this.boxVariantId || '',
+      ...data
+    };
+
+    if (window.froodTrack) {
+      window.froodTrack(eventName, payload);
+      return;
+    }
+
+    if (window.umami?.track) {
+      window.umami.track(eventName, payload);
+    }
+
+    if (new URLSearchParams(window.location.search).has('umami-debug')) {
+      console.info('[umami]', eventName, payload);
+    }
+  }
+
   // ---- Mutations --------------------------------------------------------
 
   add(id) {
     if (!this.flavours[id]) return;
     if (this.atCap) return;
+    const wasEmpty = this.total === 0;
     this.packs.push({ key: this.keySeq++, id });
     this.commit();
+
+    if (!this.hasTrackedStart && wasEmpty) {
+      this.hasTrackedStart = true;
+      this.track('bundle_builder_started', {
+        capacity: this.capacity
+      });
+    }
+
+    this.track('bundle_pack_added', {
+      flavour_id: id,
+      flavour_name: this.flavours[id]?.name || '',
+      filled: this.total,
+      capacity: this.capacity,
+      composition: this.composition
+    });
+
+    if (!this.hasTrackedCompletion && this.isValid) {
+      this.hasTrackedCompletion = true;
+      this.track('bundle_builder_completed', {
+        capacity: this.capacity,
+        complete_boxes: this.completeBoxes,
+        flavour_count: Object.keys(this.counts).length,
+        composition: this.composition
+      });
+    }
   }
 
   // Removes the LAST-added pack of this flavour — drives the per-flavour stepper.
   remove(id) {
+    let removed = false;
     for (let i = this.packs.length - 1; i >= 0; i--) {
       if (this.packs[i].id === id) {
         this.packs.splice(i, 1);
+        removed = true;
         break;
       }
     }
     this.commit();
+
+    if (removed) {
+      this.track('bundle_pack_removed', {
+        flavour_id: id,
+        flavour_name: this.flavours[id]?.name || '',
+        filled: this.total,
+        capacity: this.capacity,
+        composition: this.composition
+      });
+    }
   }
 
   commit() {
@@ -254,7 +330,23 @@ class BundleBuilder extends HTMLElement {
       else if (action === 'remove') this.remove(flavourId);
       return;
     }
-    if (e.target.closest('[data-add]') && this.isValid) this.addToCart();
+
+    const flavourLink = e.target.closest('.bundle-flavour-link');
+    if (flavourLink && this.contains(flavourLink)) {
+      const card = flavourLink.closest('[data-flavour-card]');
+      const id = card?.dataset.flavourId || '';
+      this.track('bundle_flavour_link_clicked', {
+        flavour_id: id,
+        flavour_name: this.flavours[id]?.name || '',
+        filled: this.total,
+        capacity: this.capacity
+      });
+      return;
+    }
+
+    if (e.target.closest('[data-add]')) {
+      this.addToCart();
+    }
   }
 
   // ---- Rendering --------------------------------------------------------
@@ -358,11 +450,37 @@ class BundleBuilder extends HTMLElement {
     return [...merged.values()];
   }
 
+  addFailureReason(message = '') {
+    const lower = message.toLowerCase();
+    if (lower.includes('sold') || lower.includes('stock') || lower.includes('available')) {
+      return 'out_of_stock';
+    }
+    if (lower.includes('network') || lower.includes('fetch')) {
+      return 'network_error';
+    }
+    if (message) {
+      return 'shopify_error';
+    }
+    return 'unknown';
+  }
+
   async addToCart() {
-    if (!this.isValid || !this.boxVariantId) return;
+    if (!this.isValid || !this.boxVariantId) {
+      this.track('bundle_add_validation_failed', {
+        reason: this.isValid ? 'missing_box_variant' : 'incomplete',
+        filled: this.total,
+        capacity: this.capacity,
+        composition: this.composition
+      });
+      return;
+    }
+
     this.clearError();
     this.addButton.classList.add('is-loading');
     this.addButton.disabled = true;
+    const trackedComposition = this.composition;
+    const trackedFlavourCount = Object.keys(this.counts).length;
+    const trackedCompleteBoxes = this.completeBoxes;
 
     const items = this.buildItems();
 
@@ -383,9 +501,18 @@ class BundleBuilder extends HTMLElement {
 
       const data = await response.json();
 
+      this.track('bundle_added_to_cart', {
+        capacity: this.capacity,
+        complete_boxes: trackedCompleteBoxes,
+        flavour_count: trackedFlavourCount,
+        composition: trackedComposition
+      });
+
       // Boxes are now in the native cart — drop the local draft so returning to
       // the page doesn't re-add them.
       this.packs = [];
+      this.hasTrackedStart = false;
+      this.hasTrackedCompletion = false;
       this.save();
       this.render();
       this.emit();
@@ -410,6 +537,12 @@ class BundleBuilder extends HTMLElement {
         );
       }
     } catch (error) {
+      this.track('bundle_add_failed', {
+        reason: this.addFailureReason(error.message),
+        filled: this.total,
+        capacity: this.capacity,
+        composition: trackedComposition
+      });
       this.showError(error.message);
     } finally {
       this.addButton.classList.remove('is-loading');

@@ -98,6 +98,7 @@ class RecipeModal extends HTMLElement {
     document.addEventListener('keydown', this.handleKeydown);
     (this.closeBtn || this.modal.querySelector(FOCUSABLE))?.focus();
     this.video?.play().catch(() => {});
+    window.froodTrack?.('recipe_opened');
     this.dispatchEvent(new CustomEvent('recipe-modal:opened', { bubbles: true }));
   }
 
