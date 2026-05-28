@@ -12,6 +12,7 @@ Thumbs.db
 
 # Local store schema dump (metafield/metaobject definitions — dev-only)
 .claude/meta-dump/
+.claude/meta-dump-client/
 
 # Local secrets (Shopify Admin API token, etc.)
 .env.local
