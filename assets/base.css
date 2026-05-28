@@ -14,23 +14,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Trim the font's leading half-cap above and descender below so these labels
-   sit optically centred on their own padding/margins. Scoped to the label and
-   heading surfaces that benefit — deliberately NOT the universal `*`, which
-   swept the trim into form controls (e.g. the quantity-selector input) and
-   arbitrary boxes where it collapsed the box model. Font-metric driven, so it
-   auto-adapts when the typeface is swapped. No-ops on non-text boxes and where
-   one of these classes becomes a flex item. */
-.text-h1,
-.text-h2,
-.text-h3,
-.button,
-.nav-link,
-.header-cart,
-.header-mobile-toggle {
-  text-box: trim-both cap alphabetic;
-}
-
 .unstyled-list {
   padding: 0;
   margin: 0;
@@ -521,15 +504,11 @@ body {
 .button {
   display: inline-block;
   text-align: center;
-  /* Symmetric vertical padding: the label text-box trim (§1, scoped to
-     .button/.nav-link/.text-h*) strips the cap/baseline half-leading so the
-     all-caps label is optically centred on its own — same treatment as
-     .nav-link. This relies on .button being a block-level box: as a flex item
-     the trim silently no-ops (the label becomes an anonymous flex item the rule
-     can't reach), which is why this used to need a manual 8px/7px asymmetric
-     fudge. As a flex item (e.g. .buy-buttons .button) inline-block blockifies to
-     block, which trim handles. */
-  padding: var(--spacing-xxs) var(--spacing-xs);
+  /* Asymmetric vertical padding (8px top / 6px bottom, 12px sides). Manual
+     optical centring of the all-caps HW Left label — the font's leading puts
+     more empty space above the cap-line than below the baseline, so the -2px
+     on the bottom pulls the label visually back to centre. */
+  padding: var(--spacing-xxs) var(--spacing-xs) calc(var(--spacing-xxs) - 2px);
   background-color: var(--color-accent);
   color: var(--color-text);
   border: none;

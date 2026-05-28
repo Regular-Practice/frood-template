@@ -246,9 +246,12 @@
     -webkit-backdrop-filter: blur(var(--blur));
     border: 1px solid var(--color-border);
     border-radius: var(--rad-s);
-    /* xxs all sides + 1px extra on the bottom (calc keeps the relationship to
-       the token explicit — if --spacing-xxs changes, the bottom follows). */
-    padding: var(--spacing-xxs) var(--spacing-xxs) calc(var(--spacing-xxs) + 1px);
+    /* xxs top + sides, xxxs (4px) bottom — manual optical centring of the
+       all-caps label (the font's leading puts more empty space above the
+       cap-line than below the baseline). Larger pull-down than .header-cart
+       because the bento link sits in a denser grid where the imbalance reads
+       more strongly. */
+    padding: var(--spacing-xxs) var(--spacing-xxs) var(--spacing-xxxs);
     text-align: left;
     color: var(--color-text);
     transition: background-color var(--transition-fast);
@@ -300,18 +303,20 @@
     -webkit-backdrop-filter: blur(var(--blur));
     border: 1px solid var(--color-border);
     border-radius: var(--rad-s);
-    /* Mobile: xxs all sides so the cart pill matches the Menu pill height. */
-    padding: var(--spacing-xxs);
+    /* xxs top + sides, xxxs (4px) bottom — manual optical centring of the
+       all-caps "Cart (N)" label (matches the .nav-link convention). */
+    padding: var(--spacing-xxs) var(--spacing-xxs) var(--spacing-xxxs);
     color: var(--color-text);
     transition: background-color var(--transition-fast);
   }
 
-  /* Tablet+: align with the bento .nav-link chips (xxs all sides + 1px extra
-     on the bottom). The Menu pill is hidden here, so the mobile equality no
-     longer needs to hold. */
+  /* Tablet+: align with the bento .nav-link chips (xxs top + sides, xxxs
+     bottom for optical centring). Could be merged with the base rule above
+     now that both breakpoints share the same padding, but kept split in case
+     they diverge again later. */
   @media (min-width: 600px) {
     .header-cart {
-      padding: var(--spacing-xxs) var(--spacing-xxs) calc(var(--spacing-xxs) + 1px);
+      padding: var(--spacing-xxs) var(--spacing-xxs) var(--spacing-xxxs);
     }
   }
 

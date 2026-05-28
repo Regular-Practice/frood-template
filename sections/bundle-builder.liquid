@@ -435,8 +435,8 @@
     opacity: 1;
   }
 
-  /* Inner flex wrapper — per the .button convention, never flex the button
-     itself (breaks the .button text-box trim) — flex an inner span instead. */
+  /* Inner flex wrapper — keep .button as inline-block per the convention; flex
+     an inner span when an icon + label need laying out side-by-side. */
   .bundle-add-inner {
     display: flex;
     justify-content: space-between;
@@ -449,6 +449,13 @@
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-xs);
+  }
+
+  /* 2px of padding-bottom nudges the arrow's bounding box up by ~1px within
+     the centered flex row — optically aligns it with the cap-line of the
+     all-caps label/price (compensates for the font's bottom-heavy baseline). */
+  .bundle-add-icon {
+    padding-bottom: 2px;
   }
 
   /* "× N" boxes multiplier next to the unit price (shown by JS only when the
