@@ -102,7 +102,7 @@
           "type": "media",
           "settings": {
             "image": "shopify://shop_images/IMG_9712.jpg",
-            "caption": "<p>Delicious Tacos with toppings made with the Swedish Meatball Blend, <a href=\"/pages/recipes\" target=\"_blank\" title=\"Recipes\">see recipe here</a></p>"
+            "caption": "<p>Delicious tacos with toppings made with the Swedish Meatball Blend, <a href=\"/pages/recipes\" target=\"_blank\" title=\"Recipes\">see recipe here</a></p>"
           }
         }
       },
