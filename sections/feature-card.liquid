@@ -50,7 +50,12 @@
           {%- endif -%}
 
           {%- if entry.news_link.value -%}
-            <a class="button feature-card-entry-link" href="{{ entry.news_link }}">
+            <a
+              class="button feature-card-entry-link"
+              href="{{ entry.news_link }}"
+              target="_blank"
+              rel="noopener"
+            >
               {{ section.settings.link_text | default: 'Read more' }}
             </a>
           {%- endif -%}
