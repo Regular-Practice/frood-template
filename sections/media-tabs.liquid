@@ -1,8 +1,11 @@
 {%- comment -%}
   Frood Media Tabs — three side-by-side cards. Each card has an h2 label at the top,
   a step SVG icon centered, and a description at the bottom. The active card crossfades
-  its icon out and its video in (video plays as the card background). When the video
-  ends, the next card auto-activates (looping). Cards are also clickable.
+  its icon out and its media (video or image) in. Video tabs auto-advance on `ended`;
+  image-only tabs auto-advance after 4s. Cards are also clickable.
+
+  Media: video OR image (merchant convention is one or the other; video wins defensively
+  if both are set, matching the news-card pattern).
 
   Step icons are theme assets named `step-1.svg`, `step-2.svg`, `step-3.svg` (etc.) —
   auto-derived from the block index. If you add a 4th block, drop a `step-4.svg` next
@@ -31,6 +34,14 @@
                 <source src="{{ source.url }}" type="{{ source.mime_type }}">
               {%- endfor -%}
             </video>
+          {%- elsif block.settings.image != blank -%}
+            {{ block.settings.image | image_url: width: 1200 | image_tag:
+                class: 'media-tab-image',
+                loading: 'lazy',
+                width: block.settings.image.width,
+                height: block.settings.image.height,
+                alt: block.settings.image.alt | default: block.settings.heading
+            }}
           {%- endif -%}
         </div>
 
@@ -124,7 +135,8 @@
     opacity: 1;
   }
 
-  .media-tab-video {
+  .media-tab-video,
+  .media-tab-image {
     display: block;
     width: 100%;
     height: 100%;
@@ -232,7 +244,13 @@
           "type": "video",
           "id": "video",
           "label": "Video",
-          "info": "Plays full-bleed as the card background when this tab is active. When it ends, the next tab auto-activates."
+          "info": "Plays full-bleed as the card background when this tab is active. When it ends, the next tab auto-activates. Takes precedence over Image if both are set."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "Used as the card background when this tab is active and no Video is set. The next tab auto-activates after 4 seconds."
         }
       ]
     }

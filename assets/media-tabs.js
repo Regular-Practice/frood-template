@@ -1,8 +1,13 @@
+// Image-only tabs have no `ended` event to drive auto-advance, so we fall back
+// to a fixed timer. 4s matches the rhythm of a short looping video clip.
+const IMAGE_ADVANCE_MS = 4000;
+
 class MediaTabs extends HTMLElement {
   connectedCallback() {
     this.tabs = Array.from(this.querySelectorAll('.media-tab'));
     this.videos = this.tabs.map((tab) => tab.querySelector('video'));
     this.activeIndex = 0;
+    this.imageTimer = null;
 
     if (this.tabs.length === 0) return;
 
@@ -54,10 +59,16 @@ class MediaTabs extends HTMLElement {
 
   disconnectedCallback() {
     this.scrollObserver?.disconnect();
+    if (this.imageTimer) clearTimeout(this.imageTimer);
   }
 
   setActive(index) {
     this.activeIndex = index;
+
+    if (this.imageTimer) {
+      clearTimeout(this.imageTimer);
+      this.imageTimer = null;
+    }
 
     this.tabs.forEach((tab, i) => {
       const isActive = i === index;
@@ -80,6 +91,14 @@ class MediaTabs extends HTMLElement {
         video.pause();
       }
     });
+
+    if (!this.videos[index]) {
+      this.imageTimer = setTimeout(() => {
+        if (this.activeIndex === index) {
+          this.setActive((index + 1) % this.tabs.length);
+        }
+      }, IMAGE_ADVANCE_MS);
+    }
   }
 }
 
