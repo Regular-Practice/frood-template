@@ -82,6 +82,9 @@ class BundleBuilder extends HTMLElement {
     this.packs = this.loadDraft();
     this.hasTrackedStart = this.total > 0;
     this.hasTrackedCompletion = this.isValid;
+    this.hasTrackedSecondBoxStart = this.total > this.capacity;
+    this.maxCompleteBoxesTracked = this.isValid ? this.completeBoxes : 0;
+    this.hasTrackedAbandon = false;
 
     this.addButton = this.querySelector('[data-add]');
     this.addLabel = this.querySelector('[data-add-label]');
@@ -97,6 +100,9 @@ class BundleBuilder extends HTMLElement {
     this._onRequestState = () => this.emit();
     document.addEventListener('bundle:request-state', this._onRequestState);
 
+    this._onPageHide = () => this.trackAbandon('pagehide');
+    window.addEventListener('pagehide', this._onPageHide);
+
     this.render();
     this.emit();
     this.track('bundle_builder_viewed', {
@@ -109,8 +115,10 @@ class BundleBuilder extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this.trackAbandon('disconnect');
     this.removeEventListener('click', this._onClick);
     document.removeEventListener('bundle:request-state', this._onRequestState);
+    window.removeEventListener('pagehide', this._onPageHide);
   }
 
   // ---- Config / persistence --------------------------------------------
@@ -233,6 +241,25 @@ class BundleBuilder extends HTMLElement {
     }
   }
 
+  trackingState(extra = {}) {
+    return {
+      capacity: this.capacity,
+      filled: this.total,
+      complete_boxes: this.completeBoxes,
+      remainder: this.remainder,
+      is_valid: this.isValid,
+      flavour_count: Object.keys(this.counts).length,
+      composition: this.composition,
+      ...extra
+    };
+  }
+
+  trackAbandon(reason) {
+    if (this.hasTrackedAbandon || this.total === 0) return;
+    this.hasTrackedAbandon = true;
+    this.track('bundle_builder_abandoned', this.trackingState({ reason }));
+  }
+
   // ---- Mutations --------------------------------------------------------
 
   add(id) {
@@ -242,11 +269,19 @@ class BundleBuilder extends HTMLElement {
     this.packs.push({ key: this.keySeq++, id });
     this.commit();
 
+    if (wasEmpty) {
+      this.hasTrackedAbandon = false;
+    }
+
     if (!this.hasTrackedStart && wasEmpty) {
       this.hasTrackedStart = true;
       this.track('bundle_builder_started', {
         capacity: this.capacity
       });
+      this.track('bundle_first_flavour_added', this.trackingState({
+        flavour_id: id,
+        flavour_name: this.flavours[id]?.name || ''
+      }));
     }
 
     this.track('bundle_pack_added', {
@@ -257,6 +292,14 @@ class BundleBuilder extends HTMLElement {
       composition: this.composition
     });
 
+    if (!this.hasTrackedSecondBoxStart && this.total === this.capacity + 1) {
+      this.hasTrackedSecondBoxStart = true;
+      this.track('bundle_second_box_started', this.trackingState({
+        flavour_id: id,
+        flavour_name: this.flavours[id]?.name || ''
+      }));
+    }
+
     if (!this.hasTrackedCompletion && this.isValid) {
       this.hasTrackedCompletion = true;
       this.track('bundle_builder_completed', {
@@ -266,11 +309,24 @@ class BundleBuilder extends HTMLElement {
         composition: this.composition
       });
     }
+
+    if (
+      this.isValid &&
+      this.completeBoxes > 1 &&
+      this.completeBoxes > this.maxCompleteBoxesTracked
+    ) {
+      this.maxCompleteBoxesTracked = this.completeBoxes;
+      this.track('bundle_multi_box_completed', this.trackingState());
+    }
   }
 
   // Removes the LAST-added pack of this flavour — drives the per-flavour stepper.
   remove(id) {
     let removed = false;
+    const wasValid = this.isValid;
+    const previousFilled = this.total;
+    const previousCompleteBoxes = this.completeBoxes;
+    const previousComposition = this.composition;
     for (let i = this.packs.length - 1; i >= 0; i--) {
       if (this.packs[i].id === id) {
         this.packs.splice(i, 1);
@@ -288,6 +344,16 @@ class BundleBuilder extends HTMLElement {
         capacity: this.capacity,
         composition: this.composition
       });
+
+      if (wasValid) {
+        this.track('bundle_completed_selection_revised', this.trackingState({
+          flavour_id: id,
+          flavour_name: this.flavours[id]?.name || '',
+          previous_filled: previousFilled,
+          previous_complete_boxes: previousCompleteBoxes,
+          previous_composition: previousComposition
+        }));
+      }
     }
   }
 
@@ -513,6 +579,9 @@ class BundleBuilder extends HTMLElement {
       this.packs = [];
       this.hasTrackedStart = false;
       this.hasTrackedCompletion = false;
+      this.hasTrackedSecondBoxStart = false;
+      this.maxCompleteBoxesTracked = 0;
+      this.hasTrackedAbandon = true;
       this.save();
       this.render();
       this.emit();
