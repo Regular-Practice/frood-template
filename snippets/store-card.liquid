@@ -1,0 +1,65 @@
+{%- comment -%}
+  Store row — owned by sections/main-stores.liquid.
+
+  One stockist in the locator list: retailer eyebrow → branch name → optional
+  address. A <button> so it's keyboard-operable; clicking flies the map to this
+  store's pin (handled by assets/store-map.js).
+
+  Expects:
+    - store (metaobject) with field handles: retailer, location
+      (coordinates + optional store_code live on the metaobject too but aren't
+       rendered here — store_code is internal, coordinates feed the map JSON in
+       the section)
+    - index (integer) — forloop.index0 from the section, must match the store's
+      position in the section's JSON coordinate blob so row ↔ pin line up
+
+  See CLAUDE.md → "Snippet Ownership". The `stores` metaobject does not exist in
+  the live store yet — see the section comment for the field handles to create.
+{%- endcomment -%}
+
+<li class="store-row" role="listitem">
+  <button class="store-row-button" type="button" data-store-row data-store-index="{{ index }}">
+    {%- if store.retailer != blank -%}
+      <span class="text-h1 store-row-retailer">{{ store.retailer }}</span>
+    {%- endif -%}
+
+    {%- if store.location != blank -%}
+      <span class="text-h3 store-row-name">{{ store.location }}</span>
+    {%- endif -%}
+  </button>
+</li>
+
+{% stylesheet %}
+  /* Hairline between rows, mirroring .news-index-grid: symmetric block padding
+     with a top border on every row but the first puts the hairline centred in
+     the gap. */
+  .store-row {
+    display: block;
+  }
+
+  .store-row:not(:first-child) {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .store-row-button {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+    width: 100%;
+    text-align: left;
+    padding: var(--spacing-s) var(--spacing-xs);
+    border-radius: var(--rad-s);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+  }
+
+  .store-row-button:hover {
+    background-color: var(--color-input-bg-hover);
+  }
+
+  /* Active = this row's pin is focused on the map (class set by store-map.js
+     on the button, which carries the [data-store-row] hook). */
+  .store-row-button.is-active {
+    background-color: var(--color-accent-light);
+  }
+{% endstylesheet %}

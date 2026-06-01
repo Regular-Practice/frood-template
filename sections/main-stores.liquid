@@ -1,0 +1,216 @@
+{%- comment -%}
+  Frood Stores (stockists) locator — section-lockup header above a two-column
+  store locator: a list of branches (left) beside a Mapbox map of pins (right).
+  Stacks on mobile (map on top). Loops the `stores` metaobject ONCE to render
+  both the list rows and a JSON coordinate blob the map JS reads.
+
+  The metaobject type handle is `store_locations`, referenced as
+  `shop.metaobjects.store_locations`. If the handle in admin changes, swap the
+  dot-key. The definition has these field handles:
+    - retailer     single line text  (e.g. "Marks & Spencer" — eyebrow)
+    - location      single line text  (branch, e.g. "Islington")
+    - coordinates  single line text  ("lat, lng" — paste straight from a Google
+                                       Maps right-click, e.g. "51.5362, -0.1033";
+                                       store-map.js splits on the comma)
+    - store_code   single line text  (optional — M&S internal number; never shown)
+
+  List rows and the JSON array share the index (forloop.index0), so a row click
+  maps to the right pin. Stores with blank/unparseable coordinates still list;
+  they just get no pin. The Mapbox public token is a section setting
+  (mapbox_access_token) — restrict it by URL in the Mapbox dashboard.
+
+  See CLAUDE.md → "Snippet Ownership" — `store-card` is owned by this section.
+{%- endcomment -%}
+
+<section class="stores-index">
+  <header class="stores-index-header section-lockup">
+    {%- if section.settings.eyebrow != blank -%}
+      <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+    {%- endif -%}
+
+    {%- if section.settings.heading != blank -%}
+      <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+    {%- endif -%}
+  </header>
+
+  {%- assign all_stores = shop.metaobjects.store_locations.values -%}
+
+  {%- if all_stores.count > 0 -%}
+    <store-map
+      class="stores-locator"
+      data-token="{{ section.settings.mapbox_access_token }}"
+      data-map-style="{{ section.settings.mapbox_map_style }}"
+    >
+      <ul class="stores-list" role="list">
+        {%- for store in all_stores -%}
+          {% render 'store-card', store: store, index: forloop.index0 %}
+        {%- endfor -%}
+      </ul>
+
+      <div class="stores-map-col">
+        <div class="stores-map" data-map-canvas></div>
+      </div>
+
+      {%- comment -%} Coordinate blob — index-aligned with the list rows above. {%- endcomment -%}
+      <script type="application/json" data-store-data>
+        [
+          {%- for store in all_stores -%}
+            {
+              "retailer": {{ store.retailer | json }},
+              "location": {{ store.location | json }},
+              "coordinates": {{ store.coordinates | json }}
+            }{%- unless forloop.last -%},{%- endunless -%}
+          {%- endfor -%}
+        ]
+      </script>
+    </store-map>
+  {%- else -%}
+    <p class="stores-index-empty text-body">
+      {{ 'stores.index.empty' | t }}
+    </p>
+  {%- endif -%}
+</section>
+
+<script type="module" src="{{ 'store-map.js' | asset_url }}"></script>
+
+{% stylesheet %}
+  /* Padding system mirrors .news-index. */
+  .stores-index {
+    padding-top: var(--spacing-l);
+    padding-inline: var(--spacing-xs);
+    padding-bottom: var(--spacing-m);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+
+  @media (min-width: 600px) {
+    .stores-index {
+      padding-top: var(--spacing-xl);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .stores-index {
+      padding-inline: var(--spacing-m);
+    }
+  }
+
+  .stores-index-header {
+    margin-bottom: var(--spacing-l);
+  }
+
+  .stores-index-header h3 {
+    max-width: 36ch;
+  }
+
+  /* Locator: stacked on mobile (map first, then list); two columns on desktop
+     with the list on the left and a sticky map on the right. The JSON <script>
+     and any controls collapse out of flow. */
+  .stores-locator {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-m);
+  }
+
+  .stores-locator [data-store-data] {
+    display: none;
+  }
+
+  .stores-map {
+    width: 100%;
+    height: 320px;
+    border-radius: var(--rad-s);
+    overflow: hidden;
+    background-color: var(--color-bg-dark);
+  }
+
+  /* If the token is missing or Mapbox fails to load, hide the empty canvas
+     rather than show a blank beige box — the list still works. */
+  .stores-locator.is-map-unavailable .stores-map-col {
+    display: none;
+  }
+
+  .stores-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 900px) {
+    .stores-locator {
+      grid-template-columns: 2fr 3fr;
+      align-items: start;
+      gap: var(--spacing-l);
+    }
+
+    .stores-list {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .stores-map-col {
+      grid-column: 2;
+      grid-row: 1;
+      position: sticky;
+      top: var(--spacing-m);
+    }
+
+    .stores-map {
+      height: 70vh;
+      max-height: 640px;
+    }
+  }
+
+  /* Keep Mapbox's popup readable in the Frood type system. */
+  .store-map-popup {
+    color: var(--color-text);
+  }
+
+  .stores-index-empty {
+    padding: var(--spacing-l) 0;
+    color: var(--color-text-accent);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Stores locator",
+  "tag": "section",
+  "class": "stores-index-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "default": "Stockists"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break.",
+      "default": "Find Frood near you."
+    },
+    {
+      "type": "header",
+      "content": "Map"
+    },
+    {
+      "type": "text",
+      "id": "mapbox_access_token",
+      "label": "Mapbox access token",
+      "info": "Public token (pk.…) from your Mapbox account. Restrict it by URL in the Mapbox dashboard. Without it the list still shows; the map is hidden."
+    },
+    {
+      "type": "text",
+      "id": "mapbox_map_style",
+      "label": "Mapbox style URL",
+      "default": "mapbox://styles/mapbox/light-v11"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Stores locator"
+    }
+  ]
+}
+{% endschema %}

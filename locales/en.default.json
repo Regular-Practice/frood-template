@@ -287,6 +287,11 @@
       "empty": "Nothing to report just yet — check back soon."
     }
   },
+  "stores": {
+    "index": {
+      "empty": "Stockists are on the way — check back soon."
+    }
+  },
   "recipes": {
     "index": {
       "empty": "New recipes are on the way — check back soon."
