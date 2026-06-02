@@ -30,24 +30,30 @@
 </li>
 
 {% stylesheet %}
-  /* Hairline between rows, mirroring .news-index-grid: symmetric block padding
-     with a top border on every row but the first puts the hairline centred in
-     the gap. */
+  /* Hairline between rows, mirroring .news-index-grid: a solid --color-text
+     top border on every row but the first, with the rows' equal block padding
+     putting the line centred in the gap between two locations. */
   .store-row {
     display: block;
   }
 
   .store-row:not(:first-child) {
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-text);
   }
 
+  /* List text sits flush with the section header and the map's edge, so the
+     section's left/right insets read as even. The hover/active highlight bleeds
+     symmetrically past the text by --spacing-xs on each side (width bumped to
+     match the negative inline margin), so it keeps breathing room around the
+     text without indenting the text itself. */
   .store-row-button {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xxs);
-    width: 100%;
+    width: calc(100% + 2 * var(--spacing-xs));
     text-align: left;
     padding: var(--spacing-s) var(--spacing-xs);
+    margin-inline: calc(-1 * var(--spacing-xs));
     border-radius: var(--rad-s);
     cursor: pointer;
     transition: background-color var(--transition-fast);

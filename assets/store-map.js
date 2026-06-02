@@ -2,28 +2,30 @@
  * <store-map> — store locator map for the Stores (stockists) page.
  * Owned by sections/main-stores.liquid.
  *
- * Light DOM web component. Wraps the whole locator (list column + map column).
- * Lazy-loads Mapbox GL from CDN (global `mapboxgl`, not the three.js import map),
- * reads a JSON coordinate blob emitted by the section, drops one pin per store,
- * and auto-fits the view to all pins.
+ * Light DOM web component wrapping the whole locator (list column + map column).
+ * Lazy-loads MapLibre GL from CDN (global `maplibregl`) and renders OpenFreeMap
+ * vector tiles — keyless: no account or access token. The map style is authored
+ * here from the live Frood brand tokens (read off :root at runtime), so every
+ * feature — land, water, buildings, parks, roads — is brand-coloured rather than
+ * a default basemap. (Approach translated from the 68 Newman Street MapLibre map,
+ * recoloured for Frood's warm light palette.)
  *
- * Interaction: clicking a list row flies the map to that store's pin and opens
- * its popup; clicking a pin marks the matching row `.is-active`. List rows and
- * the JSON array share the same index, so row[i] ↔ store[i].
+ * Reads a JSON coordinate blob emitted by the section, drops one pin per store,
+ * auto-fits the view to all pins. Clicking a list row flies to that store's pin
+ * and opens its popup; clicking a pin marks the matching row + pin `.is-active`.
+ * List rows and the JSON array share the index, so row[i] ↔ store[i].
  *
- * Config via data-attributes (data, not state — state uses the .is-* classes):
- *   data-token       Mapbox public access token (pk.…)
- *   data-map-style   Mapbox style URL (defaults to light-v11)
+ * State uses the .is-* classes (not data attributes). Data attributes carry
+ * config/data only: [data-store-data] (JSON), [data-store-row], [data-map-canvas].
  */
 
-const MAPBOX_VERSION = "v3.9.1";
-const DEFAULT_STYLE = "mapbox://styles/mapbox/light-v11";
-const PIN_COLOR = "#36262B"; // --color-text
+const MAPLIBRE_VERSION = "4.7.1";
+const TILE_URL = "https://tiles.openfreemap.org/planet";
+const ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://openfreemap.org">OpenFreeMap</a>';
 
 class StoreMap extends HTMLElement {
   connectedCallback() {
-    this.token = this.getAttribute("data-token") || "";
-    this.mapStyle = this.getAttribute("data-map-style") || DEFAULT_STYLE;
     this.canvas = this.querySelector("[data-map-canvas]");
     this.rows = Array.from(this.querySelectorAll("[data-store-row]"));
     this.markers = [];
@@ -38,7 +40,7 @@ class StoreMap extends HTMLElement {
     // List interaction works even if the map can't load.
     this.bindRows();
 
-    if (!this.token || !this.canvas || !this.stores.length) {
+    if (!this.canvas || !this.stores.length) {
       this.classList.add("is-map-unavailable");
       return;
     }
@@ -57,11 +59,11 @@ class StoreMap extends HTMLElement {
   }
 
   loadLibrary() {
-    if (window.mapboxgl) return Promise.resolve();
+    if (window.maplibregl) return Promise.resolve();
     if (StoreMap.loader) return StoreMap.loader;
 
     StoreMap.loader = new Promise((resolve, reject) => {
-      const base = `https://api.mapbox.com/mapbox-gl-js/${MAPBOX_VERSION}/mapbox-gl`;
+      const base = `https://unpkg.com/maplibre-gl@${MAPLIBRE_VERSION}/dist/maplibre-gl`;
 
       const css = document.createElement("link");
       css.rel = "stylesheet";
@@ -78,31 +80,148 @@ class StoreMap extends HTMLElement {
     return StoreMap.loader;
   }
 
-  initMap() {
-    mapboxgl.accessToken = this.token;
+  /* Read a CSS custom property off :root, with a fallback. */
+  token(name, fallback) {
+    const value = getComputedStyle(document.documentElement)
+      .getPropertyValue(name)
+      .trim();
+    return value || fallback;
+  }
 
-    this.map = new mapboxgl.Map({
+  /* Frood basemap style — translated from the Newman MapLibre layer set, but
+     recoloured from live brand tokens for a warm, light, on-brand map. */
+  buildStyle() {
+    const bg = this.token("--color-bg", "#FFFEF9");
+    const bgDark = this.token("--color-bg-dark", "#DFDCD4");
+    const accentLight = this.token("--color-accent-light", "#F7F0C1");
+    const text = this.token("--color-text", "#36262B");
+    const textAccent = this.token("--color-text-accent", "#979193");
+
+    return {
+      version: 8,
+      // Font source — required for any text (place labels) to render.
+      glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+      sources: {
+        openmaptiles: { type: "vector", url: TILE_URL, attribution: ATTRIBUTION },
+      },
+      layers: [
+        { id: "background", type: "background", paint: { "background-color": bg } },
+        {
+          id: "landuse",
+          type: "fill",
+          source: "openmaptiles",
+          "source-layer": "landuse",
+          paint: { "fill-color": accentLight, "fill-opacity": 0.45 },
+        },
+        {
+          id: "park",
+          type: "fill",
+          source: "openmaptiles",
+          "source-layer": "park",
+          paint: { "fill-color": accentLight, "fill-opacity": 0.55 },
+        },
+        {
+          id: "water",
+          type: "fill",
+          source: "openmaptiles",
+          "source-layer": "water",
+          paint: { "fill-color": bgDark },
+        },
+        {
+          id: "building",
+          type: "fill",
+          source: "openmaptiles",
+          "source-layer": "building",
+          paint: { "fill-color": bgDark, "fill-opacity": 0.55 },
+        },
+        {
+          id: "road-minor",
+          type: "line",
+          source: "openmaptiles",
+          "source-layer": "transportation",
+          filter: ["in", "class", "minor", "service", "path", "track"],
+          paint: { "line-color": accentLight, "line-width": 1, "line-opacity": 0.8 },
+        },
+        {
+          id: "road-secondary",
+          type: "line",
+          source: "openmaptiles",
+          "source-layer": "transportation",
+          filter: ["in", "class", "secondary", "tertiary"],
+          paint: { "line-color": accentLight, "line-width": 1.5 },
+        },
+        {
+          id: "road-primary",
+          type: "line",
+          source: "openmaptiles",
+          "source-layer": "transportation",
+          filter: ["in", "class", "primary", "trunk"],
+          paint: { "line-color": accentLight, "line-width": 2.5 },
+        },
+        {
+          id: "road-major",
+          type: "line",
+          source: "openmaptiles",
+          "source-layer": "transportation",
+          filter: ["==", "class", "motorway"],
+          paint: { "line-color": accentLight, "line-width": 3.5 },
+        },
+        {
+          // Main place wording (London + major districts) for orientation —
+          // limited to city/town/suburb so it stays uncluttered.
+          id: "place-labels",
+          type: "symbol",
+          source: "openmaptiles",
+          "source-layer": "place",
+          filter: ["in", "class", "city", "town", "suburb"],
+          layout: {
+            "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
+            "text-font": ["Noto Sans Regular"],
+            "text-transform": "uppercase",
+            "text-letter-spacing": 0.08,
+            "text-size": [
+              "match",
+              ["get", "class"],
+              "city", 15,
+              "town", 12,
+              "suburb", 11,
+              11,
+            ],
+          },
+          paint: {
+            "text-color": text,
+            "text-halo-color": bg,
+            "text-halo-width": 1.5,
+          },
+        },
+      ],
+    };
+  }
+
+  initMap() {
+    this.map = new maplibregl.Map({
       container: this.canvas,
-      style: this.mapStyle,
+      style: this.buildStyle(),
       cooperativeGestures: true, // require ctrl / two-finger to zoom — keeps page scroll usable
+      attributionControl: { compact: true },
     });
     this.map.addControl(
-      new mapboxgl.NavigationControl({ showCompass: false }),
+      new maplibregl.NavigationControl({ showCompass: false }),
       "top-right"
     );
 
-    const bounds = new mapboxgl.LngLatBounds();
+    const bounds = new maplibregl.LngLatBounds();
 
     this.stores.forEach((store, i) => {
       const lngLat = this.lngLatOf(store);
       if (!lngLat) return;
 
-      const popup = new mapboxgl.Popup({
-        offset: 24,
+      const popup = new maplibregl.Popup({
+        offset: 18,
         closeButton: false,
       }).setHTML(this.popupHtml(store));
 
-      const marker = new mapboxgl.Marker({ color: PIN_COLOR })
+      const marker = new maplibregl.Marker({ element: this.pinElement() })
         .setLngLat(lngLat)
         .setPopup(popup)
         .addTo(this.map);
@@ -113,9 +232,12 @@ class StoreMap extends HTMLElement {
       bounds.extend(lngLat);
     });
 
-    if (!bounds.isEmpty()) {
-      this.map.fitBounds(bounds, { padding: 64, maxZoom: 14, duration: 0 });
+    if (bounds.isEmpty()) {
+      this.classList.add("is-map-unavailable");
+      return;
     }
+
+    this.map.fitBounds(bounds, { padding: 56, maxZoom: 15, duration: 0 });
   }
 
   bindRows() {
@@ -129,6 +251,10 @@ class StoreMap extends HTMLElement {
     if (!store) return;
 
     this.rows.forEach((row, i) => row.classList.toggle("is-active", i === index));
+    this.markers.forEach((marker, i) => {
+      const el = marker && marker.getElement();
+      if (el) el.classList.toggle("is-active", i === index);
+    });
 
     if (!this.map) return;
 
@@ -137,20 +263,16 @@ class StoreMap extends HTMLElement {
 
     this.map.flyTo({
       center: lngLat,
-      zoom: 14,
+      zoom: 15,
       duration: this.reducedMotion ? 0 : 800,
     });
 
-    // Close any open popups, then open this store's.
-    this.markers.forEach((marker, i) => {
-      if (i !== index && marker && marker.getPopup().isOpen()) marker.togglePopup();
-    });
     const marker = this.markers[index];
-    if (marker && !marker.getPopup().isOpen()) marker.togglePopup();
+    if (marker) marker.togglePopup();
   }
 
   /* Parse the single "lat, lng" coordinates field (as pasted from a Google Maps
-     right-click) into Mapbox's [lng, lat] order. Returns null if blank/invalid. */
+     right-click) into MapLibre's [lng, lat]. Returns null if blank/invalid. */
   lngLatOf(store) {
     if (!store || typeof store.coordinates !== "string") return null;
     const parts = store.coordinates.split(",");
@@ -159,6 +281,15 @@ class StoreMap extends HTMLElement {
     const lng = parseFloat(parts[1]);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
     return [lng, lat];
+  }
+
+  pinElement() {
+    const el = document.createElement("div");
+    el.className = "store-pin";
+    const dot = document.createElement("span");
+    dot.className = "store-pin-dot";
+    el.appendChild(dot);
+    return el;
   }
 
   popupHtml(store) {
