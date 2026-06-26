@@ -23,7 +23,13 @@
   {%- comment -%} Discount % from the first allocation (e.g. 1200→1080 = 10%). {%- endcomment -%}
   {%- assign discount = first_alloc.compare_at_price | minus: first_alloc.price | times: 100.0 | divided_by: first_alloc.compare_at_price | round -%}
 
-  <product-subscription class="product-subscription" data-onetime-money="{{ variant.price | money }}">
+  <product-subscription
+    class="product-subscription"
+    data-onetime-money="{{ variant.price | money }}"
+    data-onetime-cents="{{ variant.price }}"
+    data-money-format="{{ shop.money_format }}"
+    data-min-subscription-qty="2"
+  >
 
     <fieldset class="subscription-options">
       <legend class="visually-hidden">{{ 'products.product.purchase_options' | t }}</legend>
@@ -61,6 +67,7 @@
           <option
             value="{{ allocation.selling_plan.id }}"
             data-price-money="{{ allocation.price | money }}"
+            data-price-cents="{{ allocation.price }}"
           >
             {{ allocation.selling_plan.name | split: ' subscription' | first }}
           </option>
@@ -98,6 +105,11 @@
     align-items: center;
     gap: var(--spacing-xs);
     cursor: pointer;
+  }
+
+  /* Gated off below the minimum subscription quantity (JS toggles [hidden]). */
+  .subscription-option[hidden] {
+    display: none;
   }
 
   /* Hide the native radio; .subscription-box is the visible square control. */
