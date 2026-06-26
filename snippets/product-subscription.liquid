@@ -111,10 +111,20 @@
   }
 
   /* Below the minimum subscription quantity the option is greyed out and not
-     selectable (JS toggles .is-disabled and disables the radio). */
+     selectable (JS toggles .is-disabled and disables the radio). Greyed via
+     muted colours — NOT opacity — so the tooltip child stays full-strength. */
   .subscription-option.is-disabled {
-    opacity: 0.45;
     cursor: not-allowed;
+    color: var(--color-text-accent);
+  }
+
+  .subscription-option.is-disabled .subscription-option-label,
+  .subscription-option.is-disabled .subscription-option-price {
+    color: var(--color-text-accent);
+  }
+
+  .subscription-option.is-disabled .subscription-box {
+    border-color: var(--color-text-accent);
   }
 
   /* Hover/focus hint that explains the gate — only visible while disabled. */
