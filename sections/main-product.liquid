@@ -80,9 +80,9 @@
 
       <accordion-list>
 
-      {%- comment -%} Details box: product description (open by default) {%- endcomment -%}
+      {%- comment -%} Details box: product description (closed by default — opens on click) {%- endcomment -%}
       {%- if product.description != blank -%}
-        <details class="product-box product-accordion" open>
+        <details class="product-box product-accordion">
           <summary>
             <span class="text-ui">{{ 'products.product.details' | t }}</span>
             <span class="product-accordion-icon" aria-hidden="true">
@@ -162,8 +162,17 @@
       {%- endunless -%}
 
       {%- comment -%}
-        App blocks (e.g. Recharge subscription widget). Each renders in its
-        own .product-box surface, above the buy row.
+        Subscription selector: native Frood-styled one-time / subscribe picker.
+        Renders only when the product has Recharge selling plans; writes the
+        chosen selling_plan into a hidden input read by product-form.js.
+      {%- endcomment -%}
+      {% render 'product-subscription', product: product %}
+
+      {%- comment -%}
+        App blocks (e.g. other Recharge widgets). Each renders in its own
+        .product-box surface, above the buy row. (The Recharge subscription
+        widget itself is now replaced by the native selector above — remove
+        that app block from this section in the theme editor.)
       {%- endcomment -%}
       {%- for block in section.blocks -%}
         {%- if block.type == '@app' -%}
@@ -255,6 +264,7 @@
 </section>
 
 <script src="{{ 'product-form.js' | asset_url }}" defer></script>
+<script src="{{ 'product-subscription.js' | asset_url }}" defer></script>
 <script src="{{ 'embla-carousel.umd.js' | asset_url }}" defer></script>
 <script src="{{ 'product-bg-slider.js' | asset_url }}" defer></script>
 <script src="{{ 'quantity-selector.js' | asset_url }}" defer></script>
@@ -874,15 +884,6 @@
       transform: translateY(0);
       opacity: 1;
     }
-  }
-
-  /* Recharge subscription widget (app block). All overrides scoped to the
-     .product-box-app wrapper so they only ever touch this widget. First pass:
-     shrink the widget text to the Frood UI size (app-block CSS is specific, so
-     !important is needed to win). */
-  .product-box-app,
-  .product-box-app * {
-    font-size: var(--type-ui-size) !important;
   }
 
 {% endstylesheet %}

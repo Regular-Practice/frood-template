@@ -166,6 +166,14 @@ class ProductForm extends HTMLElement {
       const quantityInput = this.querySelector('input[name="quantity"]');
       const quantity = (quantityInput && parseInt(quantityInput.value)) || 1;
 
+      // Subscription support: <product-subscription> writes the chosen
+      // selling_plan id here (empty for one-time). When present, attach it to
+      // the line item so Shopify/Recharge set up the recurring order.
+      const sellingPlanInput = this.querySelector('input[name="selling_plan"]');
+      const sellingPlan = sellingPlanInput && sellingPlanInput.value;
+      const item = { id: parseInt(variantId), quantity };
+      if (sellingPlan) item.selling_plan = parseInt(sellingPlan);
+
       const response = await fetch('/cart/add.js', {
         method: 'POST',
         headers: {
@@ -173,7 +181,7 @@ class ProductForm extends HTMLElement {
           'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
-          items: [{ id: parseInt(variantId), quantity }],
+          items: [item],
           sections: ['cart-drawer']
         })
       });
