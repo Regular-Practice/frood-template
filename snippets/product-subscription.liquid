@@ -70,6 +70,7 @@
             value="{{ allocation.selling_plan.id }}"
             data-price-money="{{ allocation.price | money }}"
             data-price-cents="{{ allocation.price }}"
+            data-compare-cents="{{ allocation.compare_at_price }}"
           >
             {{ allocation.selling_plan.name | split: ' subscription' | first }}
           </option>

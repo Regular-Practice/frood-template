@@ -64,6 +64,8 @@ class ProductSubscription extends HTMLElement {
     this.sellingPlanInput = this.querySelector('input[name="selling_plan"]');
     this.options = this.querySelectorAll('.subscription-option');
     this.subscriptionOption = this.querySelector('.subscription-option[data-purchase-option="subscription"]');
+    this.priceWasEl = this.querySelector('.subscription-price-was');
+    this.priceNowEl = this.querySelector('.subscription-price-now');
 
     this.oneTimeCents = parseInt(this.dataset.onetimeCents);
     this.oneTimeMoney = this.dataset.onetimeMoney || '';
@@ -131,6 +133,28 @@ class ProductSubscription extends HTMLElement {
     }
 
     this.updateButtonPrice(isSub, qty);
+    this.updateSubscriptionPrices(qty);
+  }
+
+  /**
+   * Keep the subscription row's was/now prices in sync with quantity and the
+   * selected frequency (total = unit × qty). Always runs, even in one-time
+   * mode, so the row previews what subscribing at this quantity would cost.
+   */
+  updateSubscriptionPrices(qty) {
+    if (!this.frequencySelect) return;
+    const opt = this.frequencySelect.selectedOptions[0];
+    if (!opt) return;
+
+    const nowCents = parseInt(opt.dataset.priceCents);
+    const wasCents = parseInt(opt.dataset.compareCents);
+
+    if (this.priceNowEl && !isNaN(nowCents)) {
+      this.priceNowEl.textContent = formatMoney(nowCents * qty, this.moneyFormat);
+    }
+    if (this.priceWasEl && !isNaN(wasCents)) {
+      this.priceWasEl.textContent = formatMoney(wasCents * qty, this.moneyFormat);
+    }
   }
 
   updateButtonPrice(isSub, qty) {
