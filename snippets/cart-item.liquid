@@ -146,14 +146,17 @@
     color: var(--color-text-light);
   }
 
-  /* Subscription label — a small brand-yellow pill so the recurring line is unmistakable. */
+  /* Subscription label — matches the PDP frequency dropdown's field (token-
+     derived grey fill, dark text), kept consistent with the cart drawer. */
   .cart-item-subscription {
     display: inline-block;
     align-self: flex-start;
-    padding: 2px var(--spacing-xxs);
+    padding: var(--spacing-xxs);
     font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
     color: var(--color-text);
-    background-color: var(--color-accent-light);
+    background-color: color-mix(in srgb, var(--color-text) 14%, var(--color-bg-dark));
     border-radius: var(--rad-s);
   }
 
