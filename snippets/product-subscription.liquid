@@ -2,12 +2,12 @@
   Native subscription / one-time selector.
 
   Reads the product's Shopify selling plans (created by Recharge as native
-  selling-plan groups) and renders a Frood-styled "One-time vs Subscribe &
-  save" picker plus a delivery-frequency dropdown. On selection it writes the
-  chosen selling_plan id into a hidden input that product-form.js includes in
-  the /cart/add.js POST. Subscriptions still bill entirely through Recharge —
-  this only replaces the on-page picker (Recharge's own widget is sealed in
-  shadow DOM and can't be styled to match Frood).
+  selling-plan groups) and renders a Frood-styled "One time vs Subscription"
+  picker plus a delivery-frequency dropdown. On selection it writes the chosen
+  selling_plan id into a hidden input that product-form.js includes in the
+  /cart/add.js POST. Subscriptions still bill entirely through Recharge — this
+  only replaces the on-page picker (Recharge's own widget is sealed in shadow
+  DOM and can't be styled to match Frood).
 
   Renders nothing if the product has no selling plans, so non-subscription
   products are unaffected.
@@ -28,18 +28,17 @@
     <fieldset class="subscription-options">
       <legend class="visually-hidden">{{ 'products.product.purchase_options' | t }}</legend>
 
-      {%- comment -%} One-time (default) {%- endcomment -%}
+      {%- comment -%} One time (default). No price shown — the design keeps this row clean. {%- endcomment -%}
       <label class="subscription-option is-selected" data-purchase-option="onetime">
         <input type="radio" name="purchase_option" value="onetime" checked>
-        <span class="subscription-radio" aria-hidden="true"></span>
+        <span class="subscription-box" aria-hidden="true"></span>
         <span class="subscription-option-label text-ui">{{ 'products.product.one_time' | t }}</span>
-        <span class="subscription-option-price text-ui">{{ variant.price | money }}</span>
       </label>
 
-      {%- comment -%} Subscribe & save {%- endcomment -%}
+      {%- comment -%} Subscription {%- endcomment -%}
       <label class="subscription-option" data-purchase-option="subscription">
         <input type="radio" name="purchase_option" value="subscription">
-        <span class="subscription-radio" aria-hidden="true"></span>
+        <span class="subscription-box" aria-hidden="true"></span>
         <span class="subscription-option-label text-ui">{{ 'products.product.subscribe_save' | t: percent: discount }}</span>
         <span class="subscription-option-price text-ui">
           <s class="subscription-price-was">{{ first_alloc.compare_at_price | money }}</s>
@@ -48,14 +47,14 @@
       </label>
     </fieldset>
 
-    {%- comment -%} Frequency — one option per allocation. Hidden until "Subscribe" is chosen. {%- endcomment -%}
+    {%- comment -%} Frequency — one option per allocation. Hidden until "Subscription" is chosen. {%- endcomment -%}
     <div class="subscription-frequency" hidden>
-      <label class="subscription-frequency-label text-ui" for="subscription-frequency-{{ product.id }}">
+      <label class="visually-hidden" for="subscription-frequency-{{ product.id }}">
         {{ 'products.product.deliver_every' | t }}
       </label>
       <select
         id="subscription-frequency-{{ product.id }}"
-        class="input select subscription-frequency-select text-ui"
+        class="select subscription-frequency-select text-ui"
         data-subscription-frequency
       >
         {%- for allocation in variant.selling_plan_allocations -%}
@@ -76,8 +75,12 @@
 {%- endif -%}
 
 {% stylesheet %}
+  /* The whole widget is one beige panel (matches the Frood box surfaces). */
   .product-subscription {
     display: block;
+    background-color: var(--color-bg-dark);
+    border-radius: var(--rad-m);
+    padding: var(--spacing-s);
   }
 
   .subscription-options {
@@ -86,31 +89,18 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xxs);
+    gap: var(--spacing-xs);
   }
 
+  /* Rows sit directly on the panel — no per-option border/box. */
   .subscription-option {
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    padding: var(--spacing-xs) var(--spacing-s);
-    border: 1px solid var(--color-border);
-    border-radius: var(--rad-s);
-    background-color: transparent;
     cursor: pointer;
-    transition: border-color var(--transition-fast), background-color var(--transition-fast);
   }
 
-  .subscription-option:hover {
-    border-color: var(--color-text);
-  }
-
-  .subscription-option.is-selected {
-    border-color: var(--color-text);
-    background-color: var(--color-bg-dark);
-  }
-
-  /* Hide the native radio; the .subscription-radio span is the visible control. */
+  /* Hide the native radio; .subscription-box is the visible square control. */
   .subscription-option input[type="radio"] {
     position: absolute;
     width: 1px;
@@ -118,29 +108,22 @@
     opacity: 0;
   }
 
-  .subscription-radio {
+  /* Square checkbox: outlined when unselected, solid --color-text when selected. */
+  .subscription-box {
     flex: 0 0 auto;
-    width: 18px;
-    height: 18px;
-    border: 1.5px solid var(--color-text-light);
-    border-radius: 50%;
-    position: relative;
-    transition: border-color var(--transition-fast);
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-text);
+    border-radius: var(--rad-s);
+    background-color: transparent;
+    transition: background-color var(--transition-fast);
   }
 
-  .subscription-option input:checked ~ .subscription-radio {
-    border-color: var(--color-text);
-  }
-
-  .subscription-option input:checked ~ .subscription-radio::after {
-    content: "";
-    position: absolute;
-    inset: 3px;
+  .subscription-option input:checked ~ .subscription-box {
     background-color: var(--color-text);
-    border-radius: 50%;
   }
 
-  .subscription-option input:focus-visible ~ .subscription-radio {
+  .subscription-option input:focus-visible ~ .subscription-box {
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
@@ -154,22 +137,29 @@
   }
 
   .subscription-price-was {
-    color: var(--color-text-light);
-    margin-right: var(--spacing-xxxs);
+    color: var(--color-text-accent);
+    margin-right: var(--spacing-xxs);
   }
 
+  /* Frequency dropdown: a distinct darker field inside the panel.
+     The fill is derived from tokens (text mixed into the beige) so it reads
+     a step darker than the panel without introducing a new colour. */
   .subscription-frequency {
-    margin-top: var(--spacing-xs);
+    margin-top: var(--spacing-s);
   }
 
-  .subscription-frequency-label {
-    display: block;
-    margin-bottom: var(--spacing-xxs);
+  .subscription-frequency-select {
+    width: 100%;
+    padding: var(--spacing-xs) var(--spacing-m) var(--spacing-xs) var(--spacing-s);
+    color: var(--color-text);
+    background-color: color-mix(in srgb, var(--color-text) 14%, var(--color-bg-dark));
+    border: 0;
+    border-radius: var(--rad-s);
+    cursor: pointer;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .subscription-option,
-    .subscription-radio {
+    .subscription-box {
       transition: none;
     }
   }
