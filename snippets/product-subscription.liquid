@@ -80,7 +80,7 @@
     display: block;
     background-color: var(--color-bg-dark);
     border-radius: var(--rad-m);
-    padding: var(--spacing-s);
+    padding: var(--spacing-xs);
   }
 
   .subscription-options {
@@ -150,7 +150,8 @@
 
   .subscription-frequency-select {
     width: 100%;
-    padding: var(--spacing-xs) var(--spacing-m) var(--spacing-xs) var(--spacing-s);
+    /* xxs all round; right keeps room for the chevron from .select */
+    padding: var(--spacing-xxs) var(--spacing-m) var(--spacing-xxs) var(--spacing-xxs);
     color: var(--color-text);
     background-color: color-mix(in srgb, var(--color-text) 14%, var(--color-bg-dark));
     border: 0;
