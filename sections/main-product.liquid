@@ -876,6 +876,15 @@
     }
   }
 
+  /* Recharge subscription widget (app block). All overrides scoped to the
+     .product-box-app wrapper so they only ever touch this widget. First pass:
+     shrink the widget text to the Frood UI size (app-block CSS is specific, so
+     !important is needed to win). */
+  .product-box-app,
+  .product-box-app * {
+    font-size: var(--type-ui-size) !important;
+  }
+
 {% endstylesheet %}
 
 {% schema %}
