@@ -162,18 +162,6 @@
       {%- endunless -%}
 
       {%- comment -%}
-        App blocks (e.g. Recharge subscription widget). Each renders in its
-        own .product-box surface, above the buy row.
-      {%- endcomment -%}
-      {%- for block in section.blocks -%}
-        {%- if block.type == '@app' -%}
-          <div class="product-box product-box-app" {{ block.shopify_attributes }}>
-            {% render block %}
-          </div>
-        {%- endif -%}
-      {%- endfor -%}
-
-      {%- comment -%}
         Buy row: bare Qty selector (left) + Add to cart button (right) —
         no .product-box wrapper, so each element shows its own surface
         (warm-beige qty slab, yellow button) directly on the bg slider.
@@ -874,15 +862,6 @@
       transform: translateY(0);
       opacity: 1;
     }
-  }
-
-  /* Recharge subscription widget (app block). All overrides scoped to the
-     .product-box-app wrapper so they only ever touch this widget. First pass:
-     shrink the widget text to the Frood UI size (app-block CSS is specific, so
-     !important is needed to win). */
-  .product-box-app,
-  .product-box-app * {
-    font-size: var(--type-ui-size) !important;
   }
 
 {% endstylesheet %}
