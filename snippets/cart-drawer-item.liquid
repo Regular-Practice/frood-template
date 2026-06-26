@@ -62,6 +62,10 @@
       {%- if subtitle != blank -%}
         <p class="cart-drawer-item-subtitle">{{ subtitle }}</p>
       {%- endif -%}
+      {%- comment -%} Subscription label — plan name (set in Recharge) when the line is a subscription. {%- endcomment -%}
+      {%- if item.selling_plan_allocation -%}
+        <p class="cart-drawer-item-subscription text-ui">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+      {%- endif -%}
       {%- if is_bundle -%}
         {% render 'bundle-line-contents', item: item %}
       {%- else -%}
