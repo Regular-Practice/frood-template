@@ -50,6 +50,8 @@
           <s class="subscription-price-was">{{ first_alloc.compare_at_price | money }}</s>
           <span class="subscription-price-now">{{ first_alloc.price | money }}</span>
         </span>
+        {%- comment -%} Hover/focus hint shown only while the option is gated (qty < min). {%- endcomment -%}
+        <span class="subscription-tooltip" role="tooltip">{{ 'products.product.subscribe_min' | t: count: 2 }}</span>
       </label>
     </fieldset>
 
@@ -101,15 +103,50 @@
 
   /* Rows sit directly on the panel — no per-option border/box. */
   .subscription-option {
+    position: relative;
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
     cursor: pointer;
   }
 
-  /* Gated off below the minimum subscription quantity (JS toggles [hidden]). */
-  .subscription-option[hidden] {
-    display: none;
+  /* Below the minimum subscription quantity the option is greyed out and not
+     selectable (JS toggles .is-disabled and disables the radio). */
+  .subscription-option.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* Hover/focus hint that explains the gate — only visible while disabled. */
+  .subscription-tooltip {
+    position: absolute;
+    bottom: calc(100% + var(--spacing-xxs));
+    left: 0;
+    z-index: 2;
+    white-space: nowrap;
+    padding: var(--spacing-xxs) var(--spacing-xs);
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--color-bg);
+    background-color: var(--color-text);
+    border-radius: var(--rad-s);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-fast);
+  }
+
+  .subscription-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: var(--spacing-s);
+    border: 4px solid transparent;
+    border-top-color: var(--color-text);
+  }
+
+  .subscription-option.is-disabled:hover .subscription-tooltip,
+  .subscription-option.is-disabled:focus-within .subscription-tooltip {
+    opacity: 1;
   }
 
   /* Hide the native radio; .subscription-box is the visible square control. */
@@ -172,7 +209,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .subscription-box {
+    .subscription-box,
+    .subscription-tooltip {
       transition: none;
     }
   }

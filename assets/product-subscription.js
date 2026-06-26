@@ -100,8 +100,13 @@ class ProductSubscription extends HTMLElement {
     const qty = this.quantity;
     const canSubscribe = qty >= this.minQty;
 
-    // Gate the subscription option's visibility on quantity.
-    if (this.subscriptionOption) this.subscriptionOption.hidden = !canSubscribe;
+    // Gate the subscription option: greyed out + not selectable below min qty
+    // (the tooltip explains why on hover).
+    if (this.subscriptionOption) {
+      this.subscriptionOption.classList.toggle('is-disabled', !canSubscribe);
+      const subRadio = this.subscriptionOption.querySelector('input[type="radio"]');
+      if (subRadio) subRadio.disabled = !canSubscribe;
+    }
 
     // If subscribing is no longer allowed but was selected, revert to one-time.
     if (!canSubscribe && this.isSubscriptionChecked) {
