@@ -70,6 +70,40 @@ function toastThumb(url, size = 60) {
   return `${url}${url.includes('?') ? '&' : '?'}width=${size}`;
 }
 
+// Shopify money formatter — formats an amount in cents using the shop's
+// money_format string (e.g. "£{{amount}}"). Mirrors Shopify's reference impl
+// so totals match the server-rendered `| money` output. (Same as
+// product-subscription.js; duplicated as this is a self-contained module.)
+function formatMoney(cents, format) {
+  if (typeof cents === 'string') cents = cents.replace('.', '');
+  const placeholderRegex = /\{\{\s*(\w+)\s*\}\}/;
+  const formatString = format || '${{amount}}';
+
+  function withDelimiters(number, precision, thousands, decimal) {
+    precision = precision == null ? 2 : precision;
+    thousands = thousands == null ? ',' : thousands;
+    decimal = decimal == null ? '.' : decimal;
+    if (isNaN(number) || number == null) return '0';
+    number = (number / 100.0).toFixed(precision);
+    const parts = number.split('.');
+    const dollars = parts[0].replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + thousands);
+    const centsPart = parts[1] ? decimal + parts[1] : '';
+    return dollars + centsPart;
+  }
+
+  let value = '';
+  switch ((formatString.match(placeholderRegex) || [])[1]) {
+    case 'amount': value = withDelimiters(cents, 2); break;
+    case 'amount_no_decimals': value = withDelimiters(cents, 0); break;
+    case 'amount_with_comma_separator': value = withDelimiters(cents, 2, '.', ','); break;
+    case 'amount_with_space_separator': value = withDelimiters(cents, 2, ' ', ','); break;
+    case 'amount_no_decimals_with_comma_separator': value = withDelimiters(cents, 0, '.', ','); break;
+    case 'amount_no_decimals_with_space_separator': value = withDelimiters(cents, 0, ' '); break;
+    default: value = withDelimiters(cents, 2);
+  }
+  return formatString.replace(placeholderRegex, value);
+}
+
 class BundleBuilder extends HTMLElement {
   connectedCallback() {
     this.capacity = parseInt(this.dataset.capacity, 10) || 4;
@@ -85,7 +119,6 @@ class BundleBuilder extends HTMLElement {
 
     this.addButton = this.querySelector('[data-add]');
     this.addLabel = this.querySelector('[data-add-label]');
-    this.addMultiplier = this.querySelector('[data-add-multiplier]');
     this.progressEl = this.querySelector('[data-progress]');
     this.progressFillEl = this.querySelector('[data-progress-fill]');
     this.hintEl = this.querySelector('[data-hint]');
@@ -96,7 +129,9 @@ class BundleBuilder extends HTMLElement {
     this.subFrequency = this.querySelector('[data-sub-frequency]');
     this.subSelect = this.querySelector('[data-sub-select]');
     this.addPriceEl = this.querySelector('.bundle-add-price');
-    this.boxPriceMoney = this.addPriceEl ? this.addPriceEl.textContent.trim() : '';
+    this.addWasEl = this.querySelector('[data-add-was]');
+    this.boxPriceCents = parseInt(this.dataset.boxPriceCents, 10);
+    this.moneyFormat = this.dataset.moneyFormat || '';
 
     this._onClick = (e) => this.handleClick(e);
     this.addEventListener('click', this._onClick);
@@ -385,14 +420,6 @@ class BundleBuilder extends HTMLElement {
     if (this.addButton) this.addButton.disabled = !this.isValid || !this.boxVariantId;
     if (this.addLabel) this.addLabel.textContent = this.dataset.i18nAdd || 'Add to cart';
 
-    // × N multiplier next to the unit price — only when the order is a valid
-    // multi-box selection (no JS currency formatting; cart shows the real total).
-    if (this.addMultiplier) {
-      const show = this.isValid && this.completeBoxes > 1;
-      this.addMultiplier.textContent = show ? `× ${this.completeBoxes}` : '';
-      this.addMultiplier.hidden = !show;
-    }
-
     // Hint nudges the shopper to finish the in-progress box.
     if (this.hintEl) {
       if (this.remainder > 0) {
@@ -417,6 +444,7 @@ class BundleBuilder extends HTMLElement {
     }
 
     this.updateSubscription();
+    this.updateAddPrice();
   }
 
   // ---- Subscription -----------------------------------------------------
@@ -433,8 +461,7 @@ class BundleBuilder extends HTMLElement {
     return isNaN(v) ? null : v;
   }
 
-  // Toggles selected styling, shows/hides the frequency dropdown, and swaps the
-  // add-button per-box price between one-time and the selected plan. No-op when
+  // Toggles selected styling and shows/hides the frequency dropdown. No-op when
   // the box product has no plans (control not rendered).
   updateSubscription() {
     if (!this.subModeInputs || this.subModeInputs.length === 0) return;
@@ -446,13 +473,37 @@ class BundleBuilder extends HTMLElement {
     });
 
     if (this.subFrequency) this.subFrequency.hidden = !isSub;
+  }
 
-    if (this.addPriceEl) {
-      if (isSub && this.subSelect) {
-        const opt = this.subSelect.selectedOptions[0];
-        this.addPriceEl.textContent = (opt && opt.dataset.priceMoney) || this.boxPriceMoney;
+  // Add-button price = per-box price × number of complete boxes (min 1 for the
+  // empty-state preview). Subscriptions show the discounted total plus the
+  // struck-through original.
+  updateAddPrice() {
+    if (!this.addPriceEl) return;
+    const n = this.completeBoxes || 1;
+    const isSub = this.isSubscription;
+
+    let unitCents = this.boxPriceCents;
+    let compareCents = null;
+    if (isSub && this.subSelect) {
+      const opt = this.subSelect.selectedOptions[0];
+      if (opt) {
+        unitCents = parseInt(opt.dataset.priceCents, 10);
+        compareCents = parseInt(opt.dataset.compareCents, 10);
+      }
+    }
+
+    if (!isNaN(unitCents)) {
+      this.addPriceEl.textContent = formatMoney(unitCents * n, this.moneyFormat);
+    }
+
+    if (this.addWasEl) {
+      const showWas = isSub && compareCents != null && !isNaN(compareCents) && compareCents > unitCents;
+      if (showWas) {
+        this.addWasEl.textContent = formatMoney(compareCents * n, this.moneyFormat);
+        this.addWasEl.hidden = false;
       } else {
-        this.addPriceEl.textContent = this.boxPriceMoney;
+        this.addWasEl.hidden = true;
       }
     }
   }

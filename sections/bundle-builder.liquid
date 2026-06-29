@@ -101,6 +101,8 @@
   data-capacity="{{ capacity }}"
   data-max-boxes="{{ section.settings.max_boxes | default: 4 }}"
   {% if box_variant %}data-box-variant-id="{{ box_variant.id }}"{% endif %}
+  {% if box_variant %}data-box-price-cents="{{ box_variant.price }}"{% endif %}
+  data-money-format="{{ shop.money_format }}"
   data-i18n-add="{{ 'sections.bundle_builder.add_to_cart' | t }}"
   data-i18n-add-more="{{ 'sections.bundle_builder.add_more' | t }}"
   data-i18n-added="{{ 'sections.bundle_builder.added' | t: product: box_product.title }}"
@@ -225,7 +227,7 @@
               <label class="visually-hidden" for="bundle-frequency-{{ section.id }}">{{ 'products.product.deliver_every' | t }}</label>
               <select id="bundle-frequency-{{ section.id }}" class="select bundle-sub-select text-ui" data-sub-select>
                 {%- for allocation in box_variant.selling_plan_allocations -%}
-                  <option value="{{ allocation.selling_plan.id }}" data-price-money="{{ allocation.price | money }}">
+                  <option value="{{ allocation.selling_plan.id }}" data-price-cents="{{ allocation.price }}" data-compare-cents="{{ allocation.compare_at_price }}">
                     {{ allocation.selling_plan.name | split: ' subscription' | first }}
                   </option>
                 {%- endfor -%}
@@ -238,8 +240,8 @@
           <span class="bundle-add-inner">
             <span class="bundle-add-label" data-add-label>{{ 'sections.bundle_builder.add_to_cart' | t }}</span>
             <span class="bundle-add-end">
-              <span class="bundle-add-multiplier" data-add-multiplier hidden></span>
               {%- if box_variant -%}
+                <s class="bundle-add-was" data-add-was hidden></s>
                 <span class="bundle-add-price">{{ box_variant.price | money }}</span>
               {%- endif -%}
               {% render 'icon-arrow', class: 'bundle-add-icon' %}
@@ -441,6 +443,9 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
+    /* Pull the footer up so the gap from the flavour list reads as s, not the
+       panel's m (one step smaller between the cards and the subscription). */
+    margin-top: calc(var(--spacing-s) - var(--spacing-m));
   }
 
   /* Dark variant of the primary .button: same shape/type as .button but with
@@ -497,9 +502,14 @@
     padding-bottom: 2px;
   }
 
-  /* "× N" boxes multiplier next to the unit price (shown by JS only when the
-     order is a valid multi-box selection). */
-  .bundle-add-multiplier[hidden] {
+  /* Original (pre-discount) total, struck through — shown by JS for
+     subscriptions next to the discounted total. */
+  .bundle-add-was {
+    color: var(--color-text-accent);
+    text-decoration: line-through;
+  }
+
+  .bundle-add-was[hidden] {
     display: none;
   }
 
