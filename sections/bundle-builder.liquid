@@ -195,6 +195,45 @@
       </div>
 
       <footer class="bundle-footer">
+        {%- comment -%}
+          Subscription control — only renders if the box product has Recharge
+          selling plans. Mirrors the PDP selector; bundle-builder.js attaches the
+          chosen selling_plan to every box line item on add-to-cart, so the
+          custom mix (line-item properties) recurs at the chosen frequency.
+        {%- endcomment -%}
+        {%- if box_variant.selling_plan_allocations.size > 0 -%}
+          {%- assign box_alloc = box_variant.selling_plan_allocations | first -%}
+          {%- assign box_discount = box_alloc.compare_at_price | minus: box_alloc.price | times: 100.0 | divided_by: box_alloc.compare_at_price | round -%}
+          <div class="bundle-subscription" data-subscription>
+            <fieldset class="bundle-sub-options">
+              <legend class="visually-hidden">{{ 'products.product.purchase_options' | t }}</legend>
+
+              <label class="bundle-sub-option is-selected">
+                <input type="radio" name="bundle-purchase-{{ section.id }}" value="onetime" checked data-sub-mode>
+                <span class="bundle-sub-box" aria-hidden="true"></span>
+                <span class="bundle-sub-label text-ui">{{ 'products.product.one_time' | t }}</span>
+              </label>
+
+              <label class="bundle-sub-option">
+                <input type="radio" name="bundle-purchase-{{ section.id }}" value="subscription" data-sub-mode>
+                <span class="bundle-sub-box" aria-hidden="true"></span>
+                <span class="bundle-sub-label text-ui">{{ 'products.product.subscribe_save' | t: percent: box_discount }}</span>
+              </label>
+            </fieldset>
+
+            <div class="bundle-sub-frequency" data-sub-frequency hidden>
+              <label class="visually-hidden" for="bundle-frequency-{{ section.id }}">{{ 'products.product.deliver_every' | t }}</label>
+              <select id="bundle-frequency-{{ section.id }}" class="select bundle-sub-select text-ui" data-sub-select>
+                {%- for allocation in box_variant.selling_plan_allocations -%}
+                  <option value="{{ allocation.selling_plan.id }}" data-price-money="{{ allocation.price | money }}">
+                    {{ allocation.selling_plan.name | split: ' subscription' | first }}
+                  </option>
+                {%- endfor -%}
+              </select>
+            </div>
+          </div>
+        {%- endif -%}
+
         <button type="button" class="button bundle-add" data-add disabled>
           <span class="bundle-add-inner">
             <span class="bundle-add-label" data-add-label>{{ 'sections.bundle_builder.add_to_cart' | t }}</span>
@@ -696,6 +735,79 @@
   @media (prefers-reduced-motion: reduce) {
     .bundle-slot,
     .bundle-pack {
+      transition: none;
+    }
+  }
+  /* Subscription control — mirrors the PDP selector (snippets/product-subscription). */
+  .bundle-subscription {
+    background-color: var(--color-bg-dark);
+    border-radius: var(--rad-m);
+    padding: var(--spacing-xxs);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .bundle-sub-options {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .bundle-sub-option {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+  }
+
+  .bundle-sub-option input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .bundle-sub-box {
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--color-text);
+    border-radius: var(--rad-s);
+    background-color: transparent;
+    transition: background-color var(--transition-fast);
+  }
+
+  .bundle-sub-option input:checked ~ .bundle-sub-box {
+    background-color: var(--color-text);
+  }
+
+  .bundle-sub-option input:focus-visible ~ .bundle-sub-box {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .bundle-sub-label {
+    flex: 1 1 auto;
+  }
+
+  .bundle-sub-frequency {
+    margin-top: var(--spacing-xs);
+  }
+
+  .bundle-sub-select {
+    width: 100%;
+    padding: var(--spacing-xxs) var(--spacing-m) var(--spacing-xxs) var(--spacing-xxs);
+    color: var(--color-text);
+    background-color: color-mix(in srgb, var(--color-text) 14%, var(--color-bg-dark));
+    border: 0;
+    border-radius: var(--rad-s);
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bundle-sub-box {
       transition: none;
     }
   }

@@ -91,8 +91,22 @@ class BundleBuilder extends HTMLElement {
     this.hintEl = this.querySelector('[data-hint]');
     this.errorEl = this.querySelector('[data-error]');
 
+    // Subscription control — only present if the box product has selling plans.
+    this.subModeInputs = this.querySelectorAll('[data-sub-mode]');
+    this.subFrequency = this.querySelector('[data-sub-frequency]');
+    this.subSelect = this.querySelector('[data-sub-select]');
+    this.addPriceEl = this.querySelector('.bundle-add-price');
+    this.boxPriceMoney = this.addPriceEl ? this.addPriceEl.textContent.trim() : '';
+
     this._onClick = (e) => this.handleClick(e);
     this.addEventListener('click', this._onClick);
+
+    this._onChange = (e) => {
+      if (e.target.matches('[data-sub-mode]') || e.target.matches('[data-sub-select]')) {
+        this.updateSubscription();
+      }
+    };
+    this.addEventListener('change', this._onChange);
 
     this._onRequestState = () => this.emit();
     document.addEventListener('bundle:request-state', this._onRequestState);
@@ -110,6 +124,7 @@ class BundleBuilder extends HTMLElement {
 
   disconnectedCallback() {
     this.removeEventListener('click', this._onClick);
+    this.removeEventListener('change', this._onChange);
     document.removeEventListener('bundle:request-state', this._onRequestState);
   }
 
@@ -400,6 +415,46 @@ class BundleBuilder extends HTMLElement {
         String(this.isValid ? this.capacity : this.remainder)
       );
     }
+
+    this.updateSubscription();
+  }
+
+  // ---- Subscription -----------------------------------------------------
+
+  get isSubscription() {
+    const checked = this.querySelector('[data-sub-mode]:checked');
+    return checked ? checked.value === 'subscription' : false;
+  }
+
+  // The chosen selling_plan id when subscribing, else null (one-time).
+  get sellingPlan() {
+    if (!this.isSubscription || !this.subSelect) return null;
+    const v = parseInt(this.subSelect.value, 10);
+    return isNaN(v) ? null : v;
+  }
+
+  // Toggles selected styling, shows/hides the frequency dropdown, and swaps the
+  // add-button per-box price between one-time and the selected plan. No-op when
+  // the box product has no plans (control not rendered).
+  updateSubscription() {
+    if (!this.subModeInputs || this.subModeInputs.length === 0) return;
+    const isSub = this.isSubscription;
+
+    this.querySelectorAll('.bundle-sub-option').forEach((opt) => {
+      const input = opt.querySelector('input[type="radio"]');
+      opt.classList.toggle('is-selected', !!input && input.checked);
+    });
+
+    if (this.subFrequency) this.subFrequency.hidden = !isSub;
+
+    if (this.addPriceEl) {
+      if (isSub && this.subSelect) {
+        const opt = this.subSelect.selectedOptions[0];
+        this.addPriceEl.textContent = (opt && opt.dataset.priceMoney) || this.boxPriceMoney;
+      } else {
+        this.addPriceEl.textContent = this.boxPriceMoney;
+      }
+    }
   }
 
   // ---- Add to cart (native Shopify cart) --------------------------------
@@ -431,6 +486,7 @@ class BundleBuilder extends HTMLElement {
   // One cart item per DISTINCT box composition; identical mixes merge to qty N.
   buildItems() {
     const variantId = parseInt(this.boxVariantId, 10);
+    const sellingPlan = this.sellingPlan; // uniform across the order (null = one-time)
     const merged = new Map();
     for (const box of this.boxes) {
       if (box.length !== this.capacity) continue; // skip a partial box (shouldn't exist when valid)
@@ -444,7 +500,9 @@ class BundleBuilder extends HTMLElement {
       if (existing) {
         existing.quantity += 1;
       } else {
-        merged.set(sig, { id: variantId, quantity: 1, properties: this.buildProperties(counts) });
+        const item = { id: variantId, quantity: 1, properties: this.buildProperties(counts) };
+        if (sellingPlan) item.selling_plan = sellingPlan;
+        merged.set(sig, item);
       }
     }
     return [...merged.values()];
