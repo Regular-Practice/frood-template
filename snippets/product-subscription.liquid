@@ -44,7 +44,18 @@
       <label class="subscription-option" data-purchase-option="subscription">
         <input type="radio" name="purchase_option" value="subscription">
         <span class="subscription-box" aria-hidden="true"></span>
-        <span class="subscription-option-label text-ui">{{ 'products.product.subscribe_save' | t: percent: discount }}</span>
+        <span class="subscription-option-label text-ui">
+          {{ 'products.product.subscribe_save' | t: percent: discount }}
+          {%- if info_link != blank -%}
+            <a
+              class="subscription-info"
+              href="{{ info_link }}"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="{{ 'products.product.subscription_info' | t }}"
+            >{{ 'info.svg' | inline_asset_content }}</a>
+          {%- endif -%}
+        </span>
         <span class="subscription-option-price text-ui">
           <s class="subscription-price-was">{{ first_alloc.compare_at_price | money }}</s>
           <span class="subscription-price-now">{{ first_alloc.price | money }}</span>
@@ -137,6 +148,22 @@
 
   .subscription-option-label {
     flex: 1 1 auto;
+  }
+
+  /* Info icon (info.svg) — sits inline right after the subscription label,
+     opens a merchant-set link in a new tab. */
+  .subscription-info {
+    display: inline-flex;
+    align-items: center;
+    margin-left: var(--spacing-xxxs);
+    vertical-align: middle;
+    line-height: 0;
+  }
+
+  .subscription-info svg {
+    width: 12px;
+    height: 12px;
+    display: block;
   }
 
   .subscription-option-price {

@@ -166,7 +166,7 @@
         Renders only when the product has Recharge selling plans; writes the
         chosen selling_plan into a hidden input read by product-form.js.
       {%- endcomment -%}
-      {% render 'product-subscription', product: product %}
+      {% render 'product-subscription', product: product, info_link: section.settings.subscription_info_link %}
 
       {%- comment -%}
         App blocks (e.g. other Recharge widgets). Each renders in its own
@@ -897,6 +897,12 @@
       "id": "show_quantity",
       "label": "Show quantity selector",
       "default": true
+    },
+    {
+      "type": "url",
+      "id": "subscription_info_link",
+      "label": "Subscription info link",
+      "info": "Shown as an info icon next to the subscription option. Opens in a new tab."
     }
   ],
   "blocks": [

@@ -66,7 +66,8 @@
       "purchase_options": "Purchase options",
       "one_time": "One time",
       "subscribe_save": "Subscription ({{ percent }}% discount)",
-      "deliver_every": "Deliver every"
+      "deliver_every": "Deliver every",
+      "subscription_info": "Subscription information"
     }
   },
   "collections": {
