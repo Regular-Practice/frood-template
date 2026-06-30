@@ -148,21 +148,22 @@
 
   .subscription-option-label {
     flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xxxs);
   }
 
-  /* Info icon (info.svg) — sits inline right after the subscription label,
-     opens a merchant-set link in a new tab. */
+  /* Info icon (info.svg) — sits right after the subscription label, vertically
+     centred with it, opens a merchant-set link in a new tab. */
   .subscription-info {
     display: inline-flex;
     align-items: center;
-    margin-left: var(--spacing-xxxs);
-    vertical-align: middle;
     line-height: 0;
   }
 
   .subscription-info svg {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     display: block;
   }
 
