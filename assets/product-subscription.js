@@ -7,8 +7,6 @@
  * native Shopify selling plans underneath.
  *
  * Responsibilities:
- *   - Gate the subscription option: it only appears when the PDP quantity is at
- *     or above data-min-subscription-qty (Frood: subscribe only at 2+ boxes).
  *   - Toggle the selected-option styling and show/hide the frequency dropdown.
  *   - Write the chosen selling_plan id into <input name="selling_plan"> (empty =
  *     one-time). product-form.js reads this on add-to-cart.
@@ -63,14 +61,12 @@ class ProductSubscription extends HTMLElement {
     this.frequencySelect = this.querySelector('[data-subscription-frequency]');
     this.sellingPlanInput = this.querySelector('input[name="selling_plan"]');
     this.options = this.querySelectorAll('.subscription-option');
-    this.subscriptionOption = this.querySelector('.subscription-option[data-purchase-option="subscription"]');
     this.priceWasEl = this.querySelector('.subscription-price-was');
     this.priceNowEl = this.querySelector('.subscription-price-now');
 
     this.oneTimeCents = parseInt(this.dataset.onetimeCents);
     this.oneTimeMoney = this.dataset.onetimeMoney || '';
     this.moneyFormat = this.dataset.moneyFormat || '';
-    this.minQty = parseInt(this.dataset.minSubscriptionQty) || 2;
 
     // The quantity input lives in the buy row (a sibling box inside <product-form>).
     const form = this.closest('product-form');
@@ -100,23 +96,7 @@ class ProductSubscription extends HTMLElement {
 
   update() {
     const qty = this.quantity;
-    const canSubscribe = qty >= this.minQty;
-
-    // Gate the subscription option: greyed out + not selectable below min qty
-    // (the tooltip explains why on hover).
-    if (this.subscriptionOption) {
-      this.subscriptionOption.classList.toggle('is-disabled', !canSubscribe);
-      const subRadio = this.subscriptionOption.querySelector('input[type="radio"]');
-      if (subRadio) subRadio.disabled = !canSubscribe;
-    }
-
-    // If subscribing is no longer allowed but was selected, revert to one-time.
-    if (!canSubscribe && this.isSubscriptionChecked) {
-      const oneTime = this.querySelector('input[value="onetime"]');
-      if (oneTime) oneTime.checked = true;
-    }
-
-    const isSub = this.isSubscriptionChecked && canSubscribe;
+    const isSub = this.isSubscriptionChecked;
 
     // Selected-box styling (CSS also handles :checked; this is the reliable source).
     this.options.forEach((opt) => {
