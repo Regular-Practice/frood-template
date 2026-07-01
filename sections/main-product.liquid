@@ -169,20 +169,6 @@
       {% render 'product-subscription', product: product, info_link: section.settings.subscription_info_link %}
 
       {%- comment -%}
-        App blocks (e.g. other Recharge widgets). Each renders in its own
-        .product-box surface, above the buy row. (The Recharge subscription
-        widget itself is now replaced by the native selector above — remove
-        that app block from this section in the theme editor.)
-      {%- endcomment -%}
-      {%- for block in section.blocks -%}
-        {%- if block.type == '@app' -%}
-          <div class="product-box product-box-app" {{ block.shopify_attributes }}>
-            {% render block %}
-          </div>
-        {%- endif -%}
-      {%- endfor -%}
-
-      {%- comment -%}
         Buy row: bare Qty selector (left) + Add to cart button (right) —
         no .product-box wrapper, so each element shows its own surface
         (warm-beige qty slab, yellow button) directly on the bg slider.
