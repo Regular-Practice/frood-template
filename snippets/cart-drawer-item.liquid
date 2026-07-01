@@ -99,5 +99,10 @@
       %}
       <span class="cart-drawer-item-price text-ui">{{ item.final_line_price | money }}</span>
     </div>
+
+    {%- comment -%} Subscription label (plan name from Recharge) — sits under the qty + price row. {%- endcomment -%}
+    {%- if item.selling_plan_allocation -%}
+      <p class="cart-drawer-item-subscription">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+    {%- endif -%}
   </div>
 </div>

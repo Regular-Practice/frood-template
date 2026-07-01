@@ -40,6 +40,11 @@
       <p class="cart-item-variant text-mini">{{ item.variant.title }}</p>
     {%- endif -%}
 
+    {%- comment -%} Subscription label — plan name (set in Recharge) when the line is a subscription. {%- endcomment -%}
+    {%- if item.selling_plan_allocation -%}
+      <p class="cart-item-subscription text-ui">{{ item.selling_plan_allocation.selling_plan.name }}</p>
+    {%- endif -%}
+
     {%- if is_bundle -%}
       {% render 'bundle-line-contents', item: item %}
     {%- else -%}
@@ -139,6 +144,20 @@
 
   .cart-item-variant {
     color: var(--color-text-light);
+  }
+
+  /* Subscription label — matches the PDP frequency dropdown's field (token-
+     derived grey fill, dark text), kept consistent with the cart drawer. */
+  .cart-item-subscription {
+    display: inline-block;
+    align-self: flex-start;
+    padding: var(--spacing-xxs);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--color-text);
+    background-color: var(--color-overlay);
+    border-radius: var(--rad-s);
   }
 
   /* Line-item properties (bundle flavours, etc.) — a quiet stacked list. */

@@ -70,6 +70,40 @@ function toastThumb(url, size = 60) {
   return `${url}${url.includes('?') ? '&' : '?'}width=${size}`;
 }
 
+// Shopify money formatter — formats an amount in cents using the shop's
+// money_format string (e.g. "£{{amount}}"). Mirrors Shopify's reference impl
+// so totals match the server-rendered `| money` output. (Same as
+// product-subscription.js; duplicated as this is a self-contained module.)
+function formatMoney(cents, format) {
+  if (typeof cents === 'string') cents = cents.replace('.', '');
+  const placeholderRegex = /\{\{\s*(\w+)\s*\}\}/;
+  const formatString = format || '${{amount}}';
+
+  function withDelimiters(number, precision, thousands, decimal) {
+    precision = precision == null ? 2 : precision;
+    thousands = thousands == null ? ',' : thousands;
+    decimal = decimal == null ? '.' : decimal;
+    if (isNaN(number) || number == null) return '0';
+    number = (number / 100.0).toFixed(precision);
+    const parts = number.split('.');
+    const dollars = parts[0].replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + thousands);
+    const centsPart = parts[1] ? decimal + parts[1] : '';
+    return dollars + centsPart;
+  }
+
+  let value = '';
+  switch ((formatString.match(placeholderRegex) || [])[1]) {
+    case 'amount': value = withDelimiters(cents, 2); break;
+    case 'amount_no_decimals': value = withDelimiters(cents, 0); break;
+    case 'amount_with_comma_separator': value = withDelimiters(cents, 2, '.', ','); break;
+    case 'amount_with_space_separator': value = withDelimiters(cents, 2, ' ', ','); break;
+    case 'amount_no_decimals_with_comma_separator': value = withDelimiters(cents, 0, '.', ','); break;
+    case 'amount_no_decimals_with_space_separator': value = withDelimiters(cents, 0, ' '); break;
+    default: value = withDelimiters(cents, 2);
+  }
+  return formatString.replace(placeholderRegex, value);
+}
+
 class BundleBuilder extends HTMLElement {
   connectedCallback() {
     this.capacity = parseInt(this.dataset.capacity, 10) || 4;
@@ -85,14 +119,29 @@ class BundleBuilder extends HTMLElement {
 
     this.addButton = this.querySelector('[data-add]');
     this.addLabel = this.querySelector('[data-add-label]');
-    this.addMultiplier = this.querySelector('[data-add-multiplier]');
     this.progressEl = this.querySelector('[data-progress]');
     this.progressFillEl = this.querySelector('[data-progress-fill]');
     this.hintEl = this.querySelector('[data-hint]');
     this.errorEl = this.querySelector('[data-error]');
 
+    // Subscription control — only present if the box product has selling plans.
+    this.subModeInputs = this.querySelectorAll('[data-sub-mode]');
+    this.subFrequency = this.querySelector('[data-sub-frequency]');
+    this.subSelect = this.querySelector('[data-sub-select]');
+    this.addPriceEl = this.querySelector('.bundle-add-price');
+    this.addWasEl = this.querySelector('[data-add-was]');
+    this.boxPriceCents = parseInt(this.dataset.boxPriceCents, 10);
+    this.moneyFormat = this.dataset.moneyFormat || '';
+
     this._onClick = (e) => this.handleClick(e);
     this.addEventListener('click', this._onClick);
+
+    this._onChange = (e) => {
+      if (e.target.matches('[data-sub-mode]') || e.target.matches('[data-sub-select]')) {
+        this.updateSubscription();
+      }
+    };
+    this.addEventListener('change', this._onChange);
 
     this._onRequestState = () => this.emit();
     document.addEventListener('bundle:request-state', this._onRequestState);
@@ -110,6 +159,7 @@ class BundleBuilder extends HTMLElement {
 
   disconnectedCallback() {
     this.removeEventListener('click', this._onClick);
+    this.removeEventListener('change', this._onChange);
     document.removeEventListener('bundle:request-state', this._onRequestState);
   }
 
@@ -370,14 +420,6 @@ class BundleBuilder extends HTMLElement {
     if (this.addButton) this.addButton.disabled = !this.isValid || !this.boxVariantId;
     if (this.addLabel) this.addLabel.textContent = this.dataset.i18nAdd || 'Add to cart';
 
-    // × N multiplier next to the unit price — only when the order is a valid
-    // multi-box selection (no JS currency formatting; cart shows the real total).
-    if (this.addMultiplier) {
-      const show = this.isValid && this.completeBoxes > 1;
-      this.addMultiplier.textContent = show ? `× ${this.completeBoxes}` : '';
-      this.addMultiplier.hidden = !show;
-    }
-
     // Hint nudges the shopper to finish the in-progress box.
     if (this.hintEl) {
       if (this.remainder > 0) {
@@ -399,6 +441,70 @@ class BundleBuilder extends HTMLElement {
         'aria-valuenow',
         String(this.isValid ? this.capacity : this.remainder)
       );
+    }
+
+    this.updateSubscription();
+    this.updateAddPrice();
+  }
+
+  // ---- Subscription -----------------------------------------------------
+
+  get isSubscription() {
+    const checked = this.querySelector('[data-sub-mode]:checked');
+    return checked ? checked.value === 'subscription' : false;
+  }
+
+  // The chosen selling_plan id when subscribing, else null (one-time).
+  get sellingPlan() {
+    if (!this.isSubscription || !this.subSelect) return null;
+    const v = parseInt(this.subSelect.value, 10);
+    return isNaN(v) ? null : v;
+  }
+
+  // Toggles selected styling and shows/hides the frequency dropdown. No-op when
+  // the box product has no plans (control not rendered).
+  updateSubscription() {
+    if (!this.subModeInputs || this.subModeInputs.length === 0) return;
+    const isSub = this.isSubscription;
+
+    this.querySelectorAll('.bundle-sub-option').forEach((opt) => {
+      const input = opt.querySelector('input[type="radio"]');
+      opt.classList.toggle('is-selected', !!input && input.checked);
+    });
+
+    if (this.subFrequency) this.subFrequency.hidden = !isSub;
+  }
+
+  // Add-button price = per-box price × number of complete boxes (min 1 for the
+  // empty-state preview). Subscriptions show the discounted total plus the
+  // struck-through original.
+  updateAddPrice() {
+    if (!this.addPriceEl) return;
+    const n = this.completeBoxes || 1;
+    const isSub = this.isSubscription;
+
+    let unitCents = this.boxPriceCents;
+    let compareCents = null;
+    if (isSub && this.subSelect) {
+      const opt = this.subSelect.selectedOptions[0];
+      if (opt) {
+        unitCents = parseInt(opt.dataset.priceCents, 10);
+        compareCents = parseInt(opt.dataset.compareCents, 10);
+      }
+    }
+
+    if (!isNaN(unitCents)) {
+      this.addPriceEl.textContent = formatMoney(unitCents * n, this.moneyFormat);
+    }
+
+    if (this.addWasEl) {
+      const showWas = isSub && compareCents != null && !isNaN(compareCents) && compareCents > unitCents;
+      if (showWas) {
+        this.addWasEl.textContent = formatMoney(compareCents * n, this.moneyFormat);
+        this.addWasEl.hidden = false;
+      } else {
+        this.addWasEl.hidden = true;
+      }
     }
   }
 
@@ -431,6 +537,7 @@ class BundleBuilder extends HTMLElement {
   // One cart item per DISTINCT box composition; identical mixes merge to qty N.
   buildItems() {
     const variantId = parseInt(this.boxVariantId, 10);
+    const sellingPlan = this.sellingPlan; // uniform across the order (null = one-time)
     const merged = new Map();
     for (const box of this.boxes) {
       if (box.length !== this.capacity) continue; // skip a partial box (shouldn't exist when valid)
@@ -444,7 +551,9 @@ class BundleBuilder extends HTMLElement {
       if (existing) {
         existing.quantity += 1;
       } else {
-        merged.set(sig, { id: variantId, quantity: 1, properties: this.buildProperties(counts) });
+        const item = { id: variantId, quantity: 1, properties: this.buildProperties(counts) };
+        if (sellingPlan) item.selling_plan = sellingPlan;
+        merged.set(sig, item);
       }
     }
     return [...merged.values()];
