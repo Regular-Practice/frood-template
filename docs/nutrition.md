@@ -150,12 +150,19 @@ Two new fields are needed on the **`flavour` metaobject definition**; neither ex
 
 | Field key                | Type                     | Content                        |
 | ------------------------ | ------------------------ | ------------------------------ |
-| `nutrition`              | `multi_line_text_field`  | One nutrient per line, `Label\|Per serving\|Per 100 g` |
+| `nutrition`              | `multi_line_text_field`  | One nutrient per line, `Label\|Per serving` |
 | `nutrition_serving_size` | `single_line_text_field` | e.g. `22.5 g` — shown in the column header |
 
-Per-serving is deliberately the **first** value column. The `<0.5 g` entries are safe to paste
-verbatim — the snippet escapes cell values, so the `<` renders as text rather than being parsed as
-a tag.
+> **Only per serving is rendered.** A per-100 g column shipped briefly and was removed at the
+> client's request. The paste blocks below still carry a third per-100 g cell — the snippet ignores
+> any cell past the second, so it's harmless, and keeping it means the column can be restored by
+> re-adding the `<th>`/`<td>` in `product-nutrition.liquid` rather than re-entering all the data.
+>
+> Note per 100 g is the *mandatory* declaration under UK/EU FIC and per serving the optional extra,
+> so the PDP currently shows only the optional half.
+
+The `<0.5 g` entries are safe to paste verbatim — the snippet escapes cell values, so the `<`
+renders as text rather than being parsed as a tag.
 
 **Why the metaobject and not the products:** the single-pack products are excluded from the Online
 Store channel, and Liquid can't reach an off-channel product's data through a metafield reference —

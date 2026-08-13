@@ -1,7 +1,7 @@
 {%- comment -%}
   Renders a product's nutrition declaration(s) as real tables. Rendered into the
-  overlay dialog by `nutrition-modal`, not straight into the PDP column — three
-  columns at 14px in a ~390px .product-box is unreadable. Owned by
+  overlay dialog by `nutrition-modal`, not straight into the PDP column — the
+  mixed box stacks four of these and would bury the rest of the page. Owned by
   sections/main-product.liquid.
 
   Nutrition is a property of the BLEND, not of the box SKU, so it's authored on
@@ -14,11 +14,13 @@
 
     nutrition              multi_line_text_field
                            One nutrient per line, pipe-delimited:
-                             Label|Per serving|Per 100 g
-                           e.g.  Fat|1.4 g|6.2 g
-                           The third cell is optional — if NO line in a given
-                           flavour supplies one, that table drops the per-100 g
-                           column rather than rendering it blank.
+                             Label|Per serving
+                           e.g.  Fat|1.4 g
+                           Any further cells are IGNORED, not rendered. The
+                           live data still carries a third per-100 g cell from
+                           when that column was shown — harmless, and left in
+                           place so the column can be restored by re-adding the
+                           <th>/<td> here rather than re-entering the data.
 
     nutrition_serving_size single_line_text_field
                            e.g. "22.5 g". Shown in the column header as
@@ -76,16 +78,6 @@
         {%- assign nutrition_rows = flavour.nutrition.value | strip | newline_to_br | split: '<br />' -%}
         {%- if nutrition_rows.size == 0 -%}{%- continue -%}{%- endif -%}
 
-        {%- comment -%} Per-flavour: one blend may declare per-100 g while another doesn't. {%- endcomment -%}
-        {%- assign has_per_100g = false -%}
-        {%- for row in nutrition_rows -%}
-          {%- assign cells = row | strip | split: '|' -%}
-          {%- if cells.size > 2 -%}
-            {%- assign has_per_100g = true -%}
-            {%- break -%}
-          {%- endif -%}
-        {%- endfor -%}
-
         {%- assign serving_size = flavour.nutrition_serving_size.value | strip | escape -%}
 
         <div class="nutrition-flavour">
@@ -114,9 +106,6 @@
                       <span class="nutrition-col-size">({{ serving_size }})</span>
                     {%- endif -%}
                   </th>
-                  {%- if has_per_100g -%}
-                    <th scope="col" class="text-ui">{{ 'products.product.nutrition_per_100g' | t }}</th>
-                  {%- endif -%}
                 </tr>
               </thead>
               <tbody>
@@ -132,9 +121,6 @@
                     {%- endcomment -%}
                     <th scope="row" class="text-body nutrition-label">{{ cells[0] | strip | escape }}</th>
                     <td class="text-body">{{ cells[1] | strip | escape }}</td>
-                    {%- if has_per_100g -%}
-                      <td class="text-body">{{ cells[2] | strip | escape }}</td>
-                    {%- endif -%}
                   </tr>
                 {%- endfor -%}
               </tbody>
@@ -147,14 +133,14 @@
 {%- endif -%}
 
 {% stylesheet %}
-  /* Nutrition declaration table(s) (PDP "Nutritional info" accordion).
+  /* Nutrition declaration table(s), shown in the nutrition-modal dialog.
 
-     Echoes the pack layout: hairline rules BETWEEN columns and none between
+     Echoes the pack layout: a hairline rule BETWEEN columns and none between
      rows, figures right-aligned, nutrient labels flush left. The "of which…"
      sub-rows are deliberately not indented — they sit flush on the artwork too.
 
      No outer frame: the pack's rounded box is already provided here by the
-     surrounding .product-box card, so framing again would nest boxes. */
+     surrounding dialog panel, so framing again would nest boxes. */
   .nutrition-flavours {
     display: flex;
     flex-direction: column;
@@ -195,13 +181,13 @@
   .nutrition-table .nutrition-label {
     text-align: left;
     padding-left: 0;
-    /* Soak up the slack so the value columns stay only as wide as their figures. */
+    /* Soak up the slack so the value column stays only as wide as its figures. */
     width: 100%;
   }
 
-  /* That `width: 100%` otherwise squeezes the value columns to min-content,
-     which breaks "1310 kJ / 311 kcal" across four lines at the slashes and
-     blows the row height out. This floor keeps them readable at any width. */
+  /* That `width: 100%` otherwise squeezes the value column to min-content,
+     which breaks "360 kJ / 86 kcal" across lines at the slashes and blows the
+     row height out. This floor keeps it readable at any width. */
   .nutrition-table td,
   .nutrition-table thead th + th {
     min-width: 6.5em;
@@ -213,7 +199,7 @@
     text-transform: none;
   }
 
-  /* The pack's defining cue: vertical rules separating the value columns. */
+  /* The pack's defining cue: a vertical rule separating labels from figures. */
   .nutrition-table td,
   .nutrition-table thead th + th {
     border-left: 1px solid var(--color-border);
@@ -234,7 +220,7 @@
 
   @media (min-width: 600px) {
     /* Enough room to hold every figure on one line. Below this the energy cell
-       wraps to two — which is how it's set on the pack anyway. */
+       may wrap to two — which is how it's set on the pack anyway. */
     .nutrition-table td,
     .nutrition-table thead th + th {
       white-space: nowrap;

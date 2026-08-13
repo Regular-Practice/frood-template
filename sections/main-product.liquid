@@ -131,9 +131,8 @@
       {%- comment -%}
         Nutritional info box: the merchant's `custom.nutritional_info` richtext,
         plus a "View full nutrition" link opening the per-flavour tables in an
-        overlay. The tables don't fit this column — three columns at 14px in a
-        ~390px .product-box is unreadable — so they live in the dialog and the
-        accordion stays short.
+        overlay. The tables live in the dialog rather than inline so the
+        accordion stays short — the mixed box stacks four of them.
 
         Captured rather than tested via a metafield: whether there's a dialog to
         offer depends on the flavours' own nutrition fields, and nutrition-modal

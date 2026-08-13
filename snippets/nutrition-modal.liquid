@@ -3,9 +3,9 @@
   nutrition tables. Owned by sections/main-product.liquid, rendered inside the
   PDP's "Nutritional info" accordion beneath the merchant's richtext.
 
-  Exists because the tables don't fit the PDP column: three columns at 14px in a
-  ~390px `.product-box` is legible in theory and unreadable in practice. The
-  dialog gives them room and scrolls, so the accordion can stay short.
+  Exists to keep the accordion short: the mixed box stacks four tables of ten
+  rows each, which buries the rest of the PDP column if inlined. The dialog gives
+  them room and scrolls instead.
 
   The tables themselves come from `product-nutrition` — this snippet only
   provides the shell. If that renders nothing (no flavours, or none with
@@ -73,8 +73,7 @@
     inset: 0;
     z-index: 999;
     display: flex;
-    /* Tight at mobile: every pixel of padding is a pixel the table doesn't
-       have, and at 390px the three columns only just fit. */
+    /* Tight at mobile so the table keeps its width; roomier from 600px up. */
     padding: var(--spacing-xs);
   }
 
@@ -114,9 +113,9 @@
     flex-direction: column;
     width: 100%;
     max-height: 100%;
-    /* Wide enough that label + two value columns stop fighting — the whole
-       reason the dialog exists. Not wider: a nutrition table gains nothing
-       from extra measure. */
+    /* Comfortable for the label + value column without stranding the figures
+       miles from their labels. A nutrition table gains nothing from extra
+       measure. */
     max-width: 560px;
     background-color: var(--color-bg);
     color: var(--color-text);
