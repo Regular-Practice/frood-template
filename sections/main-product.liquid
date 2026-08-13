@@ -128,8 +128,22 @@
         </details>
       {%- endif -%}
 
-      {%- comment -%} Nutritional info box (metafield) {%- endcomment -%}
-      {%- if product.metafields.custom.nutritional_info != blank -%}
+      {%- comment -%}
+        Nutritional info box: the merchant's `custom.nutritional_info` richtext,
+        plus a "View full nutrition" link opening the per-flavour tables in an
+        overlay. The tables don't fit this column — three columns at 14px in a
+        ~390px .product-box is unreadable — so they live in the dialog and the
+        accordion stays short.
+
+        Captured rather than tested via a metafield: whether there's a dialog to
+        offer depends on the flavours' own nutrition fields, and nutrition-modal
+        already owns that logic — re-deriving it here would be two copies to keep
+        in step. {% stylesheet %} is hoisted at compile time, so the capture
+        holds markup only. The box shows if either half has something.
+      {%- endcomment -%}
+      {%- capture nutrition_modal -%}{% render 'nutrition-modal', product: product %}{%- endcapture -%}
+      {%- assign nutrition_modal = nutrition_modal | strip -%}
+      {%- if nutrition_modal != blank or product.metafields.custom.nutritional_info != blank -%}
         <details class="product-box product-accordion">
           <summary>
             <span class="text-ui">{{ 'products.product.nutritional_info' | t }}</span>
@@ -144,8 +158,13 @@
           </summary>
           <div class="accordion-content">
             <div class="accordion-content-inner">
-              <div class="product-accordion-content typeset">
-                {{ product.metafields.custom.nutritional_info | metafield_tag }}
+              <div class="product-accordion-content product-nutrition-body">
+                {%- if product.metafields.custom.nutritional_info != blank -%}
+                  <div class="typeset">
+                    {{ product.metafields.custom.nutritional_info | metafield_tag }}
+                  </div>
+                {%- endif -%}
+                {{ nutrition_modal }}
               </div>
             </div>
           </div>
@@ -677,6 +696,15 @@
 
   .product-accordion-content {
     padding-top: var(--spacing-xxs);
+  }
+
+  /* Richtext + the "View full nutrition" trigger stack with a consistent gap,
+     and the gap collapses cleanly when the richtext is absent. */
+  .product-nutrition-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+    align-items: flex-start;
   }
 
   /* The global open-summary gap is dropped under [data-enhanced] (base.css);

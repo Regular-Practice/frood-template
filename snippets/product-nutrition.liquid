@@ -1,0 +1,243 @@
+{%- comment -%}
+  Renders a product's nutrition declaration(s) as real tables. Rendered into the
+  overlay dialog by `nutrition-modal`, not straight into the PDP column — three
+  columns at 14px in a ~390px .product-box is unreadable. Owned by
+  sections/main-product.liquid.
+
+  Nutrition is a property of the BLEND, not of the box SKU, so it's authored on
+  the `flavour` metaobject and reached via the box product's curated
+  `custom.included_flavours` list — the same list the bundle builder renders.
+  That makes every box uniform: a single-flavour box has one entry and gets one
+  table, the mixed box has four and gets four. No special case.
+
+  Two fields on the `flavour` metaobject:
+
+    nutrition              multi_line_text_field
+                           One nutrient per line, pipe-delimited:
+                             Label|Per serving|Per 100 g
+                           e.g.  Fat|1.4 g|6.2 g
+                           The third cell is optional — if NO line in a given
+                           flavour supplies one, that table drops the per-100 g
+                           column rather than rendering it blank.
+
+    nutrition_serving_size single_line_text_field
+                           e.g. "22.5 g". Shown in the column header as
+                           "Per serving (22.5 g)". Optional — the header falls
+                           back to a bare "Per serving".
+
+  Deliberately NOT read through `flavour.product_reference`: the single-pack
+  products are excluded from the Online Store channel, and Liquid can't reach an
+  off-channel product's data through a metafield reference — it collapses to
+  blank silently (see the `sku` note in sections/bundle-builder.liquid, which is
+  mirrored onto the metaobject for exactly this reason). An empty nutrition
+  panel with no error is a worse failure than a bit of duplication.
+
+  Values are transcribed verbatim from the pack (see docs/nutrition.md); nothing
+  is computed here. An on-pack nutrition declaration is a legal artefact and the
+  printed figure is the one that must be reproduced, rounding included. The four
+  blends are never averaged or merged into one combined table — a single
+  declaration covering four different foods isn't meaningful or permitted.
+
+  Blank lines and any line without at least a label + one value are skipped, so
+  a stray newline in the field can't produce an empty row. Flavours with no
+  nutrition authored are skipped entirely.
+
+  Renders nothing if there are no flavours, or none of them have nutrition —
+  `nutrition-modal` detects the empty output and omits the trigger + dialog
+  entirely rather than opening an empty overlay.
+
+  Expects:
+    - product: product object
+
+  Usage:
+    {% render 'product-nutrition', product: product %}
+{%- endcomment -%}
+
+{%- assign flavours = product.metafields.custom.included_flavours.value -%}
+
+{%- if flavours != blank -%}
+  {%- comment -%}
+    Count the flavours that actually have a table authored. Drives whether
+    flavour-name headings render at all: a single-flavour box doesn't need one
+    (the accordion label already says what this is), the mixed box does. Counted
+    on authored flavours rather than all of them, so a part-populated mixed box
+    still gets headings on the tables it does show.
+  {%- endcomment -%}
+  {%- assign authored_count = 0 -%}
+  {%- for flavour in flavours -%}
+    {%- if flavour.nutrition.value != blank -%}
+      {%- assign authored_count = authored_count | plus: 1 -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- if authored_count > 0 -%}
+    <div class="nutrition-flavours">
+      {%- for flavour in flavours -%}
+        {%- assign nutrition_rows = flavour.nutrition.value | strip | newline_to_br | split: '<br />' -%}
+        {%- if nutrition_rows.size == 0 -%}{%- continue -%}{%- endif -%}
+
+        {%- comment -%} Per-flavour: one blend may declare per-100 g while another doesn't. {%- endcomment -%}
+        {%- assign has_per_100g = false -%}
+        {%- for row in nutrition_rows -%}
+          {%- assign cells = row | strip | split: '|' -%}
+          {%- if cells.size > 2 -%}
+            {%- assign has_per_100g = true -%}
+            {%- break -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- assign serving_size = flavour.nutrition_serving_size.value | strip | escape -%}
+
+        <div class="nutrition-flavour">
+          {%- comment -%}
+            h3: these sit under the dialog's own h2 title, which sits under the
+            page h1 — no level skipped (accessibility.md). .text-ui keeps it
+            visually small.
+          {%- endcomment -%}
+          {%- if authored_count > 1 -%}
+            <h3 class="text-ui nutrition-flavour-name">{{ flavour.name }}</h3>
+          {%- endif -%}
+
+          <div class="nutrition-table-wrap">
+            <table class="nutrition-table">
+              <thead>
+                <tr>
+                  <th scope="col" class="text-ui nutrition-label">{{ 'products.product.nutrition_typical_values' | t }}</th>
+                  <th scope="col" class="text-ui">
+                    {{- 'products.product.nutrition_per_serving' | t -}}
+                    {%- comment -%}
+                      Size on its own line, as on the pack — and left in the
+                      merchant's own case rather than uppercased, so "22.5 g"
+                      doesn't come out as "22.5 G".
+                    {%- endcomment -%}
+                    {%- if serving_size != blank -%}
+                      <span class="nutrition-col-size">({{ serving_size }})</span>
+                    {%- endif -%}
+                  </th>
+                  {%- if has_per_100g -%}
+                    <th scope="col" class="text-ui">{{ 'products.product.nutrition_per_100g' | t }}</th>
+                  {%- endif -%}
+                </tr>
+              </thead>
+              <tbody>
+                {%- for row in nutrition_rows -%}
+                  {%- assign cells = row | strip | split: '|' -%}
+                  {%- if cells.size < 2 -%}{%- continue -%}{%- endif -%}
+                  <tr>
+                    {%- comment -%}
+                      `escape` is load-bearing, not boilerplate: Bolognese
+                      declares "<0.5 g", and Liquid doesn't auto-escape —
+                      unescaped, the browser parses "<0.5" as a malformed tag
+                      and eats the rest of the row.
+                    {%- endcomment -%}
+                    <th scope="row" class="text-body nutrition-label">{{ cells[0] | strip | escape }}</th>
+                    <td class="text-body">{{ cells[1] | strip | escape }}</td>
+                    {%- if has_per_100g -%}
+                      <td class="text-body">{{ cells[2] | strip | escape }}</td>
+                    {%- endif -%}
+                  </tr>
+                {%- endfor -%}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+{%- endif -%}
+
+{% stylesheet %}
+  /* Nutrition declaration table(s) (PDP "Nutritional info" accordion).
+
+     Echoes the pack layout: hairline rules BETWEEN columns and none between
+     rows, figures right-aligned, nutrient labels flush left. The "of which…"
+     sub-rows are deliberately not indented — they sit flush on the artwork too.
+
+     No outer frame: the pack's rounded box is already provided here by the
+     surrounding .product-box card, so framing again would nest boxes. */
+  .nutrition-flavours {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-s);
+  }
+
+  .nutrition-flavour-name {
+    margin: 0 0 var(--spacing-xxs);
+  }
+
+  /* Hairline between stacked blends (mixed box) so four tables in a row read as
+     four, not one long one. */
+  .nutrition-flavour + .nutrition-flavour {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--spacing-s);
+  }
+
+  .nutrition-table-wrap {
+    overflow-x: auto;
+  }
+
+  .nutrition-table {
+    width: 100%;
+    border-collapse: collapse;
+    /* Figures line up column-wise — the whole point of a nutrition panel. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  .nutrition-table th,
+  .nutrition-table td {
+    padding: var(--spacing-xxxs) var(--spacing-xxs);
+    text-align: right;
+    vertical-align: baseline;
+    /* <th> defaults to bold/centred; typography comes from .text-ui/.text-body. */
+    font-weight: inherit;
+  }
+
+  .nutrition-table .nutrition-label {
+    text-align: left;
+    padding-left: 0;
+    /* Soak up the slack so the value columns stay only as wide as their figures. */
+    width: 100%;
+  }
+
+  /* That `width: 100%` otherwise squeezes the value columns to min-content,
+     which breaks "1310 kJ / 311 kcal" across four lines at the slashes and
+     blows the row height out. This floor keeps them readable at any width. */
+  .nutrition-table td,
+  .nutrition-table thead th + th {
+    min-width: 6.5em;
+  }
+
+  /* Serving size drops below its "Per serving" label, as on the pack. */
+  .nutrition-col-size {
+    display: block;
+    text-transform: none;
+  }
+
+  /* The pack's defining cue: vertical rules separating the value columns. */
+  .nutrition-table td,
+  .nutrition-table thead th + th {
+    border-left: 1px solid var(--color-border);
+  }
+
+  .nutrition-table thead th {
+    text-transform: uppercase;
+    letter-spacing: var(--type-cap-spacing);
+    color: var(--color-text-accent);
+    vertical-align: bottom;
+    padding-bottom: var(--spacing-xxs);
+  }
+
+  .nutrition-table tbody tr:last-child th,
+  .nutrition-table tbody tr:last-child td {
+    padding-bottom: 0;
+  }
+
+  @media (min-width: 600px) {
+    /* Enough room to hold every figure on one line. Below this the energy cell
+       wraps to two — which is how it's set on the pack anyway. */
+    .nutrition-table td,
+    .nutrition-table thead th + th {
+      white-space: nowrap;
+    }
+  }
+{% endstylesheet %}
