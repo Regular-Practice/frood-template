@@ -384,7 +384,7 @@ class BundleV2Builder extends HTMLElement {
       if (removeBtn) removeBtn.disabled = qty === 0;
     });
 
-    if (this.addButton) this.addButton.disabled = !this.isValid || !this.boxVariantId;
+    if (this.addButton) this.addButton.disabled = !this.isValid || !this.hasVariants;
     if (this.addLabel) this.addLabel.textContent = this.dataset.i18nAdd || 'Add to cart';
 
     // Hint counts the shopper up to the order minimum, then goes quiet — above
@@ -439,37 +439,62 @@ class BundleV2Builder extends HTMLElement {
     if (this.subFrequency) this.subFrequency.hidden = !isSub;
   }
 
-  // Add-button price = per-pack price × pack count. An empty draft previews the
-  // minimum order rather than £0. Subscriptions show the discounted total plus
-  // the struck-through original.
+  // Add-button price = the sum of the blend lines. An empty draft previews the
+  // minimum order at the cheapest blend rather than £0. Subscriptions show the
+  // discounted total plus the struck-through original.
   updateAddPrice() {
     if (!this.addPriceEl) return;
-    const n = this.total || this.minPacks;
     const isSub = this.isSubscription;
+    const totalCents = this.draftCents();
+    if (totalCents == null) return;
 
-    let unitCents = this.boxPriceCents;
-    let compareCents = null;
+    // Subscription discount is a percentage off the plan, applied to the whole
+    // draft. (The plan itself still hangs off the BOX variant — once the blends
+    // carry their own selling plans this should read the rate from them.)
+    let rate = 1;
+    let compareRate = null;
     if (isSub && this.subSelect) {
       const opt = this.subSelect.selectedOptions[0];
-      if (opt) {
-        unitCents = parseInt(opt.dataset.priceCents, 10);
-        compareCents = parseInt(opt.dataset.compareCents, 10);
+      const planCents = parseInt(opt?.dataset.priceCents, 10);
+      const fullCents = parseInt(opt?.dataset.compareCents, 10);
+      if (!isNaN(planCents) && !isNaN(fullCents) && fullCents > 0) {
+        rate = planCents / fullCents;
+        compareRate = 1;
       }
     }
 
-    if (!isNaN(unitCents)) {
-      this.addPriceEl.textContent = formatMoney(unitCents * n, this.moneyFormat);
-    }
+    this.addPriceEl.textContent = formatMoney(Math.round(totalCents * rate), this.moneyFormat);
 
     if (this.addWasEl) {
-      const showWas = isSub && compareCents != null && !isNaN(compareCents) && compareCents > unitCents;
+      const showWas = isSub && compareRate != null && rate < 1;
       if (showWas) {
-        this.addWasEl.textContent = formatMoney(compareCents * n, this.moneyFormat);
+        this.addWasEl.textContent = formatMoney(totalCents, this.moneyFormat);
         this.addWasEl.hidden = false;
       } else {
         this.addWasEl.hidden = true;
       }
     }
+  }
+
+  // Summed price of the draft, from each blend's own variant price. An empty
+  // draft previews the minimum order at the cheapest available blend, so the
+  // button reads as a starting price rather than £0.
+  draftCents() {
+    const priceOf = (id) => this.flavours[id]?.priceCents;
+    if (this.total === 0) {
+      const prices = Object.keys(this.flavours)
+        .map(priceOf)
+        .filter((c) => typeof c === 'number');
+      if (!prices.length) return null;
+      return Math.min(...prices) * this.minPacks;
+    }
+    let cents = 0;
+    for (const [id, qty] of Object.entries(this.counts)) {
+      const unit = priceOf(id);
+      if (typeof unit !== 'number') return null;
+      cents += unit * qty;
+    }
+    return cents;
   }
 
   // ---- Add to cart (native Shopify cart) --------------------------------
@@ -498,21 +523,36 @@ class BundleV2Builder extends HTMLElement {
     return properties;
   }
 
-  // ONE cart line for the whole draft, quantity = the pack count. The box
-  // product is priced per pack, so quantity carries the price and the flavour
-  // breakdown rides along in the properties.
+  // ONE cart line PER BLEND — the blends are the products now, and the custom
+  // box is a line-item property on each of them. The box product itself is no
+  // longer purchased.
   //
-  // This replaced a per-box split (one line per full box of 6, identical mixes
-  // merged). With packs sold individually there is no box to split on, and a
-  // per-box split would have silently dropped any remainder.
+  // Every line carries the same visible property, so:
+  //   - the cart can collect them into one block by looking for it
+  //   - Shopify merges repeat adds of the same blend into one line, which is
+  //     what "you only get one custom box" should mean
+  //   - a blend bought outside a box never merges with a box line
+  //
+  // Superseded two earlier shapes: one line per full box of 6, then a single
+  // box line carrying the flavours as text.
   buildItems() {
-    const item = {
-      id: parseInt(this.boxVariantId, 10),
-      quantity: this.total,
-      properties: this.buildProperties(this.counts)
-    };
-    if (this.sellingPlan) item.selling_plan = this.sellingPlan;
-    return [item];
+    const key = this.dataset.boxPropertyKey || 'Part of';
+    const value = this.dataset.boxPropertyValue || 'Custom Box';
+    const items = [];
+    for (const [id, qty] of Object.entries(this.counts)) {
+      const variantId = this.flavours[id]?.variantId;
+      if (!qty || !variantId) continue;
+      const item = { id: variantId, quantity: qty, properties: { [key]: value } };
+      if (this.sellingPlan) item.selling_plan = this.sellingPlan;
+      items.push(item);
+    }
+    return items;
+  }
+
+  // Every flavour in the draft has to resolve to a purchasable variant, or the
+  // add would silently drop packs the shopper chose.
+  get hasVariants() {
+    return Object.keys(this.counts).every((id) => this.flavours[id]?.variantId);
   }
 
   addFailureReason(message = '') {
@@ -530,9 +570,9 @@ class BundleV2Builder extends HTMLElement {
   }
 
   async addToCart() {
-    if (!this.isValid || !this.boxVariantId) {
+    if (!this.isValid || !this.hasVariants) {
       this.track('bundle_add_validation_failed', {
-        reason: this.isValid ? 'missing_box_variant' : 'incomplete',
+        reason: this.isValid ? 'missing_variant' : 'incomplete',
         filled: this.total,
         min_packs: this.minPacks,
         composition: this.composition
@@ -609,7 +649,7 @@ class BundleV2Builder extends HTMLElement {
       this.showError(error.message);
     } finally {
       this.addButton.classList.remove('is-loading');
-      this.addButton.disabled = !this.isValid || !this.boxVariantId;
+      this.addButton.disabled = !this.isValid || !this.hasVariants;
     }
   }
 

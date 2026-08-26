@@ -98,16 +98,53 @@
   data-i18n-add-more="{{ 'sections.bundle_builder.add_minimum' | t }}"
   data-i18n-added="{{ 'sections.bundle_builder.added' | t: product: box_product.title }}"
   data-i18n-error="{{ 'sections.bundle_builder.checkout_error' | t }}"
+  {%- comment -%}
+    Visible line-item property stamped on every blend line, marking it as part of
+    the custom box. Visible (no leading underscore) so it carries through cart,
+    checkout and the order confirmation; it is also what the cart groups on.
+  {%- endcomment -%}
+  data-box-property-key="{{ 'sections.bundle_builder.box_property_key' | t }}"
+  data-box-property-value="{{ 'sections.bundle_builder.box_property_value' | t }}"
 >
   <script type="application/json" class="bundle-v2-flavours">
     [
       {%- for flavour in included_flavours -%}
+        {%- comment -%}
+          Each flavour must resolve to a PURCHASABLE variant — v2 adds the blends
+          themselves to the cart, one line each, rather than a single box line.
+
+          `product_reference` is the real single-pack product, but those are not
+          published to the Online Store channel, so Liquid sees them as blank and
+          /cart/add.js would reject them. Until they are published we fall back to
+          a DEV STAND-IN: the matching published Box product, purely so the
+          mechanism can be built and tested without touching the live store.
+
+          AT LAUNCH: publish the single-pack products, then delete the stand-in
+          block below — `product_reference` will resolve on its own and nothing
+          else has to change.
+        {%- endcomment -%}
+        {%- assign flavour_product = flavour.product_reference.value -%}
+        {%- if flavour_product == blank -%}
+          {%- case flavour.system.handle -%}
+            {%- when 'golden-curry' -%}
+              {%- assign flavour_product = all_products['golden-curry-blend-test'] -%}
+            {%- when 'mexi-fiesta' -%}
+              {%- assign flavour_product = all_products['test'] -%}
+            {%- when 'bella-bolognese' -%}
+              {%- assign flavour_product = all_products['bella-bolognese-blend-test'] -%}
+            {%- when 'swedish-meatball-blend' -%}
+              {%- assign flavour_product = all_products['swedish-meatball-blend-test'] -%}
+          {%- endcase -%}
+        {%- endif -%}
+        {%- assign flavour_variant = flavour_product.selected_or_first_available_variant | default: flavour_product.variants.first -%}
         {
           "id": {{ flavour.system.handle | json }},
           "name": {{ flavour.name.value | json }},
           "attributes": {{ flavour.atrributes.value | default: '' | json }},
           "image": {% if flavour.image.value != blank %}{{ flavour.image.value | image_url: width: 1500 | json }}{% else %}""{% endif %},
-          "sku": {{ flavour.sku.value | default: '' | json }}
+          "sku": {{ flavour.sku.value | default: '' | json }},
+          "variantId": {% if flavour_variant %}{{ flavour_variant.id | json }}{% else %}null{% endif %},
+          "priceCents": {% if flavour_variant %}{{ flavour_variant.price }}{% else %}null{% endif %}
         }{%- unless forloop.last -%},{%- endunless -%}
       {%- endfor -%}
     ]

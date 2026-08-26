@@ -276,6 +276,8 @@
       "empty_stage": "Add packs to fill your box",
       "empty_custom_box": "Add blends to your custom box!",
       "add_minimum": "Add {count} more to reach the 6-pack minimum",
+      "box_property_key": "Part of",
+      "box_property_value": "Custom Box",
       "scroll_back": "Show earlier blends",
       "scroll_forward": "Show later blends",
       "no_flavours": "No flavours yet.",
