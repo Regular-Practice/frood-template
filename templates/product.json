@@ -21,8 +21,7 @@
         "recharge_subscriptions_subscription_widget_v2_fmVdA4"
       ],
       "settings": {
-        "show_quantity": true,
-        "pack_label": "4 PACK"
+        "show_quantity": true
       }
     },
     "recipe_recommendations": {

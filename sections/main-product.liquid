@@ -18,8 +18,15 @@
                        its own card below — separate boxes, not hairlines. {%- endcomment -%}
       <div class="product-box product-box-main">
         <header class="section-lockup">
-          {%- if section.settings.pack_label != blank -%}
-            <p class="text-h1">{{ section.settings.pack_label }}</p>
+          {%- comment -%}
+            Pack-size eyebrow. Per-product via the `custom.pack_size` choice-list
+            metafield ("4 Pack" / "6 Pack"); upcased here so the stored value stays
+            readable in admin while the PDP follows the all-caps h1 convention.
+            Omitted entirely when the metafield is unset.
+          {%- endcomment -%}
+          {%- assign pack_size = product.metafields.custom.pack_size.value -%}
+          {%- if pack_size != blank -%}
+            <p class="text-h1">{{ pack_size | upcase }}</p>
           {%- endif -%}
           <h1 class="text-h2 product-box-title">{{ product.title }}</h1>
         </header>
@@ -907,13 +914,6 @@
 {
   "name": "Product information",
   "settings": [
-    {
-      "type": "text",
-      "id": "pack_label",
-      "label": "Pack size eyebrow",
-      "default": "4 PACK",
-      "info": "Small label above the product title. Leave blank to hide it."
-    },
     {
       "type": "checkbox",
       "id": "show_quantity",
