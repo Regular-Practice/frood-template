@@ -1,0 +1,124 @@
+{%- comment -%}
+  Renders every "custom box" cart line as ONE block — the box is a group of
+  ordinary line items, not a single product, but the shopper should never see
+  that. Owned by sections/main-cart.liquid (with cart-item / cart-drawer-item).
+
+  A line belongs to the box when it carries the hidden `_custom_box` property.
+  That flag is the grouping key rather than the visible "Part of / Custom Box"
+  pair, which is translated and so can't be matched on reliably.
+
+  Each row's name and chip colour come from the line's own hidden properties
+  (`_flavour_name`, `_flavour_colour`), stamped at add time by
+  bundle-v2-builder.js. They can't be looked up here: a cart line has no route
+  back to its flavour metaobject — `shop.metaobjects` isn't exposed to the
+  storefront on this store, and the blend product itself knows nothing about
+  flavours.
+
+  DELIBERATELY NOT EDITABLE. There is no quantity control, only a single remove
+  that clears every line in the group at once (`data-remove-group`, handled by
+  assets/cart-items.js). That is what keeps the 6-pack minimum from being eroded
+  line by line in the cart — without it, blocking checkout would need a Shopify
+  Function.
+
+  Expects:
+    - cart:    the cart object
+    - variant: 'cart' (default) or 'drawer' — picks the class prefix so the
+               block inherits whichever surface it's rendered on
+
+  Usage:
+    {% render 'custom-box-line', cart: cart %}
+    {% render 'custom-box-line', cart: cart, variant: 'drawer' %}
+{%- endcomment -%}
+
+{%- if variant == 'drawer' -%}
+  {%- assign base = 'cart-drawer-item' -%}
+{%- else -%}
+  {%- assign base = 'cart-item' -%}
+{%- endif -%}
+
+{%- comment -%} Gather the group: line keys for the remove control, plus totals. {%- endcomment -%}
+{%- assign box_keys = '' -%}
+{%- assign box_total = 0 -%}
+{%- assign box_compare = 0 -%}
+{%- assign box_count = 0 -%}
+{%- assign box_plan = blank -%}
+{%- for item in cart.items -%}
+  {%- if item.properties['_custom_box'] == blank -%}{%- continue -%}{%- endif -%}
+  {%- assign box_keys = box_keys | append: item.key | append: ',' -%}
+  {%- assign box_total = box_total | plus: item.final_line_price -%}
+  {%- assign box_compare = box_compare | plus: item.original_line_price -%}
+  {%- assign box_count = box_count | plus: item.quantity -%}
+  {%- if item.selling_plan_allocation -%}
+    {%- assign box_plan = item.selling_plan_allocation.selling_plan.name -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- if box_count > 0 -%}
+  <div class="{{ base }} is-bundle custom-box-line">
+    <div class="{{ base }}-details">
+      <p class="{{ base }}-title">{{ 'sections.bundle_builder.box_property_value' | t }}</p>
+
+      <p class="custom-box-count text-mini">
+        {{ 'sections.bundle_builder.box_pack_count' | t: count: box_count }}
+      </p>
+
+      {%- if box_plan != blank -%}
+        <p class="{{ base }}-subscription text-ui">{{ box_plan }}</p>
+      {%- endif -%}
+
+      {%- comment -%} One row per blend — chip + name + quantity, as before. {%- endcomment -%}
+      <ul class="bundle-line unstyled-list">
+        {%- for item in cart.items -%}
+          {%- if item.properties['_custom_box'] == blank -%}{%- continue -%}{%- endif -%}
+          {%- assign flavour_name = item.properties['_flavour_name'] | default: item.product.title -%}
+          {%- assign flavour_colour = item.properties['_flavour_colour'] -%}
+          <li class="bundle-line-row">
+            <span
+              class="bundle-line-chip"
+              {%- if flavour_colour != blank %} style="background-color: {{ flavour_colour }};"{% endif -%}
+              aria-hidden="true"
+            ></span>
+            <span class="bundle-line-name text-body">{{ flavour_name }}</span>
+            <span class="bundle-line-qty text-body">&times; {{ item.quantity }}</span>
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      <p class="{{ base }}-price">
+        {%- if box_compare != box_total -%}
+          <s class="{{ base }}-compare-price">{{ box_compare | money }}</s>
+        {%- endif -%}
+        {{ box_total | money }}
+      </p>
+
+      <div class="{{ base }}-actions">
+        <button
+          type="button"
+          class="{{ base }}-remove button"
+          data-remove-group="{{ box_keys | split: ',' | join: ',' }}"
+          aria-label="{{ 'sections.bundle_builder.remove_box' | t }}"
+        >
+          {{ 'cart.general.remove' | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  /* The group has no thumbnail and no quantity control, so its details column
+     spans the full width rather than sitting beside an image. */
+  .custom-box-line .cart-item-details,
+  .custom-box-line .cart-drawer-item-details {
+    grid-column: 1 / -1;
+  }
+
+  .custom-box-count {
+    margin: 0;
+    color: var(--color-text-accent);
+  }
+
+  .custom-box-line .bundle-line {
+    margin-top: var(--spacing-xxs);
+  }
+{% endstylesheet %}

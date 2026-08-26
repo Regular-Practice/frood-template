@@ -540,9 +540,24 @@ class BundleV2Builder extends HTMLElement {
     const value = this.dataset.boxPropertyValue || 'Custom Box';
     const items = [];
     for (const [id, qty] of Object.entries(this.counts)) {
-      const variantId = this.flavours[id]?.variantId;
-      if (!qty || !variantId) continue;
-      const item = { id: variantId, quantity: qty, properties: { [key]: value } };
+      const flavour = this.flavours[id];
+      if (!qty || !flavour?.variantId) continue;
+      const item = {
+        id: flavour.variantId,
+        quantity: qty,
+        properties: {
+          // Visible: carries through cart, checkout and the order confirmation.
+          [key]: value,
+          // Hidden. `_custom_box` is the STABLE grouping key the cart matches on —
+          // the visible pair above is translated, so it can't be relied on. The
+          // other two carry the display, because a cart line has no route back to
+          // its flavour metaobject: shop.metaobjects isn't exposed to the
+          // storefront here, and the blend product knows nothing about flavours.
+          _custom_box: '1',
+          _flavour_name: flavour.name || '',
+          _flavour_colour: flavour.colour || ''
+        }
+      };
       if (this.sellingPlan) item.selling_plan = this.sellingPlan;
       items.push(item);
     }

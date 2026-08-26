@@ -278,6 +278,11 @@
       "add_minimum": "Add {count} more to reach the 6-pack minimum",
       "box_property_key": "Part of",
       "box_property_value": "Custom Box",
+      "box_pack_count": {
+        "one": "{{ count }} pack",
+        "other": "{{ count }} packs"
+      },
+      "remove_box": "Remove your custom box",
       "scroll_back": "Show earlier blends",
       "scroll_forward": "Show later blends",
       "no_flavours": "No flavours yet.",

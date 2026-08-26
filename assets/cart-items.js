@@ -40,6 +40,16 @@ class CartItems extends HTMLElement {
 
     // Delegate click events for remove buttons
     this.addEventListener('click', (e) => {
+      // A custom box is several line items shown as one block, so its remove
+      // has to clear them all — one /cart/update.js rather than N changes, so
+      // the cart never renders a half-removed box.
+      const removeGroup = e.target.closest('[data-remove-group]');
+      if (removeGroup) {
+        e.preventDefault();
+        this.removeGroup(removeGroup.dataset.removeGroup.split(',').filter(Boolean));
+        return;
+      }
+
       const removeButton = e.target.closest('[data-remove]');
       if (removeButton) {
         e.preventDefault();
@@ -59,6 +69,43 @@ class CartItems extends HTMLElement {
     this.debounceTimer = setTimeout(() => {
       this.updateItem(key, quantity);
     }, 300);
+  }
+
+  /**
+   * Remove several line items at once via POST to /cart/update.js — used by the
+   * custom box, which is a group of lines presented as a single block.
+   * @param {string[]} keys - Cart line item keys to zero out.
+   */
+  async removeGroup(keys) {
+    if (!keys.length) return;
+    const errorGeneric = this.dataset.errorGeneric || "Couldn't update — try again";
+    const updates = {};
+    for (const key of keys) updates[key] = 0;
+
+    this.classList.add('is-loading');
+
+    try {
+      const response = await fetch('/cart/update.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ updates, sections: [this.sectionId] })
+      });
+
+      if (!response.ok) throw new Error(errorGeneric);
+
+      const data = await response.json();
+      this.renderFromSections(data.sections);
+      document.dispatchEvent(new CustomEvent('cart:updated', { bubbles: true, detail: { cart: data } }));
+    } catch {
+      document.dispatchEvent(
+        new CustomEvent('toast:show', { bubbles: true, detail: { message: errorGeneric, variant: 'error' } })
+      );
+    } finally {
+      this.classList.remove('is-loading');
+    }
   }
 
   /**

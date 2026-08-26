@@ -143,6 +143,8 @@
           "attributes": {{ flavour.atrributes.value | default: '' | json }},
           "image": {% if flavour.image.value != blank %}{{ flavour.image.value | image_url: width: 1500 | json }}{% else %}""{% endif %},
           "sku": {{ flavour.sku.value | default: '' | json }},
+          {%- comment -%} `| append: ''` casts the colour object to its hex string; `| json` alone rejects it. {%- endcomment -%}
+          "colour": {{ flavour.dark_colour | append: '' | json }},
           "variantId": {% if flavour_variant %}{{ flavour_variant.id | json }}{% else %}null{% endif %},
           "priceCents": {% if flavour_variant %}{{ flavour_variant.price }}{% else %}null{% endif %}
         }{%- unless forloop.last -%},{%- endunless -%}

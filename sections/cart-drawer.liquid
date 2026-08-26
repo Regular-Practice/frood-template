@@ -39,8 +39,17 @@
           data-error-stock="{{ 'cart.drawer.error_stock' | t }}"
           data-error-generic="{{ 'cart.drawer.error_generic' | t }}"
         >
+          {%- comment -%} See cart-items.liquid — the custom box draws once, as a group. {%- endcomment -%}
+          {%- assign box_drawn = false -%}
           {%- for item in cart.items -%}
-            {% render 'cart-drawer-item', item: item %}
+            {%- if item.properties['_custom_box'] != blank -%}
+              {%- unless box_drawn -%}
+                {% render 'custom-box-line', cart: cart, variant: 'drawer' %}
+                {%- assign box_drawn = true -%}
+              {%- endunless -%}
+            {%- else -%}
+              {% render 'cart-drawer-item', item: item %}
+            {%- endif -%}
           {%- endfor -%}
         </cart-items>
 
