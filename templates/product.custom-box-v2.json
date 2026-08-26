@@ -1,0 +1,18 @@
+/*
+ * Sandbox template for the v2 bundle builder (blends as line items).
+ * Lives on the `dev` branch only — not merged to main, so not on the live theme.
+ */
+{
+  "sections": {
+    "v2": {
+      "type": "bundle-v2-builder",
+      "settings": {
+        "box_product": "mixed-box",
+        "eyebrow": "Build your box",
+        "heading": "Create and customise your box from the Frood selection.",
+        "full_screen": true
+      }
+    }
+  },
+  "order": ["v2"]
+}
