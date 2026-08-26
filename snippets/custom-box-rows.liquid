@@ -1,0 +1,35 @@
+{%- comment -%}
+  The flavour rows inside a custom-box cart block — one row per blend line:
+  colour chip + name, with the quantity pushed to the right edge.
+
+  Split out of `custom-box-line` so the cart page and the drawer share exactly
+  one copy of the row markup while wrapping it in their own surface structure.
+
+  Reuses the `.bundle-line*` classes from `bundle-line-contents` deliberately —
+  the v1 bundle block and this one must look identical, and Shopify bundles every
+  snippet's {% stylesheet %} into one file regardless of what renders, so the
+  styles are present either way.
+
+  Expects:
+    - cart: the cart object
+
+  Usage:
+    {% render 'custom-box-rows', cart: cart %}
+{%- endcomment -%}
+
+<ul class="bundle-line unstyled-list">
+  {%- for item in cart.items -%}
+    {%- if item.properties['_custom_box'] == blank -%}{%- continue -%}{%- endif -%}
+    {%- assign flavour_name = item.properties['_flavour_name'] | default: item.product.title -%}
+    {%- assign flavour_colour = item.properties['_flavour_colour'] -%}
+    <li class="bundle-line-row">
+      <span
+        class="bundle-line-chip"
+        {%- if flavour_colour != blank %} style="background-color: {{ flavour_colour }};"{% endif -%}
+        aria-hidden="true"
+      ></span>
+      <span class="bundle-line-name text-body">{{ flavour_name }}</span>
+      <span class="bundle-line-qty text-body">&times; {{ item.quantity }}</span>
+    </li>
+  {%- endfor -%}
+</ul>

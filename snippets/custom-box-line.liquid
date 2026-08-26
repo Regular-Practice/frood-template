@@ -14,6 +14,14 @@
   storefront on this store, and the blend product itself knows nothing about
   flavours.
 
+  The two surfaces have DIFFERENT internal structures, so this mirrors each one
+  rather than sharing a prefix: the cart page is
+  `.cart-item > .cart-item-details` (a grid that `.is-bundle` collapses to one
+  column), the drawer is `.cart-drawer-item > .cart-drawer-item-info >
+  .cart-drawer-item-text` + a separate `-controls` row. Using the page's class
+  names in the drawer leaves the block with no flex sizing and it collapses to
+  its content width.
+
   DELIBERATELY NOT EDITABLE. There is no quantity control, only a single remove
   that clears every line in the group at once (`data-remove-group`, handled by
   assets/cart-items.js). That is what keeps the 6-pack minimum from being eroded
@@ -22,19 +30,12 @@
 
   Expects:
     - cart:    the cart object
-    - variant: 'cart' (default) or 'drawer' — picks the class prefix so the
-               block inherits whichever surface it's rendered on
+    - variant: 'cart' (default) or 'drawer'
 
   Usage:
     {% render 'custom-box-line', cart: cart %}
     {% render 'custom-box-line', cart: cart, variant: 'drawer' %}
 {%- endcomment -%}
-
-{%- if variant == 'drawer' -%}
-  {%- assign base = 'cart-drawer-item' -%}
-{%- else -%}
-  {%- assign base = 'cart-item' -%}
-{%- endif -%}
 
 {%- comment -%} Gather the group: line keys for the remove control, plus totals. {%- endcomment -%}
 {%- assign box_keys = '' -%}
@@ -52,73 +53,96 @@
     {%- assign box_plan = item.selling_plan_allocation.selling_plan.name -%}
   {%- endif -%}
 {%- endfor -%}
+{%- assign box_keys = box_keys | split: ',' | join: ',' -%}
 
 {%- if box_count > 0 -%}
-  <div class="{{ base }} is-bundle custom-box-line">
-    <div class="{{ base }}-details">
-      <p class="{{ base }}-title">{{ 'sections.bundle_builder.box_property_value' | t }}</p>
+  {%- if variant == 'drawer' -%}
+    <div class="cart-drawer-item is-bundle custom-box-line">
+      <div class="cart-drawer-item-info">
+        <div class="cart-drawer-item-text">
+          <p class="cart-drawer-item-title text-ui">{{ 'sections.bundle_builder.box_property_value' | t }}</p>
+          <p class="cart-drawer-item-subtitle">
+            {{ 'sections.bundle_builder.box_pack_count' | t: count: box_count }}
+          </p>
 
-      <p class="custom-box-count text-mini">
-        {{ 'sections.bundle_builder.box_pack_count' | t: count: box_count }}
-      </p>
+          {% render 'custom-box-rows', cart: cart %}
+        </div>
 
-      {%- if box_plan != blank -%}
-        <p class="{{ base }}-subscription text-ui">{{ box_plan }}</p>
-      {%- endif -%}
+        {%- comment -%} Mirrors the drawer's qty + price row, minus the quantity control. {%- endcomment -%}
+        <div class="cart-drawer-item-controls">
+          <button
+            type="button"
+            class="custom-box-remove inline-link text-ui"
+            data-remove-group="{{ box_keys }}"
+            aria-label="{{ 'sections.bundle_builder.remove_box' | t }}"
+          >
+            {{ 'cart.general.remove' | t }}
+          </button>
+          <span class="cart-drawer-item-price text-ui">
+            {%- if box_compare != box_total -%}
+              <s class="custom-box-compare">{{ box_compare | money }}</s>
+            {%- endif -%}
+            {{ box_total | money }}
+          </span>
+        </div>
 
-      {%- comment -%} One row per blend — chip + name + quantity, as before. {%- endcomment -%}
-      <ul class="bundle-line unstyled-list">
-        {%- for item in cart.items -%}
-          {%- if item.properties['_custom_box'] == blank -%}{%- continue -%}{%- endif -%}
-          {%- assign flavour_name = item.properties['_flavour_name'] | default: item.product.title -%}
-          {%- assign flavour_colour = item.properties['_flavour_colour'] -%}
-          <li class="bundle-line-row">
-            <span
-              class="bundle-line-chip"
-              {%- if flavour_colour != blank %} style="background-color: {{ flavour_colour }};"{% endif -%}
-              aria-hidden="true"
-            ></span>
-            <span class="bundle-line-name text-body">{{ flavour_name }}</span>
-            <span class="bundle-line-qty text-body">&times; {{ item.quantity }}</span>
-          </li>
-        {%- endfor -%}
-      </ul>
-
-      <p class="{{ base }}-price">
-        {%- if box_compare != box_total -%}
-          <s class="{{ base }}-compare-price">{{ box_compare | money }}</s>
+        {%- if box_plan != blank -%}
+          <p class="cart-drawer-item-subscription">{{ box_plan }}</p>
         {%- endif -%}
-        {{ box_total | money }}
-      </p>
-
-      <div class="{{ base }}-actions">
-        <button
-          type="button"
-          class="{{ base }}-remove button"
-          data-remove-group="{{ box_keys | split: ',' | join: ',' }}"
-          aria-label="{{ 'sections.bundle_builder.remove_box' | t }}"
-        >
-          {{ 'cart.general.remove' | t }}
-        </button>
       </div>
     </div>
-  </div>
+  {%- else -%}
+    <div class="cart-item is-bundle custom-box-line">
+      <div class="cart-item-details">
+        <p class="cart-item-title">{{ 'sections.bundle_builder.box_property_value' | t }}</p>
+        <p class="cart-item-variant text-mini">
+          {{ 'sections.bundle_builder.box_pack_count' | t: count: box_count }}
+        </p>
+
+        {%- if box_plan != blank -%}
+          <p class="cart-item-subscription text-ui">{{ box_plan }}</p>
+        {%- endif -%}
+
+        {% render 'custom-box-rows', cart: cart %}
+
+        <p class="cart-item-price">
+          {%- if box_compare != box_total -%}
+            <s class="cart-item-compare-price">{{ box_compare | money }}</s>
+          {%- endif -%}
+          {{ box_total | money }}
+        </p>
+
+        <div class="cart-item-actions">
+          <button
+            type="button"
+            class="cart-item-remove button"
+            data-remove-group="{{ box_keys }}"
+            aria-label="{{ 'sections.bundle_builder.remove_box' | t }}"
+          >
+            {{ 'cart.general.remove' | t }}
+          </button>
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
 {%- endif -%}
 
 {% stylesheet %}
-  /* The group has no thumbnail and no quantity control, so its details column
-     spans the full width rather than sitting beside an image. */
-  .custom-box-line .cart-item-details,
-  .custom-box-line .cart-drawer-item-details {
-    grid-column: 1 / -1;
-  }
-
-  .custom-box-count {
-    margin: 0;
-    color: var(--color-text-accent);
-  }
-
+  /* The flavour rows carry the visual, so the group needs a little more air than
+     a normal line: the rows sit apart from the title above and the price below
+     rather than butting up against them. */
   .custom-box-line .bundle-line {
-    margin-top: var(--spacing-xxs);
+    margin: var(--spacing-xxs) 0;
+  }
+
+  /* Drawer: remove sits left, price right — same row the quantity stepper would
+     have occupied, so the block keeps the drawer's rhythm. */
+  .custom-box-line .custom-box-remove {
+    flex: 0 0 auto;
+  }
+
+  .custom-box-compare {
+    color: var(--color-text-light);
+    margin-right: var(--spacing-xxs);
   }
 {% endstylesheet %}
