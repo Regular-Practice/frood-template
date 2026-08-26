@@ -113,29 +113,15 @@
           Each flavour must resolve to a PURCHASABLE variant — v2 adds the blends
           themselves to the cart, one line each, rather than a single box line.
 
-          `product_reference` is the real single-pack product, but those are not
-          published to the Online Store channel, so Liquid sees them as blank and
-          /cart/add.js would reject them. Until they are published we fall back to
-          a DEV STAND-IN: the matching published Box product, purely so the
-          mechanism can be built and tested without touching the live store.
-
-          AT LAUNCH: publish the single-pack products, then delete the stand-in
-          block below — `product_reference` will resolve on its own and nothing
-          else has to change.
+          These are the real single-pack products, via the flavour metaobject's
+          `product_reference`. NOTE they must be published to the ONLINE STORE
+          sales channel: while they aren't, Liquid sees the reference as blank,
+          `variantId` comes through null, and add-to-cart stays disabled — the
+          section degrades rather than posting a variant /cart/add.js would
+          reject. (A dev stand-in that borrowed the published Box products lived
+          here until 2026-08-26; see git history if it's needed again.)
         {%- endcomment -%}
         {%- assign flavour_product = flavour.product_reference.value -%}
-        {%- if flavour_product == blank -%}
-          {%- case flavour.system.handle -%}
-            {%- when 'golden-curry' -%}
-              {%- assign flavour_product = all_products['golden-curry-blend-test'] -%}
-            {%- when 'mexi-fiesta' -%}
-              {%- assign flavour_product = all_products['test'] -%}
-            {%- when 'bella-bolognese' -%}
-              {%- assign flavour_product = all_products['bella-bolognese-blend-test'] -%}
-            {%- when 'swedish-meatball-blend' -%}
-              {%- assign flavour_product = all_products['swedish-meatball-blend-test'] -%}
-          {%- endcase -%}
-        {%- endif -%}
         {%- assign flavour_variant = flavour_product.selected_or_first_available_variant | default: flavour_product.variants.first -%}
         {
           "id": {{ flavour.system.handle | json }},
