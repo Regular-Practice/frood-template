@@ -1,0 +1,223 @@
+{%- comment -%}
+  The "View full nutrition" trigger + the overlay dialog holding the full
+  nutrition tables. Owned by sections/main-product.liquid, rendered inside the
+  PDP's "Nutritional info" accordion beneath the merchant's richtext.
+
+  Exists to keep the accordion short: the mixed box stacks four tables of ten
+  rows each, which buries the rest of the PDP column if inlined. The dialog gives
+  them room and scrolls instead.
+
+  The tables themselves come from `product-nutrition` — this snippet only
+  provides the shell. If that renders nothing (no flavours, or none with
+  nutrition authored), the whole trigger + dialog is omitted rather than opening
+  an empty overlay.
+
+  Behaviour lives in assets/nutrition-modal.js (<nutrition-modal>): focus trap,
+  Escape, backdrop click, body scroll lock, focus restored to the trigger.
+
+  Expects:
+    - product: product object
+
+  Usage:
+    {% render 'nutrition-modal', product: product %}
+{%- endcomment -%}
+
+{%- capture nutrition_tables -%}{% render 'product-nutrition', product: product %}{%- endcapture -%}
+{%- assign nutrition_tables = nutrition_tables | strip -%}
+
+{%- if nutrition_tables != blank -%}
+  {%- assign modal_title_id = 'nutrition-modal-title-' | append: product.id -%}
+
+  <nutrition-modal>
+    <button type="button" class="inline-link nutrition-modal-trigger">
+      {{ 'products.product.view_full_nutrition' | t }}
+    </button>
+
+    <div
+      class="nutrition-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="{{ modal_title_id }}"
+      hidden
+    >
+      <div class="nutrition-modal-inner">
+        <div class="nutrition-modal-header">
+          <h2 class="text-h3" id="{{ modal_title_id }}">{{ 'products.product.nutritional_info' | t }}</h2>
+          <button type="button" class="nutrition-modal-close" aria-label="{{ 'accessibility.close' | t }}">
+            {% render 'icon-close' %}
+          </button>
+        </div>
+
+        <div class="nutrition-modal-body">
+          {{ nutrition_tables }}
+        </div>
+      </div>
+    </div>
+  </nutrition-modal>
+
+  <script type="module" src="{{ 'nutrition-modal.js' | asset_url }}"></script>
+{%- endif -%}
+
+{% stylesheet %}
+  /* Host is a plain block so the trigger sits in the accordion's flow; the
+     dialog inside is position:fixed and escapes it regardless. */
+  nutrition-modal {
+    display: block;
+  }
+
+  /* The overlay only positions and pads — it never scrolls. Its padding is what
+     keeps the panel off the viewport edges; the panel's `max-height: 100%` then
+     caps it to what's left, and the body scrolls inside that. */
+  .nutrition-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    /* Tight at mobile so the table keeps its width; roomier from 600px up. */
+    padding: var(--spacing-xs);
+  }
+
+  .nutrition-modal[hidden] {
+    display: none;
+  }
+
+  /* Frosted backdrop on its own layer — matches .recipe-modal / .cart-drawer-overlay.
+     Fades on its own opacity, which keeps the blur smooth. */
+  .nutrition-modal::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-color: var(--color-overlay);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+  }
+
+  .nutrition-modal.is-open::before {
+    opacity: 1;
+  }
+
+  /* Panel anatomy: static header, scrolling body. Capped to the overlay's
+     content box so the padding above/below always shows. Auto margins centre it
+     while it's shorter than that — and unlike flex `align-items: center`, they
+     never clip the top out of reach. Padding lives on the header and body
+     rather than here, so the body's scrollbar sits inside the panel edge. */
+  .nutrition-modal-inner {
+    --nutrition-pad: var(--spacing-s);
+    position: relative;
+    z-index: 1;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-height: 100%;
+    /* Comfortable for the label + value column without stranding the figures
+       miles from their labels. A nutrition table gains nothing from extra
+       measure. */
+    max-width: 560px;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    border-radius: var(--rad-s);
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .nutrition-modal.is-open .nutrition-modal-inner {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* `flex: none` keeps the header at its natural height so the body absorbs all
+     the flex slack — that's what makes the body the thing that scrolls. */
+  .nutrition-modal-header {
+    flex: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-s);
+    padding: var(--nutrition-pad) var(--nutrition-pad) var(--spacing-xs);
+    /* Content scrolls away beneath it, so the header needs a defined bottom
+       edge — without it figures appear to dissolve into the title. */
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .nutrition-modal-header h2 {
+    margin: 0;
+  }
+
+  /* Icon-only close — no background, matching the drawer close buttons: muted
+     at rest, full text colour on hover. */
+  .nutrition-modal-close {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xxxs);
+    color: var(--color-text-accent);
+    transition: color var(--transition-fast);
+  }
+
+  .nutrition-modal-close:hover {
+    color: var(--color-text);
+  }
+
+  /* The scroll container. `overscroll-behavior: contain` stops a flick at the
+     end of the list chaining through to the page behind. */
+  .nutrition-modal-body {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 var(--nutrition-pad) var(--nutrition-pad);
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-scrollbar-thumb) transparent;
+  }
+
+  /* Slim inset pill on a transparent track, so at rest it reads as a mark on
+     the panel rather than a chrome gutter. The transparent border plus
+     content-box clip is what insets the thumb rather than letting it fill the
+     full track width. Modern Chrome/Firefox use the standard properties above
+     and ignore these; Safari and older Chrome need them — keep both. */
+  .nutrition-modal-body {
+    --color-scrollbar-thumb: color-mix(in srgb, var(--color-text) 30%, transparent);
+  }
+
+  .nutrition-modal-body::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  .nutrition-modal-body::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  .nutrition-modal-body::-webkit-scrollbar-thumb {
+    background-color: var(--color-scrollbar-thumb);
+    border-radius: 999px;
+    border: 4px solid transparent;
+    background-clip: content-box;
+  }
+
+  .nutrition-modal-body::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  }
+
+  @media (min-width: 600px) {
+    .nutrition-modal {
+      padding: var(--spacing-s);
+    }
+
+    .nutrition-modal-inner {
+      --nutrition-pad: var(--spacing-m);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nutrition-modal::before,
+    .nutrition-modal-inner,
+    .nutrition-modal-close {
+      transition: none;
+    }
+  }
+{% endstylesheet %}

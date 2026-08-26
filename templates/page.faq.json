@@ -123,6 +123,40 @@
             "answer": "<p>Yes, all our packaging is recyclable including the packaging your order is shipped in.</p>"
           }
         },
+        "subheader_XAhyD6": {
+          "type": "subheader",
+          "settings": {
+            "text": "Subscriptions"
+          }
+        },
+        "question_ifXBTc": {
+          "type": "question",
+          "settings": {
+            "question": "How do I change my next subscription delivery?",
+            "answer": "<ol><li>Log in to your subscription account.</li><li>Select <strong>Subscriptions</strong> and choose the product you'd like to update.</li><li>Click <strong>Order Frequency</strong>.</li><li>Update your delivery schedule, then select <strong>Update Frequency</strong> to save your changes.</li></ol>"
+          }
+        },
+        "question_47Yg9K": {
+          "type": "question",
+          "settings": {
+            "question": "How do I update my shipping address?",
+            "answer": "<ol><li>Log in to your subscription account.</li><li>Select <strong>Subscriptions</strong> and choose the product you'd like to update.</li><li>Select your current shipping address.</li><li>Edit your existing address or add a new one, then save your changes.</li></ol>"
+          }
+        },
+        "question_qG8Ah3": {
+          "type": "question",
+          "settings": {
+            "question": "How do I update my payment details?",
+            "answer": "<ol><li>Log in to your subscription account.</li><li>Select <strong>Billing Method</strong>.</li><li>Choose your current payment method.</li><li>Update your card details and save your changes.</li></ol>"
+          }
+        },
+        "question_7q6Ymg": {
+          "type": "question",
+          "settings": {
+            "question": "How do I cancel my subscription?",
+            "answer": "<ol><li>Log in to your subscription account.</li><li>Go to <strong>Manage Subscriptions</strong>.</li><li>Select the subscription(s) you'd like to cancel.</li><li>Confirm your cancellation.</li></ol><p><strong>Please note:</strong> If your next subscription order has already been processed and charged, cancelling your subscription won't affect that order. Your subscription will be cancelled for future deliveries.</p>"
+          }
+        },
         "subheader_MwtpAt": {
           "type": "subheader",
           "settings": {
@@ -161,6 +195,11 @@
         "question_QfARK7",
         "question_perHdf",
         "question_xbzDdd",
+        "subheader_XAhyD6",
+        "question_ifXBTc",
+        "question_47Yg9K",
+        "question_qG8Ah3",
+        "question_7q6Ymg",
         "subheader_MwtpAt",
         "question_7mQfTF",
         "question_qkJcJa"
