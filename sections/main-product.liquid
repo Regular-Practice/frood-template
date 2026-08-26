@@ -18,7 +18,9 @@
                        its own card below — separate boxes, not hairlines. {%- endcomment -%}
       <div class="product-box product-box-main">
         <header class="section-lockup">
-          <p class="text-h1">4 PACK</p>
+          {%- if section.settings.pack_label != blank -%}
+            <p class="text-h1">{{ section.settings.pack_label }}</p>
+          {%- endif -%}
           <h1 class="text-h2 product-box-title">{{ product.title }}</h1>
         </header>
 
@@ -892,6 +894,13 @@
 {
   "name": "Product information",
   "settings": [
+    {
+      "type": "text",
+      "id": "pack_label",
+      "label": "Pack size eyebrow",
+      "default": "4 PACK",
+      "info": "Small label above the product title. Leave blank to hide it."
+    },
     {
       "type": "checkbox",
       "id": "show_quantity",
