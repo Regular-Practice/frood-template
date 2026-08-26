@@ -132,7 +132,24 @@
           {%- comment -%} `| append: ''` casts the colour object to its hex string; `| json` alone rejects it. {%- endcomment -%}
           "colour": {{ flavour.dark_colour | append: '' | json }},
           "variantId": {% if flavour_variant %}{{ flavour_variant.id | json }}{% else %}null{% endif %},
-          "priceCents": {% if flavour_variant %}{{ flavour_variant.price }}{% else %}null{% endif %}
+          "priceCents": {% if flavour_variant %}{{ flavour_variant.price }}{% else %}null{% endif %},
+          {%- comment -%}
+            Each blend's OWN selling plans. A selling plan id is only valid for
+            variants in its own group, and Recharge may well have made a separate
+            group per product — so the plan is matched across blends by NAME and
+            each line is posted with its own id. Never reuse one blend's id for
+            another, and never reuse the box product's.
+          {%- endcomment -%}
+          "plans": [
+            {%- for allocation in flavour_variant.selling_plan_allocations -%}
+              {
+                "name": {{ allocation.selling_plan.name | json }},
+                "id": {{ allocation.selling_plan.id | json }},
+                "priceCents": {{ allocation.price }},
+                "compareCents": {{ allocation.compare_at_price | default: allocation.price }}
+              }{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          ]
         }{%- unless forloop.last -%},{%- endunless -%}
       {%- endfor -%}
     ]
@@ -214,13 +231,26 @@
 
       <footer class="bundle-v2-footer">
         {%- comment -%}
-          Subscription control — only renders if the box product has Recharge
-          selling plans. Mirrors the PDP selector; bundle-v2-builder.js attaches the
-          chosen selling_plan to every box line item on add-to-cart, so the
-          custom mix (line-item properties) recurs at the chosen frequency.
+          Subscription control. Built from the BLENDS, not the box — the box is no
+          longer purchased, and its plan ids would be rejected on a blend line.
+
+          The frequency list comes from the first flavour that has plans; on
+          add-to-cart bundle-v2-builder.js looks the chosen frequency up by NAME
+          in each blend's own plan list, so every line carries a plan id valid for
+          its own variant. A frequency not offered by every blend is dropped from
+          the list by the JS.
         {%- endcomment -%}
-        {%- if box_variant.selling_plan_allocations.size > 0 -%}
-          {%- assign box_alloc = box_variant.selling_plan_allocations | first -%}
+        {%- assign plan_source = blank -%}
+        {%- for flavour in included_flavours -%}
+          {%- assign candidate = flavour.product_reference.value -%}
+          {%- assign candidate_variant = candidate.selected_or_first_available_variant | default: candidate.variants.first -%}
+          {%- if candidate_variant.selling_plan_allocations.size > 0 -%}
+            {%- assign plan_source = candidate_variant -%}
+            {%- break -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if plan_source != blank -%}
+          {%- assign box_alloc = plan_source.selling_plan_allocations | first -%}
           {%- assign box_discount = box_alloc.compare_at_price | minus: box_alloc.price | times: 100.0 | divided_by: box_alloc.compare_at_price | round -%}
           <div class="bundle-v2-subscription" data-subscription>
             <fieldset class="bundle-v2-sub-options">
@@ -242,8 +272,9 @@
             <div class="bundle-v2-sub-frequency" data-sub-frequency hidden>
               <label class="visually-hidden" for="bundle-v2-frequency-{{ section.id }}">{{ 'products.product.deliver_every' | t }}</label>
               <select id="bundle-v2-frequency-{{ section.id }}" class="select bundle-v2-sub-select text-ui" data-sub-select>
-                {%- for allocation in box_variant.selling_plan_allocations -%}
-                  <option value="{{ allocation.selling_plan.id }}" data-price-cents="{{ allocation.price }}" data-compare-cents="{{ allocation.compare_at_price }}">
+                {%- comment -%} value is the plan NAME — the key that maps across blends. {%- endcomment -%}
+                {%- for allocation in plan_source.selling_plan_allocations -%}
+                  <option value="{{ allocation.selling_plan.name | escape }}">
                     {{ allocation.selling_plan.name | split: ' subscription' | first }}
                   </option>
                 {%- endfor -%}

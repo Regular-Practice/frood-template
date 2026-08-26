@@ -130,6 +130,9 @@ class BundleV2Builder extends HTMLElement {
     this.boxPriceCents = parseInt(this.dataset.boxPriceCents, 10);
     this.moneyFormat = this.dataset.moneyFormat || '';
 
+    // Needs both the flavour list and [data-sub-select], so it runs after both.
+    this.pruneFrequencies();
+
     this._onClick = (e) => this.handleClick(e);
     this.addEventListener('click', this._onClick);
 
@@ -419,10 +422,43 @@ class BundleV2Builder extends HTMLElement {
   }
 
   // The chosen selling_plan id when subscribing, else null (one-time).
-  get sellingPlan() {
+  // The chosen frequency, identified by plan NAME. Ids are per-variant and can
+  // differ between blends, so the name is the only key that maps across them.
+  get planName() {
     if (!this.isSubscription || !this.subSelect) return null;
-    const v = parseInt(this.subSelect.value, 10);
-    return isNaN(v) ? null : v;
+    return this.subSelect.value || null;
+  }
+
+  // That frequency's plan ON A GIVEN BLEND — its own id, its own prices.
+  planFor(flavourId) {
+    const name = this.planName;
+    if (!name) return null;
+    return this.flavours[flavourId]?.plans?.find((p) => p.name === name) || null;
+  }
+
+  // Frequencies every blend in the draft actually offers. A plan missing from one
+  // blend can't be used, because that line would have no valid id — so it's
+  // dropped from the dropdown rather than failing at add-to-cart.
+  commonPlanNames() {
+    const ids = Object.keys(this.flavours);
+    if (!ids.length) return [];
+    const lists = ids.map((id) => (this.flavours[id].plans || []).map((p) => p.name));
+    if (lists.some((l) => !l.length)) return [];
+    return lists[0].filter((name) => lists.every((l) => l.includes(name)));
+  }
+
+  // Prune frequencies not shared by every blend. Runs once on connect — the
+  // flavour list is fixed for the life of the section.
+  pruneFrequencies() {
+    if (!this.subSelect) return;
+    const common = this.commonPlanNames();
+    for (const option of [...this.subSelect.options]) {
+      if (!common.includes(option.value)) option.remove();
+    }
+    // Nothing shared: subscriptions aren't offerable for this mix at all.
+    if (!this.subSelect.options.length) {
+      this.querySelector('[data-subscription]')?.setAttribute('hidden', '');
+    }
   }
 
   // Toggles selected styling and shows/hides the frequency dropdown. No-op when
@@ -444,43 +480,34 @@ class BundleV2Builder extends HTMLElement {
   // discounted total plus the struck-through original.
   updateAddPrice() {
     if (!this.addPriceEl) return;
-    const isSub = this.isSubscription;
-    const totalCents = this.draftCents();
-    if (totalCents == null) return;
+    const fullCents = this.draftCents();
+    if (fullCents == null) return;
 
-    // Subscription discount is a percentage off the plan, applied to the whole
-    // draft. (The plan itself still hangs off the BOX variant — once the blends
-    // carry their own selling plans this should read the rate from them.)
-    let rate = 1;
-    let compareRate = null;
-    if (isSub && this.subSelect) {
-      const opt = this.subSelect.selectedOptions[0];
-      const planCents = parseInt(opt?.dataset.priceCents, 10);
-      const fullCents = parseInt(opt?.dataset.compareCents, 10);
-      if (!isNaN(planCents) && !isNaN(fullCents) && fullCents > 0) {
-        rate = planCents / fullCents;
-        compareRate = 1;
-      }
-    }
+    // Each blend carries its own plan price, so a subscription total is summed
+    // per blend rather than derived from one rate.
+    const subCents = this.isSubscription ? this.draftCents({ subscription: true }) : null;
+    const showCents = subCents == null ? fullCents : subCents;
 
-    this.addPriceEl.textContent = formatMoney(Math.round(totalCents * rate), this.moneyFormat);
+    this.addPriceEl.textContent = formatMoney(showCents, this.moneyFormat);
 
     if (this.addWasEl) {
-      const showWas = isSub && compareRate != null && rate < 1;
-      if (showWas) {
-        this.addWasEl.textContent = formatMoney(totalCents, this.moneyFormat);
-        this.addWasEl.hidden = false;
-      } else {
-        this.addWasEl.hidden = true;
-      }
+      const showWas = subCents != null && subCents < fullCents;
+      this.addWasEl.textContent = showWas ? formatMoney(fullCents, this.moneyFormat) : '';
+      this.addWasEl.hidden = !showWas;
     }
   }
 
   // Summed price of the draft, from each blend's own variant price. An empty
   // draft previews the minimum order at the cheapest available blend, so the
   // button reads as a starting price rather than £0.
-  draftCents() {
-    const priceOf = (id) => this.flavours[id]?.priceCents;
+  draftCents({ subscription = false } = {}) {
+    const priceOf = (id) => {
+      if (subscription) {
+        const plan = this.planFor(id);
+        return plan ? plan.priceCents : undefined;
+      }
+      return this.flavours[id]?.priceCents;
+    };
     if (this.total === 0) {
       const prices = Object.keys(this.flavours)
         .map(priceOf)
@@ -558,7 +585,8 @@ class BundleV2Builder extends HTMLElement {
           _flavour_colour: flavour.colour || ''
         }
       };
-      if (this.sellingPlan) item.selling_plan = this.sellingPlan;
+      const plan = this.planFor(id);
+      if (plan) item.selling_plan = plan.id;
       items.push(item);
     }
     return items;
