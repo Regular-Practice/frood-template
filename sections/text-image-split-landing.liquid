@@ -1,8 +1,9 @@
 {%- comment -%}
   Frood Text + Image Split (Landing) — duplicate of sections/text-image-split.liquid,
-  used only by templates/page.landing-page.json to keep the live homepage's
-  existing section fully isolated from landing-page-only changes. Keep in
-  sync manually if the base text-image-split.liquid changes.
+  with every CSS class renamed (text-image-split-landing-*) to avoid colliding
+  with the original in Shopify's theme-wide compiled stylesheet, since both
+  are used simultaneously on the live theme. Keep in sync manually if the
+  base text-image-split.liquid changes.
 
   Frood Text + Image Split — section-lockup on the left, 50vw media column on the right.
   Media column supports 1–2 items (image or video each) with optional captions below each.
@@ -10,9 +11,9 @@
   See CLAUDE.md → "Frood Homepage Sections" for the rules.
 {%- endcomment -%}
 
-<section class="text-image-split">
-  <div class="text-image-split-text text-align-{{ section.settings.text_vertical_alignment }}">
-    <div class="text-image-split-content">
+<section class="text-image-split-landing">
+  <div class="text-image-split-landing-text text-align-{{ section.settings.text_vertical_alignment }}">
+    <div class="text-image-split-landing-content">
       <header class="section-lockup">
         {%- if section.settings.eyebrow != blank -%}
           <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
@@ -31,10 +32,10 @@
 
       {%- assign benefit_blocks = section.blocks | where: 'type', 'benefit' -%}
       {%- if benefit_blocks.size > 0 -%}
-        <ul class="text-image-split-benefits">
+        <ul class="text-image-split-landing-benefits">
           {%- for block in benefit_blocks -%}
             {%- if block.settings.text != blank -%}
-              <li class="text-image-split-benefit" {{ block.shopify_attributes }}>
+              <li class="text-image-split-landing-benefit" {{ block.shopify_attributes }}>
                 {% render 'icon-check-circle' %}
                 <span class="text-ui text-cap">{{ block.settings.text }}</span>
               </li>
@@ -45,11 +46,11 @@
     </div>
   </div>
 
-  <div class="text-image-split-media">
+  <div class="text-image-split-landing-media">
     {%- assign media_blocks = section.blocks | where: 'type', 'media' -%}
     {%- for block in media_blocks -%}
-      <figure class="text-image-split-media-item" {{ block.shopify_attributes }}>
-        <div class="text-image-split-media-asset">
+      <figure class="text-image-split-landing-media-item" {{ block.shopify_attributes }}>
+        <div class="text-image-split-landing-media-asset">
           {%- if block.settings.video != blank -%}
             {{
               block.settings.video
@@ -74,7 +75,7 @@
         </div>
 
         {%- if block.settings.caption != blank -%}
-          <figcaption class="text-image-split-caption text-body">
+          <figcaption class="text-image-split-landing-caption text-body">
             {{ block.settings.caption }}
           </figcaption>
         {%- endif -%}
@@ -84,7 +85,7 @@
 </section>
 
 {% stylesheet %}
-  .text-image-split {
+  .text-image-split-landing {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-m);
@@ -95,7 +96,7 @@
 
   /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
   @media (max-width: 599.98px) {
-    .text-image-split {
+    .text-image-split-landing {
       padding-block: var(--spacing-m);
     }
   }
@@ -104,17 +105,17 @@
      Vertical alignment is a per-section schema setting (top / middle / bottom)
      and only takes visual effect on tablet+ where the text column shares the
      grid row height with the media column. */
-  .text-image-split-text {
+  .text-image-split-landing-text {
     display: flex;
   }
-  .text-image-split-text.text-align-top    { align-items: flex-start; }
-  .text-image-split-text.text-align-middle { align-items: center; }
-  .text-image-split-text.text-align-bottom { align-items: flex-end; }
+  .text-image-split-landing-text.text-align-top    { align-items: flex-start; }
+  .text-image-split-landing-text.text-align-middle { align-items: center; }
+  .text-image-split-landing-text.text-align-bottom { align-items: flex-end; }
 
   /* Groups the lockup header + benefits into a single flex child of
-     .text-image-split-text, so the top/middle/bottom alignment above still
+     .text-image-split-landing-text, so the top/middle/bottom alignment above still
      positions them as one block rather than spreading them row-wise. */
-  .text-image-split-content {
+  .text-image-split-landing-content {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-m);
@@ -122,12 +123,12 @@
 
   /* Cap section heading at 36ch — matches the rest of the theme (intro,
      featured-collection, event-slider, fullbleed, main-recipes). */
-  .text-image-split-text h3 {
+  .text-image-split-landing-text h3 {
     max-width: 36ch;
   }
 
   /* Benefit checklist — same pattern as the Frood Hero feature card. */
-  .text-image-split-benefits {
+  .text-image-split-landing-benefits {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -136,7 +137,7 @@
     gap: var(--spacing-xxs);
   }
 
-  .text-image-split-benefit {
+  .text-image-split-landing-benefit {
     display: flex;
     align-items: center;
     gap: var(--spacing-xxs);
@@ -145,11 +146,11 @@
   /* .text-cap's default letter-spacing (0.066em) reads too wide at this
      size — dial it back just for the benefit label, not the shared utility
      (used elsewhere: main-search, product-variant-selector). */
-  .text-image-split-benefit .text-cap {
+  .text-image-split-landing-benefit .text-cap {
     letter-spacing: 0.02em;
   }
 
-  .text-image-split-benefit svg {
+  .text-image-split-landing-benefit svg {
     flex: 0 0 16px;
     width: 16px;
     height: 16px;
@@ -157,13 +158,13 @@
   }
 
   /* Media side — up to 2 media items side by side, each with caption underneath */
-  .text-image-split-media {
+  .text-image-split-landing-media {
     display: flex;
     flex-direction: row;
     gap: var(--spacing-xxs);
   }
 
-  .text-image-split-media-item {
+  .text-image-split-landing-media-item {
     flex: 1;
     margin: 0;
     display: flex;
@@ -172,30 +173,30 @@
     min-width: 0;
   }
 
-  .text-image-split-media-asset img,
-  .text-image-split-media-asset video {
+  .text-image-split-landing-media-asset img,
+  .text-image-split-landing-media-asset video {
     width: 100%;
     height: auto;
     display: block;
   }
 
   /* Override base.css's figcaption global margin; zero out richtext's inner <p> tags */
-  .text-image-split-caption {
+  .text-image-split-landing-caption {
     margin: 0;
   }
 
-  .text-image-split-caption p {
+  .text-image-split-landing-caption p {
     margin: 0;
   }
 
-  .text-image-split-caption p + p {
+  .text-image-split-landing-caption p + p {
     margin-top: var(--spacing-xxs);
   }
 
   /* Desktop+: side-by-side 50/50 layout + larger section padding.
      Mobile + tablet stack vertically (media under text, full width, gap m). */
   @media (min-width: 900px) {
-    .text-image-split {
+    .text-image-split-landing {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: var(--spacing-m);
@@ -208,7 +209,7 @@
 {
   "name": "Text + image (Landing)",
   "tag": "section",
-  "class": "text-image-split-section",
+  "class": "text-image-split-landing-section",
   "settings": [
     {
       "type": "text",

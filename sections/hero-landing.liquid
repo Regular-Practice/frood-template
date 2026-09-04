@@ -1,9 +1,9 @@
 {%- comment -%}
-  Frood Hero (Landing) — duplicate of sections/hero.liquid, used only by
-  templates/page.landing-page.json so the live theme's existing homepage
-  hero (still on the older schema) is unaffected by this section's newer
-  fields (richtext heading, benefit blocks). Keep in sync manually if the
-  base hero.liquid changes.
+  Frood Hero (Landing) — duplicate of sections/hero.liquid, with every CSS
+  class renamed (hero-frood-landing-*) to avoid colliding with the original
+  in Shopify's theme-wide compiled stylesheet, since both are used
+  simultaneously on the live theme. Keep in sync manually if the base
+  hero.liquid changes.
 
   Frood Hero — full-bleed background video with the Frood logo centered in accent yellow.
   100vh tall, fills page width. Logo is the inline SVG snippet logo-frood (recolorable via currentColor).
@@ -12,7 +12,7 @@
   See CLAUDE.md → "Frood Hero section" for design rules.
 {%- endcomment -%}
 
-<section class="hero-frood">
+<section class="hero-frood-landing">
   {%- if section.settings.background_image != blank -%}
     {%- assign hero_poster = section.settings.background_image | image_url: width: 2400 -%}
   {%- else -%}
@@ -20,7 +20,7 @@
   {%- endif -%}
 
   <video
-    class="hero-frood-bg"
+    class="hero-frood-landing-bg"
     src="{{ 'frood-hero.mp4' | asset_url }}"
     poster="{{ hero_poster }}"
     autoplay
@@ -33,29 +33,29 @@
 
   {%- if section.settings.overlay_opacity > 0 -%}
     <div
-      class="hero-frood-overlay"
+      class="hero-frood-landing-overlay"
       style="--hero-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }}"
     ></div>
   {%- endif -%}
 
-  <div class="hero-frood-logo">
+  <div class="hero-frood-landing-logo">
     {% render 'logo-frood' %}
   </div>
 
   {%- if section.settings.product != blank -%}
     {%- assign feat_product = section.settings.product -%}
     {%- assign render_video = feat_product.metafields.custom.product_render_video.value -%}
-    <div class="hero-frood-feature">
-      <div class="hero-frood-feature-card">
-        <div class="hero-frood-feature-text">
+    <div class="hero-frood-landing-feature">
+      <div class="hero-frood-landing-feature-card">
+        <div class="hero-frood-landing-feature-text">
           {%- if section.settings.heading != blank -%}
-            <div class="text-h3 hero-frood-feature-heading">{{ section.settings.heading }}</div>
+            <div class="text-h3 hero-frood-landing-feature-heading">{{ section.settings.heading }}</div>
           {%- endif -%}
           {%- if section.blocks.size > 0 -%}
-            <ul class="hero-frood-benefits">
+            <ul class="hero-frood-landing-benefits">
               {%- for block in section.blocks -%}
                 {%- if block.settings.text != blank -%}
-                  <li class="hero-frood-benefit" {{ block.shopify_attributes }}>
+                  <li class="hero-frood-landing-benefit" {{ block.shopify_attributes }}>
                     {% render 'icon-check-circle' %}
                     <span class="text-ui text-cap">{{ block.settings.text }}</span>
                   </li>
@@ -64,12 +64,12 @@
             </ul>
           {%- endif -%}
         </div>
-        <div class="hero-frood-feature-media">
+        <div class="hero-frood-landing-feature-media">
           {%- if render_video != blank -%}
             <product-render-video
-              class="hero-frood-feature-image"
+              class="hero-frood-landing-feature-image"
               loop-delay="10000"
-              defer-first-play-until=".hero-frood-feature-card"
+              defer-first-play-until=".hero-frood-landing-feature-card"
             >
               {{
                 render_video
@@ -82,7 +82,7 @@
               }}
             </product-render-video>
           {%- elsif feat_product.featured_image -%}
-            <div class="hero-frood-feature-image">
+            <div class="hero-frood-landing-feature-image">
               {{ feat_product.featured_image | image_url: width: 480 | image_tag:
                 loading: 'lazy',
                 alt: feat_product.featured_image.alt | default: feat_product.title,
@@ -91,7 +91,7 @@
               }}
             </div>
           {%- endif -%}
-          <a href="{{ feat_product.url }}" class="button hero-frood-feature-cta">{{ 'general.shop_now' | t }}</a>
+          <a href="{{ feat_product.url }}" class="button hero-frood-landing-feature-cta">{{ 'general.shop_now' | t }}</a>
         </div>
       </div>
     </div>
@@ -100,14 +100,14 @@
 </section>
 
 {% stylesheet %}
-  .hero-frood {
+  .hero-frood-landing {
     position: relative;
     width: 100%;
     height: 100vh;
     overflow: hidden;
   }
 
-  .hero-frood-bg {
+  .hero-frood-landing-bg {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -115,7 +115,7 @@
     object-fit: cover;
   }
 
-  .hero-frood-overlay {
+  .hero-frood-landing-overlay {
     position: absolute;
     inset: 0;
     background-color: var(--color-text);
@@ -123,7 +123,7 @@
     pointer-events: none;
   }
 
-  .hero-frood-logo {
+  .hero-frood-landing-logo {
     position: absolute;
     top: var(--spacing-xxs);
     left: var(--spacing-xxs);
@@ -133,36 +133,36 @@
     /* Fades in after the header stagger finishes (~0.6s) */
     opacity: 0;
     transform: scale(0.98);
-    animation: hero-logo-in 0.5s ease-out 0.6s forwards;
+    animation: hero-logo-in-landing 0.5s ease-out 0.6s forwards;
   }
 
-  .hero-frood-logo svg {
+  .hero-frood-landing-logo svg {
     display: block;
     width: 100%;
     height: auto;
   }
 
   @media (min-width: 600px) {
-    .hero-frood-logo {
+    .hero-frood-landing-logo {
       width: 234px;
     }
   }
 
   /* Max size — the wordmark caps out here on desktop. */
   @media (min-width: 900px) {
-    .hero-frood-logo {
+    .hero-frood-landing-logo {
       width: 293px;
     }
   }
 
   /* Hidden on mobile — the feature card takes over that space instead. */
   @media (max-width: 599.98px) {
-    .hero-frood-logo {
+    .hero-frood-landing-logo {
       display: none;
     }
   }
 
-  @keyframes hero-logo-in {
+  @keyframes hero-logo-in-landing {
     to {
       opacity: 1;
       transform: scale(1);
@@ -170,14 +170,14 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-frood-logo {
+    .hero-frood-landing-logo {
       opacity: 1;
       transform: none;
       animation: none;
     }
   }
 
-  .hero-frood-feature {
+  .hero-frood-landing-feature {
     position: absolute;
     bottom: var(--spacing-xxs);
     right: var(--spacing-xxs);
@@ -192,13 +192,13 @@
      `order` combined with `display: contents` has known cross-browser
      reliability issues, which is what broke this the first time round. */
   @media (max-width: 599.98px) {
-    .hero-frood-feature {
+    .hero-frood-landing-feature {
       left: var(--spacing-xxs);
       right: auto;
       width: 75%;
     }
 
-    .hero-frood-feature-card {
+    .hero-frood-landing-feature-card {
       display: grid;
       grid-template-columns: 1fr;
       grid-template-areas:
@@ -211,31 +211,31 @@
     /* Un-boxes the text/media groupings so heading, image, benefits and CTA
        become direct grid children of the card — letting grid-area place
        them regardless of their markup grouping. */
-    .hero-frood-feature-text,
-    .hero-frood-feature-media {
+    .hero-frood-landing-feature-text,
+    .hero-frood-landing-feature-media {
       display: contents;
     }
 
-    .hero-frood-feature-heading {
+    .hero-frood-landing-feature-heading {
       grid-area: heading;
     }
 
-    .hero-frood-feature-image {
+    .hero-frood-landing-feature-image {
       grid-area: image;
       width: 100%;
     }
 
-    .hero-frood-benefits {
+    .hero-frood-landing-benefits {
       grid-area: benefits;
     }
 
-    .hero-frood-feature-cta {
+    .hero-frood-landing-feature-cta {
       grid-area: cta;
     }
   }
 
   @media (min-width: 600px) {
-    .hero-frood-feature {
+    .hero-frood-landing-feature {
       width: 380px;
     }
   }
@@ -245,13 +245,13 @@
      the gap between them — the same spacing-xxs inset on both sides, so the
      gap off the seam matches the gap off the viewport's right edge. */
   @media (min-width: 900px) {
-    .hero-frood-feature {
+    .hero-frood-landing-feature {
       left: calc(50vw + var(--spacing-xxxs));
       width: auto;
     }
   }
 
-  .hero-frood-feature-card {
+  .hero-frood-landing-feature-card {
     background-color: var(--color-bg-dark);
     border-radius: var(--rad-s);
     padding: var(--spacing-s);
@@ -262,10 +262,10 @@
     /* Fades in after the logo settles (logo finishes at ~1.1s) */
     opacity: 0;
     transform: translateY(8px);
-    animation: hero-feature-in 0.5s ease-out 1.1s forwards;
+    animation: hero-feature-in-landing 0.5s ease-out 1.1s forwards;
   }
 
-  .hero-frood-feature-text {
+  .hero-frood-landing-feature-text {
     flex: 1 1 auto;
     min-width: 0;
     align-self: stretch;
@@ -274,12 +274,12 @@
     justify-content: space-between;
   }
 
-  .hero-frood-feature-heading {
+  .hero-frood-landing-feature-heading {
     margin: 0;
     max-width: 30ch;
   }
 
-  .hero-frood-benefits {
+  .hero-frood-landing-benefits {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -288,7 +288,7 @@
     gap: var(--spacing-xxs);
   }
 
-  .hero-frood-benefit {
+  .hero-frood-landing-benefit {
     display: flex;
     align-items: center;
     gap: var(--spacing-xxs);
@@ -297,18 +297,18 @@
   /* .text-cap's default letter-spacing (0.066em) reads too wide at this
      size — dial it back just for the benefit label, not the shared utility
      (used elsewhere: main-search, product-variant-selector). */
-  .hero-frood-benefit .text-cap {
+  .hero-frood-landing-benefit .text-cap {
     letter-spacing: 0.02em;
   }
 
-  .hero-frood-benefit svg {
+  .hero-frood-landing-benefit svg {
     flex: 0 0 16px;
     width: 16px;
     height: 16px;
     margin-bottom: 3px;
   }
 
-  .hero-frood-feature-media {
+  .hero-frood-landing-feature-media {
     flex: 0 0 auto;
     display: flex;
     flex-direction: column;
@@ -316,32 +316,32 @@
     gap: var(--spacing-xxs);
   }
 
-  .hero-frood-feature-image {
+  .hero-frood-landing-feature-image {
     display: block;
     width: 96px;
   }
 
   @media (min-width: 900px) {
-    .hero-frood-feature-image {
+    .hero-frood-landing-feature-image {
       width: 140px;
     }
   }
 
-  .hero-frood-feature-image video,
-  .hero-frood-feature-image img {
+  .hero-frood-landing-feature-image video,
+  .hero-frood-landing-feature-image img {
     display: block;
     width: 100%;
     height: auto;
   }
 
-  .hero-frood-feature-cta {
+  .hero-frood-landing-feature-cta {
     width: 100%;
     opacity: 0;
     transform: translateY(8px);
-    animation: hero-feature-in 0.5s ease-out 1.25s forwards;
+    animation: hero-feature-in-landing 0.5s ease-out 1.25s forwards;
   }
 
-  @keyframes hero-feature-in {
+  @keyframes hero-feature-in-landing {
     to {
       opacity: 1;
       transform: translateY(0);
@@ -349,8 +349,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-frood-feature-card,
-    .hero-frood-feature-cta {
+    .hero-frood-landing-feature-card,
+    .hero-frood-landing-feature-cta {
       opacity: 1;
       transform: none;
       animation: none;
@@ -362,7 +362,7 @@
 {
   "name": "Frood Hero (Landing)",
   "tag": "section",
-  "class": "section-frood-hero",
+  "class": "section-frood-hero-landing",
   "settings": [
     {
       "type": "header",
