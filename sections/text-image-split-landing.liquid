@@ -1,0 +1,297 @@
+{%- comment -%}
+  Frood Text + Image Split (Landing) — duplicate of sections/text-image-split.liquid,
+  used only by templates/page.landing-page.json to keep the live homepage's
+  existing section fully isolated from landing-page-only changes. Keep in
+  sync manually if the base text-image-split.liquid changes.
+
+  Frood Text + Image Split — section-lockup on the left, 50vw media column on the right.
+  Media column supports 1–2 items (image or video each) with optional captions below each.
+  Mobile: stacks vertically (text above media).
+  See CLAUDE.md → "Frood Homepage Sections" for the rules.
+{%- endcomment -%}
+
+<section class="text-image-split">
+  <div class="text-image-split-text text-align-{{ section.settings.text_vertical_alignment }}">
+    <div class="text-image-split-content">
+      <header class="section-lockup">
+        {%- if section.settings.eyebrow != blank -%}
+          <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+        {%- endif -%}
+
+        {%- if section.settings.heading != blank -%}
+          <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+        {%- endif -%}
+
+        {%- if section.settings.button_text != blank -%}
+          <a class="button" href="{{ section.settings.button_link | default: '#' }}">
+            {{ section.settings.button_text }}
+          </a>
+        {%- endif -%}
+      </header>
+
+      {%- assign benefit_blocks = section.blocks | where: 'type', 'benefit' -%}
+      {%- if benefit_blocks.size > 0 -%}
+        <ul class="text-image-split-benefits">
+          {%- for block in benefit_blocks -%}
+            {%- if block.settings.text != blank -%}
+              <li class="text-image-split-benefit" {{ block.shopify_attributes }}>
+                {% render 'icon-check-circle' %}
+                <span class="text-ui text-cap">{{ block.settings.text }}</span>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <div class="text-image-split-media">
+    {%- assign media_blocks = section.blocks | where: 'type', 'media' -%}
+    {%- for block in media_blocks -%}
+      <figure class="text-image-split-media-item" {{ block.shopify_attributes }}>
+        <div class="text-image-split-media-asset">
+          {%- if block.settings.video != blank -%}
+            {{
+              block.settings.video
+              | video_tag:
+                controls: false,
+                autoplay: true,
+                loop: true,
+                muted: true,
+                playsinline: true
+            }}
+          {%- elsif block.settings.image -%}
+            {{
+              block.settings.image
+              | image_url: width: 1200
+              | image_tag:
+                loading: 'lazy',
+                sizes: '(min-width: 600px) 25vw, 50vw',
+                width: block.settings.image.width,
+                height: block.settings.image.height
+            }}
+          {%- endif -%}
+        </div>
+
+        {%- if block.settings.caption != blank -%}
+          <figcaption class="text-image-split-caption text-body">
+            {{ block.settings.caption }}
+          </figcaption>
+        {%- endif -%}
+      </figure>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  .text-image-split {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+    padding: var(--spacing-xs);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
+  @media (max-width: 599.98px) {
+    .text-image-split {
+      padding-block: var(--spacing-m);
+    }
+  }
+
+  /* Text side — matches featured-collection's section-lockup pattern.
+     Vertical alignment is a per-section schema setting (top / middle / bottom)
+     and only takes visual effect on tablet+ where the text column shares the
+     grid row height with the media column. */
+  .text-image-split-text {
+    display: flex;
+  }
+  .text-image-split-text.text-align-top    { align-items: flex-start; }
+  .text-image-split-text.text-align-middle { align-items: center; }
+  .text-image-split-text.text-align-bottom { align-items: flex-end; }
+
+  /* Groups the lockup header + benefits into a single flex child of
+     .text-image-split-text, so the top/middle/bottom alignment above still
+     positions them as one block rather than spreading them row-wise. */
+  .text-image-split-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+  }
+
+  /* Cap section heading at 36ch — matches the rest of the theme (intro,
+     featured-collection, event-slider, fullbleed, main-recipes). */
+  .text-image-split-text h3 {
+    max-width: 36ch;
+  }
+
+  /* Benefit checklist — same pattern as the Frood Hero feature card. */
+  .text-image-split-benefits {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+
+  .text-image-split-benefit {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+  }
+
+  /* .text-cap's default letter-spacing (0.066em) reads too wide at this
+     size — dial it back just for the benefit label, not the shared utility
+     (used elsewhere: main-search, product-variant-selector). */
+  .text-image-split-benefit .text-cap {
+    letter-spacing: 0.02em;
+  }
+
+  .text-image-split-benefit svg {
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+    margin-bottom: 3px;
+  }
+
+  /* Media side — up to 2 media items side by side, each with caption underneath */
+  .text-image-split-media {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xxs);
+  }
+
+  .text-image-split-media-item {
+    flex: 1;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    min-width: 0;
+  }
+
+  .text-image-split-media-asset img,
+  .text-image-split-media-asset video {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Override base.css's figcaption global margin; zero out richtext's inner <p> tags */
+  .text-image-split-caption {
+    margin: 0;
+  }
+
+  .text-image-split-caption p {
+    margin: 0;
+  }
+
+  .text-image-split-caption p + p {
+    margin-top: var(--spacing-xxs);
+  }
+
+  /* Desktop+: side-by-side 50/50 layout + larger section padding.
+     Mobile + tablet stack vertically (media under text, full width, gap m). */
+  @media (min-width: 900px) {
+    .text-image-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-m);
+      padding: var(--spacing-m);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Text + image (Landing)",
+  "tag": "section",
+  "class": "text-image-split-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "default": "Our story"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break.",
+      "default": "From our kitchen to yours."
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button label",
+      "default": "Read more"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "text_vertical_alignment",
+      "label": "Text vertical alignment",
+      "info": "Aligns the text column to the top, middle, or bottom of the section. Only visible on tablet and up.",
+      "options": [
+        { "value": "top", "label": "Top" },
+        { "value": "middle", "label": "Middle" },
+        { "value": "bottom", "label": "Bottom" }
+      ],
+      "default": "middle"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "media",
+      "name": "Media",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Video (autoplays muted, loops)",
+          "info": "If both image and video are set, video wins."
+        },
+        {
+          "type": "richtext",
+          "id": "caption",
+          "label": "Caption"
+        }
+      ]
+    },
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Benefit text",
+          "default": "Real whole produce"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Text + image (Landing)",
+      "blocks": [
+        { "type": "media" },
+        { "type": "media" }
+      ]
+    }
+  ]
+}
+{% endschema %}

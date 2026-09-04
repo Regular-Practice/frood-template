@@ -1,0 +1,326 @@
+{%- comment -%}
+  Frood Feature Card (Landing) — duplicate of sections/feature-card.liquid,
+  used only by templates/page.landing-page.json so the live homepage's
+  existing feature-card section (still on the older schema, no fallback
+  content fields) is unaffected. Keep in sync manually if the base
+  feature-card.liquid changes.
+
+  Frood Feature Card — left-aligned card (max-width 1134px, centered in section)
+  that promotes a piece of content from the `news` metaobject + a richtext heading.
+
+  Expects the existing `news` metaobject definition with fields:
+    - date              date
+    - location          single_line_text_field
+    - title             single_line_text_field
+    - news_image        file_reference (image)
+    - news_description  rich_text_field
+    - news_link         url
+
+  Each field renders conditionally — if the entry has it AND the merchant has
+  toggled it on in the section settings, it shows.
+
+  Card bg + text colours are merchant-picked from Frood's brand tokens.
+  See CLAUDE.md → "Frood Homepage Sections" for rules.
+{%- endcomment -%}
+
+<section class="feature-card-section">
+  <article class="feature-card card-bg-{{ section.settings.card_bg }} card-color-{{ section.settings.card_color }}">
+    {%- assign entry = section.settings.featured_entry -%}
+    {%- assign entry_has_content = false -%}
+    {%- if entry -%}
+      {%- if entry.news_image.value or entry.date.value or entry.location.value or entry.title.value or entry.news_link.value -%}
+        {%- assign entry_has_content = true -%}
+      {%- endif -%}
+    {%- endif -%}
+    {%- if entry_has_content -%}
+      <div class="feature-card-entry">
+        {%- if entry.news_image.value -%}
+          <div class="feature-card-entry-image-wrap">
+            {{
+              entry.news_image.value
+              | image_url: width: 1200
+              | image_tag:
+                loading: 'lazy',
+                class: 'feature-card-entry-image',
+                width: entry.news_image.value.width,
+                height: entry.news_image.value.height
+            }}
+          </div>
+        {%- endif -%}
+
+        <div class="feature-card-entry-text">
+          {%- if entry.date.value or entry.location.value -%}
+            <p class="feature-card-entry-meta text-h1">
+              {%- if entry.date.value -%}{{ entry.date.value | date: '%d.%m.%Y' }}{%- endif -%}
+              {%- if entry.date.value and entry.location.value %} — {% endif -%}
+              {%- if entry.location.value -%}{{ entry.location }}{%- endif -%}
+            </p>
+          {%- endif -%}
+
+          {%- if entry.title.value -%}
+            <h3 class="feature-card-entry-title text-h3">{{ entry.title }}</h3>
+          {%- endif -%}
+
+          {%- if entry.news_link.value -%}
+            <a
+              class="button feature-card-entry-link"
+              href="{{ entry.news_link }}"
+              target="_blank"
+              rel="noopener"
+            >
+              {{ section.settings.link_text | default: 'Read more' }}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- elsif section.settings.fallback_image or section.settings.fallback_meta != blank or section.settings.fallback_title != blank or section.settings.fallback_link != blank -%}
+      {%- comment -%} No News entry attached — merchant-filled fallback content, same markup/classes as the metaobject entry above. {%- endcomment -%}
+      <div class="feature-card-entry">
+        {%- if section.settings.fallback_image -%}
+          <div class="feature-card-entry-image-wrap is-fallback">
+            {{
+              section.settings.fallback_image
+              | image_url: width: 1200
+              | image_tag:
+                loading: 'lazy',
+                class: 'feature-card-entry-image',
+                width: section.settings.fallback_image.width,
+                height: section.settings.fallback_image.height
+            }}
+          </div>
+        {%- endif -%}
+
+        <div class="feature-card-entry-text">
+          {%- if section.settings.fallback_meta != blank -%}
+            <p class="feature-card-entry-meta text-h1">{{ section.settings.fallback_meta }}</p>
+          {%- endif -%}
+
+          {%- if section.settings.fallback_title != blank -%}
+            <h3 class="feature-card-entry-title text-h3">{{ section.settings.fallback_title }}</h3>
+          {%- endif -%}
+
+          {%- if section.settings.fallback_link != blank -%}
+            <a
+              class="button feature-card-entry-link"
+              href="{{ section.settings.fallback_link }}"
+              target="_blank"
+              rel="noopener"
+            >
+              {{ section.settings.link_text | default: 'Read more' }}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.heading != blank -%}
+      {%- comment -%} Heading scales down to h3 whenever there's no featured News entry — keeps the fallback card from being top-heavy with only text content. {%- endcomment -%}
+      <div class="feature-card-text {% if entry_has_content %}text-h2{% else %}text-h3{% endif %}">
+        {{ section.settings.heading | newline_to_br }}
+      </div>
+    {%- endif -%}
+  </article>
+</section>
+
+{% stylesheet %}
+  .feature-card-section {
+    padding: var(--spacing-s) var(--spacing-xs);
+    background-color: var(--color-bg);
+  }
+
+  @media (min-width: 900px) {
+    .feature-card-section {
+      padding: var(--spacing-l) var(--spacing-m);
+    }
+  }
+
+  .feature-card {
+    padding: var(--spacing-xs);
+    border-radius: var(--rad-s);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-l);
+    /* Centered horizontally in the section */
+    margin-inline: auto;
+  }
+
+  /* Cap the width only on desktop (≥900px). Below that — tablet + mobile —
+     the card fills the available section width. */
+  @media (min-width: 900px) {
+    .feature-card {
+      padding: var(--spacing-m);
+      max-width: 960px;
+    }
+  }
+
+  .feature-card-entry {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  @media (min-width: 600px) {
+    .feature-card-entry {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: var(--spacing-m);
+    }
+  }
+
+  .feature-card-entry-image-wrap {
+    flex: 0 0 33%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+  }
+
+  /* Fallback (merchant-filled) image only — the real News entry image keeps
+     the 4:3 ratio above. */
+  .feature-card-entry-image-wrap.is-fallback {
+    aspect-ratio: 1 / 1;
+  }
+
+  .feature-card-entry-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .feature-card-entry-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .feature-card-entry-meta,
+  .feature-card-entry-title {
+    margin: 0;
+  }
+
+  .feature-card-entry-title {
+    margin-top: var(--spacing-xxs);
+    max-width: 36ch;
+  }
+
+  .feature-card-entry-link {
+    margin-top: var(--spacing-s);
+  }
+
+  /* Card background — merchant-pickable from Frood brand tokens only */
+  .card-bg-bg            { background-color: var(--color-bg); }
+  .card-bg-bg-dark       { background-color: var(--color-bg-dark); }
+  .card-bg-text          { background-color: var(--color-text); }
+  .card-bg-text-accent   { background-color: var(--color-text-accent); }
+  .card-bg-accent        { background-color: var(--color-accent); }
+  .card-bg-accent-light  { background-color: var(--color-accent-light); }
+
+  /* Card text color — merchant-pickable from Frood brand tokens only */
+  .card-color-bg            { color: var(--color-bg); }
+  .card-color-bg-dark       { color: var(--color-bg-dark); }
+  .card-color-text          { color: var(--color-text); }
+  .card-color-text-accent   { color: var(--color-text-accent); }
+  .card-color-accent        { color: var(--color-accent); }
+  .card-color-accent-light  { color: var(--color-accent-light); }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Feature card (Landing)",
+  "tag": "section",
+  "class": "feature-card-section-wrapper",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Featured content (from News metaobject)"
+    },
+    {
+      "type": "metaobject",
+      "id": "featured_entry",
+      "label": "Featured news entry",
+      "metaobject_type": "news"
+    },
+    {
+      "type": "header",
+      "content": "Fallback content",
+      "info": "Used only when no featured news entry is selected above."
+    },
+    {
+      "type": "image_picker",
+      "id": "fallback_image",
+      "label": "Fallback image"
+    },
+    {
+      "type": "text",
+      "id": "fallback_meta",
+      "label": "Fallback meta text",
+      "info": "Optional — e.g. a date or location line."
+    },
+    {
+      "type": "text",
+      "id": "fallback_title",
+      "label": "Fallback title"
+    },
+    {
+      "type": "url",
+      "id": "fallback_link",
+      "label": "Fallback link"
+    },
+    {
+      "type": "text",
+      "id": "link_text",
+      "label": "Link label",
+      "default": "Read more",
+      "info": "Used for both the featured entry and the fallback content."
+    },
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Press Enter to add a line break. Renders at h2 scale when a featured entry is selected above, h3 scale otherwise.",
+      "default": "A statement goes here."
+    },
+    {
+      "type": "header",
+      "content": "Card appearance"
+    },
+    {
+      "type": "select",
+      "id": "card_bg",
+      "label": "Card background",
+      "options": [
+        { "value": "bg", "label": "Off-white" },
+        { "value": "bg-dark", "label": "Beige" },
+        { "value": "text", "label": "Dark burgundy" },
+        { "value": "text-accent", "label": "Warm grey" },
+        { "value": "accent", "label": "Yellow" },
+        { "value": "accent-light", "label": "Pale yellow" }
+      ],
+      "default": "bg-dark"
+    },
+    {
+      "type": "select",
+      "id": "card_color",
+      "label": "Card text color",
+      "options": [
+        { "value": "text", "label": "Dark burgundy" },
+        { "value": "text-accent", "label": "Warm grey" },
+        { "value": "bg", "label": "Off-white" },
+        { "value": "bg-dark", "label": "Beige" },
+        { "value": "accent", "label": "Yellow" },
+        { "value": "accent-light", "label": "Pale yellow" }
+      ],
+      "default": "text"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Feature card (Landing)"
+    }
+  ]
+}
+{% endschema %}
