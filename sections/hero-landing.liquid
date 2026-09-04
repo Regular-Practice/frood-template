@@ -155,10 +155,15 @@
     }
   }
 
-  /* Hidden on mobile — the feature card takes over that space instead. */
+  /* Mobile: centered in the section (both axes) instead of the top-left
+     corner used at tablet+ — the feature card is hidden here, so the
+     wordmark can take the middle of the screen like the original design. */
   @media (max-width: 599.98px) {
     .hero-frood-landing-logo {
-      display: none;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.98);
+      animation: hero-logo-in-landing-mobile 0.5s ease-out 0.6s forwards;
     }
   }
 
@@ -169,10 +174,26 @@
     }
   }
 
+  @keyframes hero-logo-in-landing-mobile {
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hero-frood-landing-logo {
       opacity: 1;
       transform: none;
+      animation: none;
+    }
+  }
+
+  /* Reduced motion + mobile: keep the centering translate (it's positioning,
+     not decoration) — only drop the scale/fade animation. */
+  @media (max-width: 599.98px) and (prefers-reduced-motion: reduce) {
+    .hero-frood-landing-logo {
+      transform: translate(-50%, -50%);
       animation: none;
     }
   }
@@ -185,52 +206,10 @@
     max-width: calc(100% - var(--spacing-xxs) * 2);
   }
 
-  /* Mobile: the card takes over the wordmark's spot, stacked (not the
-     row/flex layout used at tablet+), 75% of the section's width, in
-     reading order: heading, image, benefits, then the CTA.
-     Grid + named grid-area (not flex `order`) reorders these reliably —
-     `order` combined with `display: contents` has known cross-browser
-     reliability issues, which is what broke this the first time round. */
+  /* Hidden on mobile — the (re-centered) wordmark takes this space instead. */
   @media (max-width: 599.98px) {
     .hero-frood-landing-feature {
-      left: var(--spacing-xxs);
-      right: auto;
-      width: 75%;
-    }
-
-    .hero-frood-landing-feature-card {
-      display: grid;
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "heading"
-        "image"
-        "benefits"
-        "cta";
-    }
-
-    /* Un-boxes the text/media groupings so heading, image, benefits and CTA
-       become direct grid children of the card — letting grid-area place
-       them regardless of their markup grouping. */
-    .hero-frood-landing-feature-text,
-    .hero-frood-landing-feature-media {
-      display: contents;
-    }
-
-    .hero-frood-landing-feature-heading {
-      grid-area: heading;
-    }
-
-    .hero-frood-landing-feature-image {
-      grid-area: image;
-      width: 100%;
-    }
-
-    .hero-frood-landing-benefits {
-      grid-area: benefits;
-    }
-
-    .hero-frood-landing-feature-cta {
-      grid-area: cta;
+      display: none;
     }
   }
 
