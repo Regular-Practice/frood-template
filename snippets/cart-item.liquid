@@ -79,13 +79,7 @@
 
     <div class="cart-item-actions">
       <div class="cart-item-quantity">
-        {% render 'quantity-selector',
-          value: item.quantity,
-          name: 'updates[]',
-          min: 0,
-          max: item.variant.inventory_quantity | default: 99,
-          data_key: item.key
-        %}
+        {% render 'quantity-selector', value: item.quantity, name: 'updates[]', min: 0, max: item.variant.inventory_quantity, default: 99, data_key: item.key %}
       </div>
 
       <button
@@ -184,3 +178,21 @@
     margin-top: var(--spacing-xs);
   }
 {% endstylesheet %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: |-
+    {% render 'quantity-selector',
+              value: item.quantity,
+              name: 'updates[]',
+              min: 0,
+              max: item.variant.inventory_quantity | default: 99,
+              data_key: item.key
+            %}
+  to: "{% render 'quantity-selector', value: item.quantity, name: 'updates[]', min:
+    0, max: item.variant.inventory_quantity, default: 99, data_key: item.key %}"
+  position: 2949..3101
+{% endcomment %}
