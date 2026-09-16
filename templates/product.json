@@ -73,6 +73,19 @@
         "klaviyo_reviews_product_reviews_PNNAEQ"
       ],
       "settings": {}
+    },
+    "1789566433046d32bf": {
+      "type": "apps",
+      "blocks": {
+        "klaviyo_reviews_product_reviews_XrDRGM": {
+          "type": "shopify://apps/klaviyo-reviews/blocks/product-reviews/db20e365-d984-4ac4-9655-e1588d951ca9",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "klaviyo_reviews_product_reviews_XrDRGM"
+      ],
+      "settings": {}
     }
   },
   "order": [
@@ -80,6 +93,7 @@
     "recipe_recommendations",
     "fullbleed_EN6NHa",
     "product_recommendations_hc87aa",
-    "1789566343ba407cf5"
+    "1789566343ba407cf5",
+    "1789566433046d32bf"
   ]
 }
