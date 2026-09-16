@@ -21,8 +21,9 @@
         "recharge_subscriptions_subscription_widget_v2_fmVdA4"
       ],
       "settings": {
+        "pack_label": "4 PACK",
         "show_quantity": true,
-        "pack_label": "4 PACK"
+        "subscription_info_link": ""
       }
     },
     "recipe_recommendations": {
@@ -59,12 +60,26 @@
         "products_to_show": 4,
         "grid_columns": "4"
       }
+    },
+    "1789566343ba407cf5": {
+      "type": "apps",
+      "blocks": {
+        "klaviyo_reviews_product_reviews_PNNAEQ": {
+          "type": "shopify://apps/klaviyo-reviews/blocks/product-reviews/db20e365-d984-4ac4-9655-e1588d951ca9",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "klaviyo_reviews_product_reviews_PNNAEQ"
+      ],
+      "settings": {}
     }
   },
   "order": [
     "main",
     "recipe_recommendations",
     "fullbleed_EN6NHa",
-    "product_recommendations_hc87aa"
+    "product_recommendations_hc87aa",
+    "1789566343ba407cf5"
   ]
 }
