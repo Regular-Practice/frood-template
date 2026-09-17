@@ -100,6 +100,19 @@
         "klaviyo_reviews_product_reviews_XrDRGM"
       ],
       "settings": {}
+    },
+    "1789638949d639ca1c": {
+      "type": "apps",
+      "blocks": {
+        "klaviyo_reviews_product_reviews_4Dzh9K": {
+          "type": "shopify://apps/klaviyo-reviews/blocks/product-reviews/db20e365-d984-4ac4-9655-e1588d951ca9",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "klaviyo_reviews_product_reviews_4Dzh9K"
+      ],
+      "settings": {}
     }
   },
   "order": [
@@ -108,6 +121,7 @@
     "fullbleed_EN6NHa",
     "product_recommendations_hc87aa",
     "1789566343ba407cf5",
-    "1789566433046d32bf"
+    "1789566433046d32bf",
+    "1789638949d639ca1c"
   ]
 }
