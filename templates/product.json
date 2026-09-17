@@ -15,10 +15,17 @@
         "recharge_subscriptions_subscription_widget_v2_fmVdA4": {
           "type": "shopify://apps/recharge-subscriptions/blocks/subscription-widget-v2/371eed76-0b44-4869-9813-730372ea378e",
           "settings": {}
+        },
+        "klaviyo_reviews_average_rating_Ypxb9E": {
+          "type": "shopify://apps/klaviyo-reviews/blocks/average-rating/db20e365-d984-4ac4-9655-e1588d951ca9",
+          "settings": {
+            "product": "{{product}}"
+          }
         }
       },
       "block_order": [
-        "recharge_subscriptions_subscription_widget_v2_fmVdA4"
+        "recharge_subscriptions_subscription_widget_v2_fmVdA4",
+        "klaviyo_reviews_average_rating_Ypxb9E"
       ],
       "settings": {
         "pack_label": "4 PACK",
