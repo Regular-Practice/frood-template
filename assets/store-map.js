@@ -25,8 +25,7 @@
  *
  * State uses the .is-* classes (not data attributes). Data attributes carry
  * config/data only: [data-store-data] (JSON), [data-store-row], [data-map-canvas],
- * [data-store-list], [data-store-search], [data-store-status], [data-no-results],
- * data-next-url, data-count-one/-other (translated "__COUNT__ stores" templates).
+ * [data-store-list], [data-store-search], [data-no-results], data-next-url.
  */
 
 const MAPLIBRE_VERSION = "4.7.1";
@@ -40,7 +39,6 @@ class StoreMap extends HTMLElement {
     this.canvas = this.querySelector("[data-map-canvas]");
     this.list = this.querySelector("[data-store-list]");
     this.searchInput = this.querySelector("[data-store-search]");
-    this.status = this.querySelector("[data-store-status]");
     this.noResults = this.querySelector("[data-no-results]");
     this.query = "";
     this.activeIndex = -1;
@@ -182,11 +180,6 @@ class StoreMap extends HTMLElement {
     if (firstVisible) firstVisible.row.classList.add("is-first-visible");
 
     if (this.noResults) this.noResults.hidden = count > 0;
-    if (this.status) {
-      const template =
-        count === 1 ? this.dataset.countOne : this.dataset.countOther;
-      this.status.textContent = (template || "").replace("__COUNT__", count);
-    }
 
     const active = this.entries[this.activeIndex];
     if (active && !active.visible) this.clearActive();

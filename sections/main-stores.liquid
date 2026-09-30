@@ -22,8 +22,7 @@
   inside `paginate ... by 250`. Page 1 renders here (works with no JS); when
   there is a next page its URL is put on `data-next-url` and `store-map.js`
   fetches + merges the remaining pages, re-indexes, sorts A–Z and drives the
-  search box and clustered pins. The three `data-count-*`/`data-no-results`
-  attributes carry translated strings to that JS. The map is keyless — `store-map.js` lazy-loads MapLibre GL
+  search box and clustered pins. The map is keyless — `store-map.js` lazy-loads MapLibre GL
   and renders OpenFreeMap vector tiles with a brand-coloured style, so there's no
   account, token, or section setting to configure for it.
 
@@ -46,8 +45,6 @@
       <store-map
         class="stores-locator"
         {% if paginate.next %}data-next-url="{{ paginate.next.url }}"{% endif %}
-        data-count-one="{{ 'stores.index.count' | t: count: 1 | replace: '1', '__COUNT__' }}"
-        data-count-other="{{ 'stores.index.count' | t: count: 2 | replace: '2', '__COUNT__' }}"
       >
         <div class="stores-list-col">
           <div class="stores-search">
@@ -60,7 +57,6 @@
               placeholder="{{ 'stores.index.search_placeholder' | t }}"
               data-store-search
             >
-            <p class="stores-status text-body" role="status" aria-live="polite" data-store-status></p>
           </div>
 
           <ul class="stores-list" role="list" data-store-list>
@@ -171,7 +167,6 @@
     gap: var(--spacing-xxs);
   }
 
-  .stores-status,
   .stores-no-results {
     color: var(--color-text-accent);
   }
