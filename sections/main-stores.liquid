@@ -16,7 +16,14 @@
 
   List rows and the JSON array share the index (forloop.index0), so a row click
   maps to the right pin. Stores with blank/unparseable coordinates still list;
-  they just get no pin. The map is keyless — `store-map.js` lazy-loads MapLibre GL
+  they just get no pin.
+
+  Scale: a metaobject list holds at most 250 entries per page, so the loop sits
+  inside `paginate ... by 250`. Page 1 renders here (works with no JS); when
+  there is a next page its URL is put on `data-next-url` and `store-map.js`
+  fetches + merges the remaining pages, re-indexes, sorts A–Z and drives the
+  search box and clustered pins. The three `data-count-*`/`data-no-results`
+  attributes carry translated strings to that JS. The map is keyless — `store-map.js` lazy-loads MapLibre GL
   and renders OpenFreeMap vector tiles with a brand-coloured style, so there's no
   account, token, or section setting to configure for it.
 
@@ -34,38 +41,62 @@
     {%- endif -%}
   </header>
 
-  {%- assign all_stores = shop.metaobjects.store_locations.values -%}
+  {%- paginate shop.metaobjects.store_locations.values by 250 -%}
+    {%- if paginate.items > 0 -%}
+      <store-map
+        class="stores-locator"
+        {% if paginate.next %}data-next-url="{{ paginate.next.url }}"{% endif %}
+        data-count-one="{{ 'stores.index.count' | t: count: 1 | replace: '1', '__COUNT__' }}"
+        data-count-other="{{ 'stores.index.count' | t: count: 2 | replace: '2', '__COUNT__' }}"
+      >
+        <div class="stores-list-col">
+          <div class="stores-search">
+            <label class="visually-hidden" for="stores-search-input">{{ 'stores.index.search_label' | t }}</label>
+            <input
+              class="input text-ui"
+              id="stores-search-input"
+              type="search"
+              autocomplete="off"
+              placeholder="{{ 'stores.index.search_placeholder' | t }}"
+              data-store-search
+            >
+            <p class="stores-status text-body" role="status" aria-live="polite" data-store-status></p>
+          </div>
 
-  {%- if all_stores.count > 0 -%}
-    <store-map class="stores-locator">
-      <ul class="stores-list" role="list">
-        {%- for store in all_stores -%}
-          {% render 'store-card', store: store, index: forloop.index0 %}
-        {%- endfor -%}
-      </ul>
+          <ul class="stores-list" role="list" data-store-list>
+            {%- for store in shop.metaobjects.store_locations.values -%}
+              {% render 'store-card', store: store, index: forloop.index0 %}
+            {%- endfor -%}
+          </ul>
 
-      <div class="stores-map-col">
-        <div class="stores-map" data-map-canvas></div>
-      </div>
+          <p class="stores-no-results text-body" data-no-results hidden>
+            {{ 'stores.index.no_results' | t }}
+          </p>
+        </div>
 
-      {%- comment -%} Coordinate blob — index-aligned with the list rows above. {%- endcomment -%}
-      <script type="application/json" data-store-data>
-        [
-          {%- for store in all_stores -%}
-            {
-              "retailer": {{ store.retailer | json }},
-              "location": {{ store.location | json }},
-              "coordinates": {{ store.coordinates | json }}
-            }{%- unless forloop.last -%},{%- endunless -%}
-          {%- endfor -%}
-        ]
-      </script>
-    </store-map>
-  {%- else -%}
-    <p class="stores-index-empty text-body">
-      {{ 'stores.index.empty' | t }}
-    </p>
-  {%- endif -%}
+        <div class="stores-map-col">
+          <div class="stores-map" data-map-canvas></div>
+        </div>
+
+        {%- comment -%} Coordinate blob — index-aligned with the list rows above. {%- endcomment -%}
+        <script type="application/json" data-store-data>
+          [
+            {%- for store in shop.metaobjects.store_locations.values -%}
+              {
+                "retailer": {{ store.retailer | json }},
+                "location": {{ store.location | json }},
+                "coordinates": {{ store.coordinates | json }}
+              }{%- unless forloop.last -%},{%- endunless -%}
+            {%- endfor -%}
+          ]
+        </script>
+      </store-map>
+    {%- else -%}
+      <p class="stores-index-empty text-body">
+        {{ 'stores.index.empty' | t }}
+      </p>
+    {%- endif -%}
+  {%- endpaginate -%}
 </section>
 
 <script type="module" src="{{ 'store-map.js' | asset_url }}"></script>
@@ -127,12 +158,49 @@
     display: none;
   }
 
+  .stores-list-col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-s);
+    min-width: 0;
+  }
+
+  .stores-search {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+
+  .stores-status,
+  .stores-no-results {
+    color: var(--color-text-accent);
+  }
+
   .stores-list {
     display: flex;
     flex-direction: column;
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+
+  /* Rows hidden by the search box. */
+  .stores-list .store-row.is-filtered-out {
+    display: none;
+  }
+
+  /* With hundreds of stores the list scrolls inside its own column (desktop)
+     so the map stays in view; on mobile it gets a capped height below the map. */
+  .stores-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* The rows' hover highlight bleeds --spacing-xs past the text (see
+       store-card); the scroll box would clip that, so pad it back in here. */
+    padding-inline: var(--spacing-xs);
+    margin-inline: calc(-1 * var(--spacing-xs));
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-text-accent) transparent;
   }
 
   @media (min-width: 900px) {
@@ -142,9 +210,13 @@
       gap: var(--spacing-l);
     }
 
-    .stores-list {
+    .stores-list-col {
       grid-column: 1;
       grid-row: 1;
+    }
+
+    .stores-list {
+      max-height: calc(min(70vh, 640px) - 96px);
     }
 
     .stores-map-col {

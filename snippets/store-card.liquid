@@ -41,6 +41,12 @@
     border-top: 1px solid var(--color-text);
   }
 
+  /* store-map.js marks the first row left after a search, so a filtered list
+     doesn't start with a stray hairline. */
+  .store-row.is-first-visible {
+    border-top: 0;
+  }
+
   /* List text sits flush with the section header and the map's edge, so the
      section's left/right insets read as even. The hover/active highlight bleeds
      symmetrically past the text by --spacing-xs on each side (width bumped to

@@ -297,7 +297,14 @@
   },
   "stores": {
     "index": {
-      "empty": "Stockists are on the way — check back soon."
+      "empty": "Stockists are on the way — check back soon.",
+      "search_label": "Search stores",
+      "search_placeholder": "Search by town or store name",
+      "count": {
+        "one": "{{ count }} store",
+        "other": "{{ count }} stores"
+      },
+      "no_results": "No stores match your search."
     }
   },
   "recipes": {
