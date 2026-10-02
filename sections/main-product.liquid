@@ -93,7 +93,7 @@
             </summary>
             <div class="accordion-content">
               <div class="accordion-content-inner">
-                <div class="product-accordion-content typeset">
+                <div tabindex="0" class="product-accordion-content typeset">
                   {{ product.metafields.custom.instructions | metafield_tag }}
                 </div>
               </div>
@@ -124,7 +124,7 @@
             </summary>
             <div class="accordion-content">
               <div class="accordion-content-inner">
-                <div class="product-accordion-content product-nutrition-body">
+                <div tabindex="0" class="product-accordion-content product-nutrition-body">
                   {%- if product.metafields.custom.nutritional_info != blank -%}
                     <div class="typeset">
                       {{ product.metafields.custom.nutritional_info | metafield_tag }}
@@ -152,7 +152,7 @@
             </summary>
             <div class="accordion-content">
               <div class="accordion-content-inner">
-                <div class="product-accordion-content typeset">
+                <div tabindex="0" class="product-accordion-content typeset">
                   {{ product.metafields.custom.benefits | metafield_tag }}
                 </div>
               </div>
@@ -168,7 +168,7 @@
             </summary>
             <div class="accordion-content">
               <div class="accordion-content-inner">
-                <div class="product-accordion-content typeset">
+                <div tabindex="0" class="product-accordion-content typeset">
                   {{ product.metafields.custom.who_is_it_for | metafield_tag }}
                 </div>
               </div>
@@ -184,7 +184,7 @@
             </summary>
             <div class="accordion-content">
               <div class="accordion-content-inner">
-                <div class="product-accordion-content typeset">
+                <div tabindex="0" class="product-accordion-content typeset">
                   {{ product.metafields.custom.how_does_the_subscription_work | metafield_tag }}
                 </div>
               </div>
@@ -637,8 +637,27 @@
     opacity: 1;
   }
 
+  /* Long content (the Mixed Box's nutrition runs to four tables' worth) scrolls
+     inside the dropdown instead of stretching the column. The scroll lives on
+     this box, not on .accordion-content-inner, so the open/close height tween
+     in accordion.js is unaffected. Scrollbar: both the standard properties
+     (Chrome/Firefox) and ::-webkit-scrollbar (Safari) — keep both. */
   .product-accordion-content {
     padding-bottom: var(--spacing-xs);
+    max-height: 320px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-text-accent) transparent;
+  }
+
+  .product-accordion-content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .product-accordion-content::-webkit-scrollbar-thumb {
+    background-color: var(--color-text-accent);
+    border-radius: 3px;
   }
 
   /* Richtext + the "View full nutrition" trigger stack with a consistent gap,
