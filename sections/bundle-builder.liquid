@@ -139,143 +139,157 @@
             class="bundle-flavour"
             data-flavour-card
             data-flavour-id="{{ flavour.system.handle }}"
-            {%- if flavour.dark_colour != blank or flavour.light_colour != blank -%}
-              style="
-                {%- if flavour.dark_colour != blank -%}--flavour-dark: {{ flavour.dark_colour }};{%- endif -%}
-                {%- if flavour.light_colour != blank -%}--flavour-light: {{ flavour.light_colour }};{%- endif -%}
-              "
-            {%- endif -%}
           >
-            <div class="bundle-flavour-header">
-              <div class="bundle-flavour-title">
-                <h3 class="text-ui">{{ flavour.name }}</h3>
-                {%- if flavour.atrributes != blank -%}
-                  <p class="bundle-flavour-attributes">{{ flavour.atrributes }}</p>
-                {%- endif -%}
+            {%- comment -%} Card photo is the flavour's `meal_image` (not the pouch render the visualiser uses). {%- endcomment -%}
+            {%- if flavour.meal_image.value != blank -%}
+              <div class="bundle-flavour-media">
+                {{ flavour.meal_image.value | image_url: width: 800 | image_tag:
+                  loading: 'lazy',
+                  widths: '300, 400, 600, 800',
+                  sizes: '(min-width: 900px) 22vw, 45vw',
+                  alt: flavour.name.value
+                }}
               </div>
-              {%- assign flavour_product = flavour.product_reference.value -%}
-              {%- if flavour_product != blank -%}
-                <a
-                  class="bundle-flavour-link"
-                  href="{{ flavour_product.url }}"
-                  aria-label="{{ 'sections.bundle_builder.view_product' | t: name: flavour.name }}"
-                >
-                  <svg width="10" height="10" viewBox="0 0 7 7" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                    <path d="M0.753846 7L0 6.24615L5.16923 1.07692H0.538462V0H7V6.46154H5.92308V1.83077L0.753846 7Z"/>
-                  </svg>
-                </a>
+            {%- endif -%}
+            <div class="bundle-flavour-body">
+              <h3 class="text-ui">{{ flavour.name }}</h3>
+              {%- if flavour.v2_description != blank -%}
+                <p class="bundle-flavour-description text-body">{{ flavour.v2_description }}</p>
               {%- endif -%}
             </div>
-            <div class="bundle-stepper">
-              <button
-                type="button"
-                data-action="remove"
-                data-flavour-id="{{ flavour.system.handle }}"
-                aria-label="{{ 'sections.bundle_builder.decrease' | t: name: flavour.name }}"
-                disabled
-              >
-                <svg width="10" height="10" viewBox="0 0 7 1" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                  <path d="M0 1V0H7V1H0Z"/>
-                </svg>
-              </button>
-              <span class="bundle-qty" data-qty="{{ flavour.system.handle }}">0</span>
-              <button
-                type="button"
-                data-action="add"
-                data-flavour-id="{{ flavour.system.handle }}"
-                aria-label="{{ 'sections.bundle_builder.increase' | t: name: flavour.name }}"
-              >
-                <svg width="10" height="10" viewBox="0 0 7 7" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                  <path d="M3 4H0V3H3V0H4V3H7V4H4V7H3V4Z"/>
-                </svg>
-              </button>
+
+            {%- comment -%}
+              Qty 0: one full-width "Add" bar. Qty > 0 (.is-active, set by
+              bundle-builder.js): the − qty + stepper. Same two buttons and the
+              same data hooks either way — only CSS swaps what shows.
+            {%- endcomment -%}
+            <div class="bundle-flavour-action">
+              <div class="bundle-stepper">
+                <button
+                  type="button"
+                  data-action="remove"
+                  data-flavour-id="{{ flavour.system.handle }}"
+                  aria-label="{{ 'sections.bundle_builder.decrease' | t: name: flavour.name }}"
+                  disabled
+                >
+                  <svg width="10" height="10" viewBox="0 0 7 1" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                    <path d="M0 1V0H7V1H0Z"/>
+                  </svg>
+                </button>
+                <span class="bundle-qty text-h1" data-qty="{{ flavour.system.handle }}" aria-live="polite">0</span>
+                <button
+                  type="button"
+                  data-action="add"
+                  data-flavour-id="{{ flavour.system.handle }}"
+                  aria-label="{{ 'sections.bundle_builder.increase' | t: name: flavour.name }}"
+                >
+                  <span class="bundle-add-blend-label text-h1">{{ 'products.product.add' | t }}</span>
+                  <svg class="bundle-add-blend-icon" width="10" height="10" viewBox="0 0 7 7" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                    <path d="M3 4H0V3H3V0H4V3H7V4H4V7H3V4Z"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </article>
         {%- else -%}
-          <p class="bundle-flavour-attributes">{{ 'sections.bundle_builder.no_flavours' | t }}</p>
+          <p class="text-body">{{ 'sections.bundle_builder.no_flavours' | t }}</p>
         {%- endfor -%}
       </div>
-
-      <footer class="bundle-footer">
-        {%- comment -%}
-          Subscription control — only renders if the box product has Recharge
-          selling plans. Mirrors the PDP selector; bundle-builder.js attaches the
-          chosen selling_plan to every box line item on add-to-cart, so the
-          custom mix (line-item properties) recurs at the chosen frequency.
-        {%- endcomment -%}
-        {%- if box_variant.selling_plan_allocations.size > 0 -%}
-          {%- assign box_alloc = box_variant.selling_plan_allocations | first -%}
-          {%- assign box_discount = box_alloc.compare_at_price | minus: box_alloc.price | times: 100.0 | divided_by: box_alloc.compare_at_price | round -%}
-          <div class="bundle-subscription" data-subscription>
-            <fieldset class="bundle-sub-options">
-              <legend class="visually-hidden">{{ 'products.product.purchase_options' | t }}</legend>
-
-              <label class="bundle-sub-option is-selected">
-                <input type="radio" name="bundle-purchase-{{ section.id }}" value="onetime" checked data-sub-mode>
-                <span class="bundle-sub-box" aria-hidden="true"></span>
-                <span class="bundle-sub-label text-ui">{{ 'products.product.one_time' | t }}</span>
-              </label>
-
-              <label class="bundle-sub-option">
-                <input type="radio" name="bundle-purchase-{{ section.id }}" value="subscription" data-sub-mode>
-                <span class="bundle-sub-box" aria-hidden="true"></span>
-                <span class="bundle-sub-label text-ui">{{ 'products.product.subscribe_save' | t: percent: box_discount }}</span>
-              </label>
-            </fieldset>
-
-            <div class="bundle-sub-frequency" data-sub-frequency hidden>
-              <label class="visually-hidden" for="bundle-frequency-{{ section.id }}">{{ 'products.product.deliver_every' | t }}</label>
-              <select id="bundle-frequency-{{ section.id }}" class="select bundle-sub-select text-ui" data-sub-select>
-                {%- for allocation in box_variant.selling_plan_allocations -%}
-                  <option value="{{ allocation.selling_plan.id }}" data-price-cents="{{ allocation.price }}" data-compare-cents="{{ allocation.compare_at_price }}">
-                    {{ allocation.selling_plan.name | split: ' subscription' | first }}
-                  </option>
-                {%- endfor -%}
-              </select>
-            </div>
-          </div>
-        {%- endif -%}
-
-        <button type="button" class="button bundle-add" data-add disabled>
-          <span class="bundle-add-inner">
-            <span class="bundle-add-label" data-add-label>{{ 'sections.bundle_builder.add_to_cart' | t }}</span>
-            <span class="bundle-add-end">
-              {%- if box_variant -%}
-                <s class="bundle-add-was" data-add-was hidden></s>
-                <span class="bundle-add-price">{{ box_variant.price | money }}</span>
-              {%- endif -%}
-              {% render 'icon-arrow', class: 'bundle-add-icon' %}
-            </span>
-          </span>
-        </button>
-
-        <p class="bundle-hint" data-hint aria-live="polite"></p>
-
-        <div class="bundle-progress" data-progress role="progressbar" aria-valuemin="0" aria-valuemax="{{ capacity }}" aria-valuenow="0">
-          <div class="bundle-progress-fill" data-progress-fill></div>
-        </div>
-
-        <div class="form-error" data-error role="alert" hidden></div>
-      </footer>
     </section>
 
     <div class="bundle-visualiser">
-      <bundle-stage class="bundle-stage" data-capacity="{{ capacity }}">
-        <div class="bundle-stage-track" data-stage></div>
-        {%- comment -%}
-          One box scene per box, cloned from this template by bundle-stage.js so
-          the box-layer image URLs / dimensions stay server-rendered here.
-        {%- endcomment -%}
-        <template data-box-template>
-          <div class="bundle-scene" data-scene>
-            <img class="bundle-layer bundle-box-back" src="{{ box_back_url }}" alt="" loading="lazy" width="{{ box_back_w }}" height="{{ box_back_h }}">
-            <img class="bundle-layer bundle-box-front" src="{{ box_front_url }}" alt="" loading="lazy" width="{{ box_front_w }}" height="{{ box_front_h }}">
+      <aside class="bundle-box-panel"{% if section.settings.panel_title != blank %} aria-labelledby="bundle-box-title-{{ section.id }}"{% endif %}>
+        {%- if section.settings.panel_title != blank or section.settings.panel_subtitle != blank -%}
+          <header class="bundle-box-header">
+            {%- if section.settings.panel_title != blank -%}
+              <h2 class="text-h1" id="bundle-box-title-{{ section.id }}">{{ section.settings.panel_title }}</h2>
+            {%- endif -%}
+            {%- if section.settings.panel_subtitle != blank -%}
+              <p class="bundle-box-subtitle text-body">{{ section.settings.panel_subtitle }}</p>
+            {%- endif -%}
+          </header>
+        {%- endif -%}
+
+        <bundle-stage class="bundle-stage" data-capacity="{{ capacity }}">
+          <div class="bundle-stage-track" data-stage></div>
+          {%- comment -%}
+            One box scene per box, cloned from this template by bundle-stage.js so
+            the box-layer image URLs / dimensions stay server-rendered here.
+          {%- endcomment -%}
+          <template data-box-template>
+            <div class="bundle-scene" data-scene>
+              <img class="bundle-layer bundle-box-back" src="{{ box_back_url }}" alt="" loading="lazy" width="{{ box_back_w }}" height="{{ box_back_h }}">
+              <img class="bundle-layer bundle-box-front" src="{{ box_front_url }}" alt="" loading="lazy" width="{{ box_front_w }}" height="{{ box_front_h }}">
+            </div>
+          </template>
+        </bundle-stage>
+
+        <footer class="bundle-footer">
+          {%- comment -%}
+            Subscription control — only renders if the box product has Recharge
+            selling plans. Mirrors the PDP selector; bundle-builder.js attaches the
+            chosen selling_plan to every box line item on add-to-cart, so the
+            custom mix (line-item properties) recurs at the chosen frequency.
+          {%- endcomment -%}
+          {%- if box_variant.selling_plan_allocations.size > 0 -%}
+            {%- assign box_alloc = box_variant.selling_plan_allocations | first -%}
+            {%- assign box_discount = box_alloc.compare_at_price | minus: box_alloc.price | times: 100.0 | divided_by: box_alloc.compare_at_price | round -%}
+            <div class="bundle-subscription" data-subscription>
+              <fieldset class="bundle-sub-options">
+                <legend class="visually-hidden">{{ 'products.product.purchase_options' | t }}</legend>
+
+                <label class="bundle-sub-option is-selected">
+                  <input type="radio" name="bundle-purchase-{{ section.id }}" value="onetime" checked data-sub-mode>
+                  <span class="bundle-sub-box" aria-hidden="true"></span>
+                  <span class="bundle-sub-label text-ui">{{ 'products.product.one_time' | t }}</span>
+                </label>
+
+                <label class="bundle-sub-option">
+                  <input type="radio" name="bundle-purchase-{{ section.id }}" value="subscription" data-sub-mode>
+                  <span class="bundle-sub-box" aria-hidden="true"></span>
+                  <span class="bundle-sub-label text-ui">{{ 'products.product.subscribe_save' | t: percent: box_discount }}</span>
+                </label>
+              </fieldset>
+
+              <div class="bundle-sub-frequency" data-sub-frequency hidden>
+                <label class="visually-hidden" for="bundle-frequency-{{ section.id }}">{{ 'products.product.deliver_every' | t }}</label>
+                <select id="bundle-frequency-{{ section.id }}" class="select bundle-sub-select text-ui" data-sub-select>
+                  {%- for allocation in box_variant.selling_plan_allocations -%}
+                    <option value="{{ allocation.selling_plan.id }}" data-price-cents="{{ allocation.price }}" data-compare-cents="{{ allocation.compare_at_price }}">
+                      {{ allocation.selling_plan.name | split: ' subscription' | first }}
+                    </option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            </div>
+          {%- endif -%}
+
+          <button type="button" class="button bundle-add" data-add disabled>
+            <span class="bundle-add-inner">
+              <span class="bundle-add-label" data-add-label>{{ 'sections.bundle_builder.add_to_cart' | t }}</span>
+              <span class="bundle-add-end">
+                {%- if box_variant -%}
+                  <s class="bundle-add-was" data-add-was hidden></s>
+                  <span class="bundle-add-price">{{ box_variant.price | money }}</span>
+                {%- endif -%}
+                {% render 'icon-arrow', class: 'bundle-add-icon' %}
+              </span>
+            </span>
+          </button>
+
+          <p class="bundle-hint" data-hint aria-live="polite"></p>
+
+          <div class="bundle-progress" data-progress role="progressbar" aria-valuemin="0" aria-valuemax="{{ capacity }}" aria-valuenow="0">
+            <div class="bundle-progress-fill" data-progress-fill></div>
           </div>
-        </template>
-      </bundle-stage>
+
+          <div class="form-error" data-error role="alert" hidden></div>
+        </footer>
+      </aside>
     </div>
   </div>
 </bundle-builder>
+
 
 {% stylesheet %}
   .bundle-builder {
@@ -291,33 +305,28 @@
     }
   }
 
+  /* Stacked on mobile/tablet (cards, then the "Your box" panel); two columns on
+     desktop — the flavour grid, then the sticky yellow panel. */
   .bundle-layout {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: var(--spacing-m);
-    align-items: center;
     max-width: 1400px;
     margin-inline: auto;
     padding-top: var(--spacing-l);
   }
 
-  /* Builder panel */
+  /* Selection column: section lockup + flavour cards. */
   .bundle-panel {
-    /* Positioned so .bundle-progress can anchor to the panel's outer edges
-       (left / right / bottom) and break out of the panel's inner padding. */
-    position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-m);
-    width: 100%;
-    max-width: 460px;
-    padding: var(--spacing-xs);
-    background-color: var(--color-bg-dark);
+    min-width: 0;
+    flex: 1;
   }
 
-  /* Cap the panel's section heading at 36ch — matches the rest of the theme.
-     Scoped via direct child of the lockup so the per-card flavour h3 stays
-     unconstrained. */
+  /* Cap the section heading at 36ch — matches the rest of the theme. Scoped via
+     direct child of the lockup so the per-card flavour h3 stays unconstrained. */
   .bundle-panel > .section-lockup h3 {
     max-width: 36ch;
   }
@@ -325,127 +334,173 @@
   .bundle-flavour-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xxs);
+  }
+
+  /* Flavour card: photo, name + description, then one full-width action bar —
+     "Add" at qty 0, the − qty + stepper once the flavour is in the box. */
+  .bundle-flavour {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+    padding: var(--spacing-xxs);
+    border-radius: var(--rad-s);
+    background-color: var(--color-bg-dark);
+    color: var(--color-text);
+  }
+
+  /* Extra room under the photo — with the card's own gap that makes the photo →
+     name spacing --spacing-s (16px). */
+  .bundle-flavour-media {
+    margin-bottom: var(--spacing-xxs);
+  }
+
+  .bundle-flavour-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .bundle-flavour-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     gap: var(--spacing-xxxs);
   }
 
-  /* Flavour card + stepper.
-     Local tokens (--c-text / --c-text-accent / --c-bg) so the .is-active state
-     can swap to the flavour's dark_colour + light_colour without re-stating
-     every rule. Defaults map to the theme tokens; the active state overrides. */
-  .bundle-flavour {
-    --c-text: var(--color-text);
-    --c-text-accent: var(--color-text-accent);
-    --c-bg: var(--color-bg);
-    --c-surface-muted: var(--color-bg-dark);
-
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--spacing-m);
-    padding: var(--spacing-xxs);
-    border-radius: var(--rad-s);
-    background: var(--c-bg);
-    color: var(--c-text);
-  }
-
-  .bundle-flavour.is-active {
-    --c-text: var(--flavour-dark, var(--color-text));
-    --c-text-accent: color-mix(in srgb, var(--flavour-dark, var(--color-text)) 50%, transparent);
-    /* Same dark @ 50% transparent as the attributes line — applied as bg for
-       the muted buttons (disabled stepper + expand link). */
-    --c-surface-muted: color-mix(in srgb, var(--flavour-dark, var(--color-text)) 50%, transparent);
-    /* Light colour @ 50% composited over --color-bg (off-white), rendered as
-       one opaque value so the result doesn't bleed through to the panel's
-       beige bg. Equivalent to 0.5 × light + 0.5 × bg. */
-    --c-bg: color-mix(in srgb, var(--flavour-light, var(--color-bg)) 50%, var(--color-bg));
-  }
-
-  .bundle-flavour-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-    width: 100%;
-  }
-
-  .bundle-flavour-title {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .bundle-flavour-title h3 {
+  .bundle-flavour-body h3,
+  .bundle-flavour-description {
     margin: 0;
   }
 
-  .bundle-flavour-link {
-    flex: none;
-    width: 24px;
-    height: 24px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--c-surface-muted);
-    color: var(--c-text);
-    border-radius: var(--rad-s);
-    transition: background-color var(--transition-fast), color var(--transition-fast);
+  .bundle-flavour-action {
+    display: flex;
+    /* Extra room above the action bar — with the card's own gap that makes
+       description → button --spacing-s (16px), at every width. */
+    margin-top: var(--spacing-xxs);
   }
 
-  .bundle-flavour-link:hover,
-  .bundle-flavour-link:focus-visible {
-    background-color: var(--c-text);
+  /* The stepper bar. bundle-builder.js toggles .is-active on the card (qty > 0)
+     and disables the buttons at the limits; everything else here is CSS. */
+  .bundle-stepper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-xxxs);
+    border-radius: var(--rad-s);
+    background-color: var(--color-text);
     color: var(--color-bg);
   }
 
-  .bundle-flavour-attributes {
-    margin: 0;
-    font-size: var(--type-mini-size);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--c-text-accent, var(--color-text-accent));
-  }
-
-  .bundle-stepper {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xxxs);
-  }
-
   .bundle-stepper button {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--c-text);
-    color: var(--color-bg);
+    background-color: var(--color-accent);
+    color: var(--color-text);
     border-radius: var(--rad-s);
     cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .bundle-stepper button:hover {
+    background-color: var(--color-bg);
   }
 
   .bundle-stepper button:disabled {
-    background-color: var(--c-surface-muted);
-    color: var(--c-text);
+    opacity: 0.5;
     cursor: default;
   }
 
   .bundle-qty {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 24px;
-    font-size: var(--type-mini-size);
+    color: inherit;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Footer: add button (carries the flat box price) + progress bar */
+  /* .text-h1 forces the muted grey; the label should follow the button. */
+  .bundle-add-blend-label {
+    display: none;
+    color: inherit;
+  }
+
+  /* Qty 0: collapse the stepper to a single dark "Add" bar (the + button, shown
+     as a label). Same button, same data hooks — so no JS involved. */
+  .bundle-flavour:not(.is-active) .bundle-stepper {
+    padding: 0;
+    background-color: transparent;
+  }
+
+  .bundle-flavour:not(.is-active) .bundle-qty,
+  .bundle-flavour:not(.is-active) [data-action="remove"],
+  .bundle-flavour:not(.is-active) .bundle-add-blend-icon {
+    display: none;
+  }
+
+  .bundle-flavour:not(.is-active) [data-action="add"] {
+    flex: 1;
+    width: auto;
+    height: auto;
+    padding: var(--spacing-xxs) var(--spacing-xs) calc(var(--spacing-xxs) - 2px);
+    background-color: var(--color-text);
+    color: var(--color-bg);
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .bundle-flavour:not(.is-active) [data-action="add"]:hover:not(:disabled) {
+    background-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .bundle-flavour:not(.is-active) .bundle-add-blend-label {
+    display: inline;
+  }
+
+  /* "Your box" panel — brand yellow, sticky beside the grid on desktop. Holds
+     the visualiser and the footer (subscription, add to cart, hint, progress).
+     Positioned so .bundle-progress anchors to the panel's outer edges. */
+  .bundle-box-panel {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-xs) calc(var(--spacing-xs) + 4px);
+    border-radius: var(--rad-s);
+    background-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .bundle-box-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxxs);
+  }
+
+  .bundle-box-header h2 {
+    margin: 0;
+    /* The panel is yellow, so the grey eyebrow colour would fail contrast. */
+    color: var(--color-text);
+  }
+
+  .bundle-box-subtitle {
+    margin: 0;
+    color: color-mix(in srgb, var(--color-text) 55%, var(--color-accent));
+  }
+
   .bundle-footer {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    /* Pull the footer up so the gap from the flavour list reads as s, not the
-       panel's m (one step smaller between the cards and the subscription). */
-    margin-top: calc(var(--spacing-s) - var(--spacing-m));
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, var(--color-accent));
   }
 
   /* Dark variant of the primary .button: same shape/type as .button but with
@@ -519,7 +574,7 @@
     margin: 0;
     min-height: 1.2em;
     font-size: var(--type-mini-size);
-    color: var(--color-text-accent);
+    color: color-mix(in srgb, var(--color-text) 65%, var(--color-accent));
   }
 
   /* Progress bar — thin track + fill that tracks the IN-PROGRESS box (the
@@ -553,10 +608,7 @@
   /* Visualiser */
   .bundle-visualiser {
     width: 100%;
-    max-width: 460px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-width: 0;
   }
 
   .bundle-stage {
@@ -661,21 +713,28 @@
     .bundle-layout {
       flex-direction: row;
       align-items: stretch;
-      justify-content: flex-start;
-      gap: var(--spacing-xl);
+      gap: var(--spacing-m);
     }
 
+    /* Cards take a fixed two-column block. The panel column fills the rest and
+       is as tall as the grid; auto margins centre the panel both ways within it,
+       and sticky keeps it in view while the grid scrolls past. */
     .bundle-panel {
-      flex: none;
-      width: 440px;
-      max-width: 440px;
-      gap: var(--spacing-l);
-      justify-content: space-between;
+      flex: 0 1 640px;
     }
 
     .bundle-visualiser {
       flex: 1;
-      max-width: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bundle-box-panel {
+      width: 100%;
+      max-width: 460px;
+      margin: auto;
+      position: sticky;
+      top: var(--spacing-l);
     }
 
     /* Roomier box scenes on desktop, where the visualiser has the width. Bumping
@@ -686,11 +745,6 @@
 
     .bundle-scene:only-child {
       max-width: 560px;
-    }
-
-    .bundle-flavour-list {
-      display: flex;
-      flex-direction: column;
     }
 
     /* Full-screen toggle (in section settings): adds extra vertical breathing
@@ -840,7 +894,7 @@
     },
     {
       "type": "paragraph",
-      "content": "Flavours come from this product's 'Included flavours' metafield (custom.included_flavours) — a list of flavour metaobjects. Reorder there to reorder the cards. Each flavour needs a name, optional attributes, and an image. Each box always holds 4 packs."
+      "content": "Flavours come from this product's 'Included flavours' metafield (custom.included_flavours) — a list of flavour metaobjects. Reorder there to reorder the cards. Each flavour needs a name, a photo (meal_image), a description (v2_description) and the pouch render (image) used by the visualiser. Each box always holds 4 packs."
     },
     {
       "type": "range",
@@ -867,6 +921,22 @@
       "id": "heading",
       "label": "Heading",
       "default": "Create and customise your box from the Frood selection."
+    },
+    {
+      "type": "header",
+      "content": "\"Your box\" panel"
+    },
+    {
+      "type": "text",
+      "id": "panel_title",
+      "label": "Panel title",
+      "default": "Your box"
+    },
+    {
+      "type": "text",
+      "id": "panel_subtitle",
+      "label": "Panel subtitle",
+      "default": "Fill each box with 4 blends"
     },
     {
       "type": "header",
