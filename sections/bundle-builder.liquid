@@ -920,12 +920,16 @@
       min-width: 0;
     }
 
+    /* Pinned in the vertical middle of the window while the section is on screen
+       (--panel-h is the panel's own height, kept current by bundle-v2-stage.js),
+       then it scrolls away with the page as the section ends. Never closer to the
+       top than --spacing-l if the panel is taller than the window. */
     .bundle-v2-panel {
       width: 100%;
       max-width: 370px;
-      margin: auto;
+      margin: 0 auto;
       position: sticky;
-      top: var(--spacing-l);
+      top: max(var(--spacing-l), calc((100vh - var(--panel-h, 480px)) / 2));
     }
 
     /* The collapse toggle is a mobile control. */

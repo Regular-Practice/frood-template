@@ -47,6 +47,7 @@ class BundleV2Stage extends HTMLElement {
     this._onUpdated = (e) => this.render(e.detail);
     document.addEventListener('bundle-v2:updated', this._onUpdated);
     this.initDrag();
+    this.observePanel();
 
     // Handshake — the builder may have emitted before this module upgraded.
     document.dispatchEvent(new CustomEvent('bundle-v2:request-state'));
@@ -54,6 +55,20 @@ class BundleV2Stage extends HTMLElement {
 
   disconnectedCallback() {
     document.removeEventListener('bundle-v2:updated', this._onUpdated);
+    if (this.panelObserver) this.panelObserver.disconnect();
+  }
+
+  // Publishes the "Your box" panel's height as --panel-h on the panel. The section
+  // stylesheet uses it to keep the sticky panel vertically centred in the window on
+  // desktop, which CSS alone can't do for a sticky box of varying height (the panel
+  // grows when the subscription options open, the hint text appears, and so on).
+  observePanel() {
+    const panel = this.closest('.bundle-v2-panel');
+    if (!panel || !('ResizeObserver' in window)) return;
+    this.panelObserver = new ResizeObserver(() => {
+      panel.style.setProperty('--panel-h', `${Math.round(panel.getBoundingClientRect().height)}px`);
+    });
+    this.panelObserver.observe(panel);
   }
 
   // ---- Browsing ---------------------------------------------------------
