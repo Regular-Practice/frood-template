@@ -9,7 +9,7 @@
  *   <product-bg-slider class="product-bg-slider" aria-hidden="true">
  *     <div class="product-bg-slider-viewport">
  *       <div class="product-bg-slider-container">
- *         <div class="product-bg-slider-slide">...</div>
+ *         <div class="product-media-item">...</div>
  *       </div>
  *     </div>
  *   </product-bg-slider>
@@ -17,7 +17,7 @@
 class ProductBgSlider extends HTMLElement {
   connectedCallback() {
     this.viewport = this.querySelector('.product-bg-slider-viewport');
-    this.slides = this.querySelectorAll('.product-bg-slider-slide');
+    this.slides = this.querySelectorAll('.product-media-item');
 
     if (!this.viewport || this.slides.length < 2) return;
 

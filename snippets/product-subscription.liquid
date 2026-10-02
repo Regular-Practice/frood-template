@@ -93,12 +93,9 @@
 {%- endif -%}
 
 {% stylesheet %}
-  /* The whole widget is one beige panel (matches the Frood box surfaces). */
+  /* Rows sit directly on the page bg — no panel. */
   .product-subscription {
     display: block;
-    background-color: var(--color-bg-dark);
-    border-radius: var(--rad-m);
-    padding: var(--spacing-xxs);
   }
 
   .subscription-options {
@@ -110,7 +107,7 @@
     gap: var(--spacing-xs);
   }
 
-  /* Rows sit directly on the panel — no per-option border/box. */
+  /* Rows carry no per-option border/box. */
   .subscription-option {
     display: flex;
     align-items: center;
@@ -178,9 +175,7 @@
     margin-right: var(--spacing-xxs);
   }
 
-  /* Frequency dropdown: a distinct darker field inside the panel.
-     The fill is derived from tokens (text mixed into the beige) so it reads
-     a step darker than the panel without introducing a new colour. */
+  /* Frequency dropdown: a beige field (--color-bg-dark) on the page bg. */
   .subscription-frequency {
     margin-top: var(--spacing-s);
   }
@@ -190,7 +185,7 @@
     /* xxs all round; right keeps room for the chevron from .select */
     padding: var(--spacing-xxs) var(--spacing-m) var(--spacing-xxs) var(--spacing-xxs);
     color: var(--color-text);
-    background-color: color-mix(in srgb, var(--color-text) 14%, var(--color-bg-dark));
+    background-color: var(--color-bg-dark);
     border: 0;
     border-radius: var(--rad-s);
     cursor: pointer;
