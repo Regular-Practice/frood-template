@@ -1,9 +1,9 @@
 {%- comment -%}
-  Frood Featured Collection — editorial heading (eyebrow + heading + CTA) above
-  either:
-    • an Embla drag-and-slide carousel (enable_carousel = true), or
-    • the original responsive grid (enable_carousel = false; mobile_layout
-      controls mobile carousel-vs-grid).
+  Frood Featured Collection — editorial heading (eyebrow + heading + CTA)
+  above the products. Fixed responsive behavior (no merchant toggle):
+    • below 600px: a static 2-column grid, no JS
+    • 600px and up: an Embla drag-and-slide carousel
+  Both markups render always; CSS shows/hides whichever applies.
   See CLAUDE.md → "Frood Homepage Sections" for rules.
 {%- endcomment -%}
 
@@ -27,104 +27,101 @@
     {%- endif -%}
   </header>
 
-  {%- if section.settings.enable_carousel -%}
-    <featured-collection-carousel>
-      <div class="featured-collection-viewport">
-        <div class="featured-collection-container">
-          {%- if section.settings.collection != blank -%}
-            {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
-              <div class="featured-collection-slide">
-                {% render 'product-card', product: product %}
-              </div>
-            {%- endfor -%}
-          {%- else -%}
-            {%- for i in (1..section.settings.products_to_show) -%}
-              <div class="featured-collection-slide">
-                <div class="placeholder-card" aria-hidden="true"></div>
-              </div>
-            {%- endfor -%}
-          {%- endif -%}
-        </div>
-      </div>
-      <button
-        class="featured-collection-arrow featured-collection-arrow-prev"
-        type="button"
-        data-direction="prev"
-        aria-label="{{ 'general.accessibility.previous_slide' | t: default: 'Previous slide' }}"
-        hidden
-      >
-        {% render 'icon-arrow' %}
-      </button>
-      <button
-        class="featured-collection-arrow featured-collection-arrow-next"
-        type="button"
-        data-direction="next"
-        aria-label="{{ 'general.accessibility.next_slide' | t: default: 'Next slide' }}"
-        hidden
-      >
-        {% render 'icon-arrow' %}
-      </button>
-    </featured-collection-carousel>
-  {%- else -%}
+  <div class="featured-collection-products-mobile">
     {%- if section.settings.collection != blank -%}
-      <div class="featured-collection-products mobile-{{ section.settings.mobile_layout }}">
-        {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
-          {% render 'product-card', product: product %}
-        {%- endfor -%}
-      </div>
+      {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+        {% render 'product-card', product: product %}
+      {%- endfor -%}
     {%- else -%}
-      <div class="featured-collection-products mobile-{{ section.settings.mobile_layout }}">
-        {%- for i in (1..section.settings.products_to_show) -%}
-          <div class="placeholder-card" aria-hidden="true"></div>
-        {%- endfor -%}
-      </div>
+      {%- for i in (1..section.settings.products_to_show) -%}
+        <div class="placeholder-card" aria-hidden="true"></div>
+      {%- endfor -%}
     {%- endif -%}
-  {%- endif -%}
+  </div>
+
+  <featured-collection-carousel>
+    <div class="featured-collection-viewport">
+      <div class="featured-collection-container">
+        {%- if section.settings.collection != blank -%}
+          {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+            <div class="featured-collection-slide">
+              {% render 'product-card', product: product %}
+            </div>
+          {%- endfor -%}
+        {%- else -%}
+          {%- for i in (1..section.settings.products_to_show) -%}
+            <div class="featured-collection-slide">
+              <div class="placeholder-card" aria-hidden="true"></div>
+            </div>
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+    </div>
+    <button
+      class="featured-collection-arrow featured-collection-arrow-prev"
+      type="button"
+      data-direction="prev"
+      aria-label="{{ 'general.accessibility.previous_slide' | t: default: 'Previous slide' }}"
+      hidden
+    >
+      {% render 'icon-arrow' %}
+    </button>
+    <button
+      class="featured-collection-arrow featured-collection-arrow-next"
+      type="button"
+      data-direction="next"
+      aria-label="{{ 'general.accessibility.next_slide' | t: default: 'Next slide' }}"
+      hidden
+    >
+      {% render 'icon-arrow' %}
+    </button>
+  </featured-collection-carousel>
 </section>
 
-{%- if section.settings.enable_carousel -%}
-  <script src="{{ 'embla-carousel.umd.js' | asset_url }}" defer></script>
-  <script src="{{ 'featured-collection.js' | asset_url }}" defer></script>
-{%- endif -%}
+<script src="{{ 'embla-carousel.umd.js' | asset_url }}" defer></script>
+<script src="{{ 'featured-collection.js' | asset_url }}" defer></script>
 
 {% stylesheet %}
   .featured-collection {
-    padding: var(--spacing-xs);
+    padding: var(--spacing-m) var(--spacing-xs);
     color: var(--color-text);
     background-color: var(--color-bg);
   }
 
-  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
-  @media (max-width: 599.98px) {
+  @media (min-width: 600px) {
     .featured-collection {
-      padding-block: var(--spacing-m);
+      padding-block: var(--spacing-l);
     }
   }
 
   @media (min-width: 900px) {
     .featured-collection {
-      padding: var(--spacing-m);
+      padding-inline: var(--spacing-m);
     }
   }
 
   /* Lockup alignment + internal gaps come from .section-lockup (see base.css §22).
-     This rule only handles the gap between the lockup and the product area below. */
-  .featured-collection-header {
-    margin-bottom: var(--spacing-l);
-  }
-
+     No margin below the lockup: the button sits directly on the product area. */
   .featured-collection-header h3 {
     max-width: 36ch;
   }
 
-  /* ───── Carousel mode (Embla) ───── */
+  /* ───── Carousel (Embla) — 600px and up ───── */
+
+  /* Hidden below 600px (the mobile grid takes over there). */
+  featured-collection-carousel {
+    display: none;
+    position: relative;
+  }
+
+  @media (min-width: 600px) {
+    featured-collection-carousel {
+      display: block;
+    }
+  }
 
   /* Embla viewport — bleeds past the section's left AND right padding so cards
      reach both screen edges and give a clear drag/scroll affordance. */
-  featured-collection-carousel {
-    display: block;
-    position: relative;
-  }
 
   .featured-collection-viewport {
     overflow: hidden;
@@ -214,61 +211,18 @@
     }
   }
 
-  /* ───── Grid mode (original behavior) ───── */
+  /* ───── Mobile grid — below 600px ───── */
 
-  /* Mobile: carousel (horizontal scroll-snap).
-     Bleeds past the section's right padding so cards extend to the screen edge —
-     gives a clear scroll affordance. First card aligns with the left padding. */
-  .featured-collection-products.mobile-carousel {
-    display: flex;
-    gap: var(--spacing-xs);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    padding-bottom: var(--spacing-xs);
-    margin-right: calc(-1 * var(--spacing-xs));
-  }
-
-  .featured-collection-products.mobile-carousel::-webkit-scrollbar {
-    display: none;
-  }
-
-  .featured-collection-products.mobile-carousel > * {
-    flex: 0 0 75%;
-    scroll-snap-align: start;
-  }
-
-  /* Mobile: stacked grid (1 column) */
-  .featured-collection-products.mobile-grid {
+  .featured-collection-products-mobile {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-xs);
   }
 
-  /* Tablet+: 2-column grid (overrides both mobile modes).
-     Also resets the carousel's right-edge bleed and flex item sizing. */
+  /* Hidden from 600px up (the carousel takes over there). */
   @media (min-width: 600px) {
-    .featured-collection-products.mobile-carousel,
-    .featured-collection-products.mobile-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: var(--spacing-xs);
-      overflow: visible;
-      padding-bottom: 0;
-      margin-right: 0;
-    }
-
-    .featured-collection-products.mobile-carousel > * {
-      flex: initial;
-      scroll-snap-align: none;
-    }
-  }
-
-  /* Desktop+: 4-column grid */
-  @media (min-width: 900px) {
-    .featured-collection-products.mobile-carousel,
-    .featured-collection-products.mobile-grid {
-      grid-template-columns: repeat(4, 1fr);
+    .featured-collection-products-mobile {
+      display: none;
     }
   }
 
@@ -337,28 +291,6 @@
       "max": 12,
       "step": 1,
       "default": 8
-    },
-    {
-      "type": "header",
-      "content": "Layout"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_carousel",
-      "label": "Carousel (drag-and-slide)",
-      "info": "When off, products show in the responsive grid below.",
-      "default": true
-    },
-    {
-      "type": "select",
-      "id": "mobile_layout",
-      "label": "Mobile layout (grid mode only)",
-      "info": "Used only when carousel is off. Tablet and desktop are always a grid.",
-      "options": [
-        { "value": "carousel", "label": "Carousel (horizontal scroll)" },
-        { "value": "grid", "label": "Grid (stacked)" }
-      ],
-      "default": "carousel"
     }
   ],
   "presets": [

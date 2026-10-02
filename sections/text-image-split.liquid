@@ -5,27 +5,50 @@
   See CLAUDE.md → "Frood Homepage Sections" for the rules.
 {%- endcomment -%}
 
-<section class="text-image-split">
+{%- assign media_count = section.blocks | where: 'type', 'media' | size -%}
+
+<section class="text-image-split media-{{ section.settings.media_alignment }}{% if media_count == 1 and section.settings.media_size == 'big' %} media-big{% endif %}{% if section.settings.yellow_box %} yellow-box{% endif %}">
   <div class="text-image-split-text text-align-{{ section.settings.text_vertical_alignment }}">
-    <header class="section-lockup">
-      {%- if section.settings.eyebrow != blank -%}
-        <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
-      {%- endif -%}
+    <div class="text-image-split-content">
+      <header class="section-lockup">
+        {%- if section.settings.eyebrow != blank -%}
+          <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+        {%- endif -%}
 
-      {%- if section.settings.heading != blank -%}
-        <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
-      {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+        {%- endif -%}
 
-      {%- if section.settings.button_text != blank -%}
-        <a class="button" href="{{ section.settings.button_link | default: '#' }}">
-          {{ section.settings.button_text }}
-        </a>
+        {%- if section.settings.text != blank -%}
+          <div class="text-image-split-body text-body">{{ section.settings.text }}</div>
+        {%- endif -%}
+
+        {%- if section.settings.button_text != blank -%}
+          <a class="button" href="{{ section.settings.button_link | default: '#' }}">
+            {{ section.settings.button_text }}
+          </a>
+        {%- endif -%}
+      </header>
+
+      {%- assign benefit_blocks = section.blocks | where: 'type', 'benefit' -%}
+      {%- if benefit_blocks.size > 0 -%}
+        <ul class="text-image-split-benefits">
+          {%- for block in benefit_blocks -%}
+            {%- if block.settings.text != blank -%}
+              <li class="text-image-split-benefit" {{ block.shopify_attributes }}>
+                {% render 'icon-check-circle' %}
+                <span class="text-ui text-cap">{{ block.settings.text }}</span>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
       {%- endif -%}
-    </header>
+    </div>
   </div>
 
   <div class="text-image-split-media">
-    {%- for block in section.blocks -%}
+    {%- assign media_blocks = section.blocks | where: 'type', 'media' -%}
+    {%- for block in media_blocks -%}
       <figure class="text-image-split-media-item" {{ block.shopify_attributes }}>
         <div class="text-image-split-media-asset">
           {%- if block.settings.video != blank -%}
@@ -66,15 +89,14 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-m);
-    padding: var(--spacing-xs);
+    padding: var(--spacing-m) var(--spacing-xs);
     background-color: var(--color-bg);
     color: var(--color-text);
   }
 
-  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
-  @media (max-width: 599.98px) {
+  @media (min-width: 600px) {
     .text-image-split {
-      padding-block: var(--spacing-m);
+      padding-block: var(--spacing-l);
     }
   }
 
@@ -89,10 +111,100 @@
   .text-image-split-text.text-align-middle { align-items: center; }
   .text-image-split-text.text-align-bottom { align-items: flex-end; }
 
+  /* Groups the lockup header + benefits into a single flex child of
+     .text-image-split-text, so the top/middle/bottom alignment above still
+     positions them as one block rather than spreading them row-wise. */
+  .text-image-split-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+  }
+
+  /* Body text under the heading. Richtext wraps its own <p>s, so zero their
+     margins and space multiple paragraphs locally. */
+  .text-image-split-body p {
+    margin: 0;
+  }
+  .text-image-split-body p + p {
+    margin-top: var(--spacing-xxs);
+  }
+
+  /* More air between the body text and the button than the lockup's default
+     16px. Scoped to the text→button pairing so heading→button is unchanged. */
+  .text-image-split .text-image-split-body + .button {
+    margin-top: var(--spacing-m);
+  }
+
+  /* Yellow box — the text block sits on the bright accent yellow, hugging its
+     content (not stretched to the media's height) and pinned to the top of the
+     column to line up with the media's top edge. The button inverts (dark on
+     yellow would otherwise vanish): dark fill, yellow label, i.e. the normal
+     hover state as the resting one. */
+  .text-image-split.yellow-box .text-image-split-text {
+    align-items: flex-start;
+  }
+  .text-image-split.yellow-box .text-image-split-content {
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--spacing-xs);
+    background-color: var(--color-accent);
+    color: var(--color-text);
+  }
+  .text-image-split.yellow-box .button {
+    background-color: var(--color-text);
+    color: var(--color-accent);
+  }
+  .text-image-split.yellow-box .button:hover {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+  /* Stacked layout (<900px): the yellow box sits flush on top of the media,
+     no gap between them. Desktop keeps the side-by-side column gap. */
+  @media (max-width: 899.98px) {
+    .text-image-split.yellow-box {
+      gap: 0;
+    }
+  }
+  @media (min-width: 900px) {
+    .text-image-split.yellow-box .text-image-split-content {
+      padding: var(--spacing-m);
+    }
+  }
+
   /* Cap section heading at 36ch — matches the rest of the theme (intro,
      featured-collection, event-slider, fullbleed, main-recipes). */
   .text-image-split-text h3 {
     max-width: 36ch;
+  }
+
+  /* Benefit checklist — same pattern as the Frood Hero feature card. */
+  .text-image-split-benefits {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+
+  .text-image-split-benefit {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+  }
+
+  /* .text-cap's default letter-spacing (0.066em) reads too wide at this
+     size — dial it back just for the benefit label, not the shared utility
+     (used elsewhere: main-search, product-variant-selector). */
+  .text-image-split-benefit .text-cap {
+    letter-spacing: 0.02em;
+  }
+
+  .text-image-split-benefit svg {
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+    margin-bottom: 3px;
   }
 
   /* Media side — up to 2 media items side by side, each with caption underneath */
@@ -138,7 +250,24 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: var(--spacing-m);
-      padding: var(--spacing-m);
+      padding-inline: var(--spacing-m);
+    }
+
+    /* Media alignment — flips which column the media sits in. Only on
+       desktop; stacked layouts keep text above media. Grid `order` moves the
+       media before the text without touching DOM (reading order stays
+       text-first for screen readers). */
+    .text-image-split.media-left .text-image-split-media {
+      order: -1;
+    }
+
+    /* Big media (single-item only): media column takes 60%, text 40%. Grid
+       tracks are positional, so the wide track follows the media's side. */
+    .text-image-split.media-big {
+      grid-template-columns: 2fr 3fr;
+    }
+    .text-image-split.media-big.media-left {
+      grid-template-columns: 3fr 2fr;
     }
   }
 {% endstylesheet %}
@@ -163,6 +292,12 @@
       "default": "From our kitchen to yours."
     },
     {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "info": "Optional body text under the heading."
+    },
+    {
       "type": "text",
       "id": "button_text",
       "label": "Button label",
@@ -172,6 +307,35 @@
       "type": "url",
       "id": "button_link",
       "label": "Button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "yellow_box",
+      "label": "Yellow box",
+      "info": "Puts the text block on a bright yellow background, aligned to the top of the media.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "media_alignment",
+      "label": "Media alignment",
+      "info": "Which side of the section the media sits on. Only visible on desktop; on smaller screens the media stacks below the text.",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "select",
+      "id": "media_size",
+      "label": "Media size (single media only)",
+      "info": "Small is an even 50/50 split; Big gives the media 60% and the text 40%. Ignored when the section has two media items. Desktop only.",
+      "options": [
+        { "value": "small", "label": "Small (50/50)" },
+        { "value": "big", "label": "Big (60/40)" }
+      ],
+      "default": "small"
     },
     {
       "type": "select",
@@ -207,6 +371,18 @@
           "type": "richtext",
           "id": "caption",
           "label": "Caption"
+        }
+      ]
+    },
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Benefit text",
+          "default": "Real whole produce"
         }
       ]
     }

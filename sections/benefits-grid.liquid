@@ -1,0 +1,240 @@
+{%- comment -%}
+  Frood Benefits Grid — centred grid of icon + text benefits (max 6 blocks).
+  Layout follows the count: 4 → 2x2, 6 → 3x2, 3 → one row of 3, 5 → 3 over 2 (centred).
+  The count class on the list drives the column cap; see the stylesheet.
+{%- endcomment -%}
+
+<section class="benefits-grid">
+  {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+    <div class="benefits-grid-header">
+      {%- if section.settings.eyebrow != blank -%}
+        <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h3 class="text-h3">{{ section.settings.heading }}</h3>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- if section.blocks.size > 0 -%}
+    <ul class="benefits-grid-list benefits-count-{{ section.blocks.size }}">
+      {%- for block in section.blocks -%}
+        <li class="benefit" {{ block.shopify_attributes }}>
+          {%- if block.settings.icon != blank -%}
+            {%- assign icon_height = 21 | divided_by: block.settings.icon.aspect_ratio | round -%}
+            <span class="benefit-icon">
+              {{ block.settings.icon | image_url: width: 128 | image_tag:
+                loading: 'lazy',
+                width: 21,
+                height: icon_height,
+                alt: ''
+              }}
+            </span>
+          {%- endif -%}
+          {%- if block.settings.text != blank -%}
+            <span class="benefit-text text-ui">{{ block.settings.text }}</span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+
+  {%- if section.settings.button_text != blank and section.settings.button_link != blank -%}
+    <a class="button" href="{{ section.settings.button_link }}">{{ section.settings.button_text }}</a>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+  .benefits-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-m);
+    padding: var(--spacing-m) var(--spacing-xs);
+    text-align: center;
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+
+  @media (min-width: 600px) {
+    .benefits-grid {
+      padding-block: var(--spacing-l);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .benefits-grid {
+      padding-inline: var(--spacing-m);
+    }
+  }
+
+  .benefits-grid-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xxs);
+  }
+
+  .benefits-grid-header h3 {
+    max-width: 24ch;
+  }
+
+  /* Grid with equal-height rows: `grid-auto-rows: 1fr` sizes every row to the
+     tallest card, so all cards match. Columns are doubled (4 on mobile, 6 on
+     desktop) with each card spanning 2, which lets a short last row centre
+     itself by starting on an offset column. */
+  .benefits-grid-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 1fr;
+    gap: var(--spacing-s);
+    width: 100%;
+    max-width: 1200px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .benefit {
+    grid-column: span 2;
+  }
+
+  /* Mobile/tablet: two across; an odd last card centres. */
+  .benefits-grid-list .benefit:last-child:nth-child(odd) {
+    grid-column: 2 / span 2;
+  }
+
+  /* Desktop: three across — except four, which stays 2x2 (4 across is too
+     cramped, 3+1 is lopsided). Short rows (1, 2, 5) centre via offsets. */
+  @media (min-width: 900px) {
+    .benefits-grid-list {
+      grid-template-columns: repeat(6, 1fr);
+    }
+    .benefits-grid-list .benefit:last-child:nth-child(odd) {
+      grid-column: span 2;
+    }
+    .benefits-grid-list.benefits-count-4 {
+      max-width: 800px;
+    }
+    .benefits-count-4 .benefit {
+      grid-column: span 3;
+    }
+    .benefits-grid-list.benefits-count-1 .benefit:first-child,
+    .benefits-grid-list.benefits-count-1 .benefit:last-child:nth-child(odd) {
+      grid-column: 3 / span 2;
+    }
+    .benefits-grid-list.benefits-count-2 .benefit:first-child {
+      grid-column: 2 / span 2;
+    }
+    .benefits-grid-list.benefits-count-2 .benefit:last-child {
+      grid-column: 4 / span 2;
+    }
+    .benefits-grid-list.benefits-count-5 .benefit:nth-child(4) {
+      grid-column: 2 / span 2;
+    }
+    .benefits-grid-list.benefits-count-5 .benefit:nth-child(5) {
+      grid-column: 4 / span 2;
+    }
+  }
+
+  .benefit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    min-width: 0;
+    box-sizing: border-box;
+    padding: var(--spacing-m) var(--spacing-xs);
+    border-radius: var(--rad-m);
+    background-color: var(--color-accent-light);
+  }
+
+  /* Tablet+: roomier cards. On mobile two sit across, so keep them compact. */
+  @media (min-width: 600px) {
+    .benefit {
+      padding: var(--spacing-l) var(--spacing-s);
+    }
+  }
+
+  .benefit-icon {
+    display: block;
+    width: 21px;
+  }
+
+  .benefit-icon img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .benefit-text {
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Benefits grid",
+  "tag": "section",
+  "class": "benefits-grid-wrapper",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h2)"
+    },
+    {
+      "type": "header",
+      "content": "Button (optional)"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link",
+      "info": "Both label and link must be set for the button to appear."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icon",
+          "info": "Shown at 21px wide; height follows the image."
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Benefits grid",
+      "blocks": [
+        { "type": "benefit", "settings": { "text": "Real ingredients" } },
+        { "type": "benefit", "settings": { "text": "Ready in minutes" } },
+        { "type": "benefit", "settings": { "text": "No additives" } },
+        { "type": "benefit", "settings": { "text": "Delivered to your door" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -9,7 +9,7 @@
     - Desktop (≥900px): inline steps up to m
 {%- endcomment -%}
 
-<section class="faq-section">
+<section class="faq-section{% if section.settings.even_spacing %} even-spacing{% endif %}">
   {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
     <header class="faq-section-header section-lockup">
       {%- if section.settings.eyebrow != blank -%}
@@ -62,21 +62,23 @@
   .faq-section {
     padding-top: var(--spacing-l);
     padding-inline: var(--spacing-xs);
-    padding-bottom: var(--spacing-m);
+    padding-bottom: var(--spacing-l);
     color: var(--color-text);
     background-color: var(--color-bg);
-  }
-
-  @media (min-width: 600px) {
-    .faq-section {
-      padding-top: var(--spacing-xl);
-    }
   }
 
   @media (min-width: 900px) {
     .faq-section {
       padding-inline: var(--spacing-m);
     }
+  }
+
+  /* Even spacing toggle: top and bottom both become l at every breakpoint,
+     overriding the l/xl top progression and m bottom above. Two-class
+     selector so it wins regardless of the min-width query's source order. */
+  .faq-section.even-spacing {
+    padding-top: var(--spacing-l);
+    padding-bottom: var(--spacing-l);
   }
 
   /* Override .section-lockup's left-aligned defaults → centered for this section. */
@@ -209,6 +211,13 @@
       "label": "Heading (h3)",
       "info": "Press Enter to add a line break. Leave blank to hide.",
       "default": "Everything you\nneed to know."
+    },
+    {
+      "type": "checkbox",
+      "id": "even_spacing",
+      "label": "Even top and bottom spacing",
+      "info": "Makes the top and bottom padding both l, instead of the default larger top spacing with an m bottom.",
+      "default": false
     }
   ],
   "blocks": [

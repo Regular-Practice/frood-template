@@ -1,0 +1,199 @@
+{%- comment -%}
+  Frood Logo Section — centred eyebrow (h1) + title (h2) + button, then a row of
+  logos. The logos sit in a wrapping, centred flex row; each is 30px tall on mobile (45px from 600px up) and keeps
+  its own aspect ratio, and any that don't fit drop to the next row. Logos are `logo` blocks.
+{%- endcomment -%}
+
+<section class="logo-section">
+  {%- if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.button_text != blank -%}
+    <div class="logo-section-header">
+      {%- if section.settings.eyebrow != blank -%}
+        <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h2 class="text-h3">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.button_text != blank and section.settings.button_link != blank -%}
+        <a class="button logo-section-button" href="{{ section.settings.button_link }}">{{ section.settings.button_text }}</a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  {%- if section.blocks.size > 0 -%}
+    <ul class="logo-section-logos">
+      {%- for block in section.blocks -%}
+        {%- if block.settings.image != blank -%}
+          <li class="logo-section-logo" style="--logo-ratio: {{ block.settings.image.aspect_ratio }}" {{ block.shopify_attributes }}>
+            {%- capture logo_image -%}
+              {{
+                block.settings.image
+                | image_url: width: 800
+                | image_tag:
+                  loading: 'lazy',
+                  width: block.settings.image.width,
+                  height: block.settings.image.height,
+                  alt: block.settings.image.alt
+              }}
+            {%- endcapture -%}
+
+            {%- if block.settings.link != blank -%}
+              <a href="{{ block.settings.link }}">{{ logo_image }}</a>
+            {%- else -%}
+              {{ logo_image }}
+            {%- endif -%}
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+  .logo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-l);
+    padding: var(--spacing-m) var(--spacing-xs);
+    text-align: center;
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+
+  @media (min-width: 600px) {
+    .logo-section {
+      padding-block: var(--spacing-l);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .logo-section {
+      padding-inline: var(--spacing-m);
+    }
+  }
+
+  .logo-section-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xxs);
+  }
+
+  .logo-section-header h2 {
+    max-width: 24ch;
+  }
+
+  .logo-section-button {
+    margin-top: var(--spacing-m);
+  }
+
+  /* Wrapping flex row, centred. Each logo is 30px tall on mobile / 45px from 600px up, and
+     its natural width is that height × its aspect ratio (--logo-ratio, set inline from the image). When the
+     next logo doesn't fit on the row it wraps to the next one — no scrolling.
+     A logo wider than the container (only possible on very narrow screens)
+     shrinks to fit, keeping its proportions. */
+  .logo-section-logos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-m);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .logo-section-logo {
+    --logo-height: 30px;
+    flex: 0 1 calc(var(--logo-height) * var(--logo-ratio));
+    min-width: 0;
+    max-width: 100%;
+    aspect-ratio: var(--logo-ratio);
+  }
+
+  /* Tablet+: full 45px height. */
+  @media (min-width: 600px) {
+    .logo-section-logo {
+      --logo-height: 45px;
+    }
+  }
+
+  .logo-section-logo a {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .logo-section-logo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Logo section",
+  "tag": "section",
+  "class": "logo-section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Title (h2)"
+    },
+    {
+      "type": "header",
+      "content": "Button (optional)"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link",
+      "info": "Both label and link must be set for the button to appear."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "Logo",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Logo"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link (optional)"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Logo section",
+      "blocks": [
+        { "type": "logo" },
+        { "type": "logo" },
+        { "type": "logo" }
+      ]
+    }
+  ]
+}
+{% endschema %}

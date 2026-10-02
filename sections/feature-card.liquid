@@ -20,7 +20,13 @@
 <section class="feature-card-section">
   <article class="feature-card card-bg-{{ section.settings.card_bg }} card-color-{{ section.settings.card_color }}">
     {%- assign entry = section.settings.featured_entry -%}
+    {%- assign entry_has_content = false -%}
     {%- if entry -%}
+      {%- if entry.news_image.value or entry.date.value or entry.location.value or entry.title.value or entry.news_link.value -%}
+        {%- assign entry_has_content = true -%}
+      {%- endif -%}
+    {%- endif -%}
+    {%- if entry_has_content -%}
       <div class="feature-card-entry">
         {%- if entry.news_image.value -%}
           <div class="feature-card-entry-image-wrap">
@@ -61,10 +67,49 @@
           {%- endif -%}
         </div>
       </div>
+    {%- elsif section.settings.fallback_image or section.settings.fallback_meta != blank or section.settings.fallback_title != blank or section.settings.fallback_link != blank -%}
+      {%- comment -%} No News entry attached — merchant-filled fallback content, same markup/classes as the metaobject entry above. {%- endcomment -%}
+      <div class="feature-card-entry">
+        {%- if section.settings.fallback_image -%}
+          <div class="feature-card-entry-image-wrap is-fallback">
+            {{
+              section.settings.fallback_image
+              | image_url: width: 1200
+              | image_tag:
+                loading: 'lazy',
+                class: 'feature-card-entry-image',
+                width: section.settings.fallback_image.width,
+                height: section.settings.fallback_image.height
+            }}
+          </div>
+        {%- endif -%}
+
+        <div class="feature-card-entry-text">
+          {%- if section.settings.fallback_meta != blank -%}
+            <p class="feature-card-entry-meta text-h1">{{ section.settings.fallback_meta }}</p>
+          {%- endif -%}
+
+          {%- if section.settings.fallback_title != blank -%}
+            <h3 class="feature-card-entry-title text-quote">{{ section.settings.fallback_title }}</h3>
+          {%- endif -%}
+
+          {%- if section.settings.fallback_link != blank -%}
+            <a
+              class="button feature-card-entry-link"
+              href="{{ section.settings.fallback_link }}"
+              target="_blank"
+              rel="noopener"
+            >
+              {{ section.settings.link_text | default: 'Read more' }}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
     {%- endif -%}
 
     {%- if section.settings.heading != blank -%}
-      <div class="feature-card-text text-h2">
+      {%- comment -%} Heading scales down to h3 whenever there's no featured News entry — keeps the fallback card from being top-heavy with only text content. {%- endcomment -%}
+      <div class="feature-card-text {% if entry_has_content %}text-h2{% else %}text-h3{% endif %}">
         {{ section.settings.heading | newline_to_br }}
       </div>
     {%- endif -%}
@@ -73,8 +118,14 @@
 
 {% stylesheet %}
   .feature-card-section {
-    padding: var(--spacing-s) var(--spacing-xs);
+    padding: var(--spacing-m) var(--spacing-xs);
     background-color: var(--color-bg);
+  }
+
+  @media (min-width: 600px) {
+    .feature-card-section {
+      padding-block: var(--spacing-l);
+    }
   }
 
   @media (min-width: 900px) {
@@ -120,6 +171,12 @@
     flex: 0 0 33%;
     aspect-ratio: 4 / 3;
     overflow: hidden;
+  }
+
+  /* Fallback (merchant-filled) image only — the real News entry image keeps
+     the 4:3 ratio above. */
+  .feature-card-entry-image-wrap.is-fallback {
+    aspect-ratio: 1 / 1;
   }
 
   .feature-card-entry-image {
@@ -184,10 +241,37 @@
       "metaobject_type": "news"
     },
     {
+      "type": "header",
+      "content": "Fallback content",
+      "info": "Used only when no featured news entry is selected above."
+    },
+    {
+      "type": "image_picker",
+      "id": "fallback_image",
+      "label": "Fallback image"
+    },
+    {
+      "type": "text",
+      "id": "fallback_meta",
+      "label": "Fallback meta text",
+      "info": "Optional — e.g. a date or location line."
+    },
+    {
+      "type": "text",
+      "id": "fallback_title",
+      "label": "Fallback title"
+    },
+    {
+      "type": "url",
+      "id": "fallback_link",
+      "label": "Fallback link"
+    },
+    {
       "type": "text",
       "id": "link_text",
       "label": "Link label",
-      "default": "Read more"
+      "default": "Read more",
+      "info": "Used for both the featured entry and the fallback content."
     },
     {
       "type": "header",
@@ -196,8 +280,8 @@
     {
       "type": "textarea",
       "id": "heading",
-      "label": "Heading (h2 styling)",
-      "info": "Press Enter to add a line break.",
+      "label": "Heading",
+      "info": "Press Enter to add a line break. Renders at h2 scale when a featured entry is selected above, h3 scale otherwise.",
       "default": "A statement goes here."
     },
     {

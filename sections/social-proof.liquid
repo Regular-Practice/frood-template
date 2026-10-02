@@ -1,0 +1,309 @@
+{%- comment -%}
+  Frood Social Proof — section-lockup header (centered) above an Embla
+  drag-and-slide carousel of testimonial cards. Prev/next arrows sit in a
+  static row below the carousel (not overlaid — see .social-proof-arrows).
+
+  Loops through every entry of the `social_proof` metaobject definition —
+  same shop-level pattern as sections/main-news.liquid. No merchant picker;
+  add/remove entries in the metaobject itself and the carousel follows.
+  Card rendering is owned by snippets/social-proof-card.liquid.
+
+  Note: the metaobject type handle is referenced as `shop.metaobjects.social_proof`.
+  If the type handle in admin differs, swap the dot-key. If entries exist but
+  don't show up here, check the metaobject definition's Access settings —
+  "Online Store" storefront access must be enabled for `shop.metaobjects` to
+  see them at all.
+{%- endcomment -%}
+
+<section class="social-proof">
+  {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
+    <header class="social-proof-header section-lockup">
+      {%- if section.settings.eyebrow != blank -%}
+        <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h3 class="text-h3">{{ section.settings.heading | newline_to_br }}</h3>
+      {%- endif -%}
+    </header>
+  {%- endif -%}
+
+  {%- assign social_proof_items = shop.metaobjects.social_proof.values -%}
+
+  {%- if social_proof_items.size > 0 -%}
+    <social-proof-carousel>
+      <div class="social-proof-viewport">
+        <div class="social-proof-container">
+          {%- comment -%} Two passes so verified entries come first; each group keeps its metaobject order. {%- endcomment -%}
+          {%- for pass in (1..2) -%}
+            {%- for item in social_proof_items -%}
+              {%- assign show_now = false -%}
+              {%- if pass == 1 and item.verfied -%}{%- assign show_now = true -%}{%- endif -%}
+              {%- if pass == 2 and item.verfied != true -%}{%- assign show_now = true -%}{%- endif -%}
+              {%- if show_now -%}
+                <div class="social-proof-slide">
+                  {% render 'social-proof-card', item: item, verified_label: section.settings.verified_label %}
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endfor -%}
+        </div>
+      </div>
+
+      {%- if social_proof_items.size > 1 -%}
+        <div class="social-proof-arrows">
+          <button
+            class="social-proof-arrow social-proof-arrow-prev"
+            type="button"
+            data-direction="prev"
+            aria-label="{{ 'general.accessibility.previous_slide' | t: default: 'Previous slide' }}"
+            hidden
+          >
+            {% render 'icon-arrow', class: 'social-proof-arrow-icon is-prev' %}
+          </button>
+          <button
+            class="social-proof-arrow social-proof-arrow-next"
+            type="button"
+            data-direction="next"
+            aria-label="{{ 'general.accessibility.next_slide' | t: default: 'Next slide' }}"
+            hidden
+          >
+            {% render 'icon-arrow', class: 'social-proof-arrow-icon' %}
+          </button>
+        </div>
+      {%- endif -%}
+    </social-proof-carousel>
+  {%- endif -%}
+</section>
+
+<script src="{{ 'embla-carousel.umd.js' | asset_url }}" defer></script>
+<script src="{{ 'social-proof-carousel.js' | asset_url }}" defer></script>
+
+{% stylesheet %}
+  .social-proof {
+    padding: var(--spacing-m) var(--spacing-xs);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+
+  @media (min-width: 600px) {
+    .social-proof {
+      padding-block: var(--spacing-l);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .social-proof {
+      padding-inline: var(--spacing-m);
+    }
+  }
+
+  /* Left-aligned — .section-lockup's default (see base.css §22). */
+  .social-proof-header {
+    margin-bottom: var(--spacing-l);
+  }
+
+  .social-proof-header h3 {
+    max-width: 36ch;
+  }
+
+  /* Embla viewport — bleeds past the section's left AND right padding so
+     cards reach both screen edges and give a clear drag/scroll affordance. */
+  social-proof-carousel {
+    display: block;
+  }
+
+  .social-proof-viewport {
+    overflow: hidden;
+    margin-left: calc(-1 * var(--spacing-xs));
+    margin-right: calc(-1 * var(--spacing-xs));
+  }
+
+  @media (min-width: 900px) {
+    .social-proof-viewport {
+      margin-left: calc(-1 * var(--spacing-m));
+      margin-right: calc(-1 * var(--spacing-m));
+    }
+  }
+
+  .social-proof-container {
+    display: flex;
+    gap: var(--spacing-xs);
+    touch-action: pan-y pinch-zoom;
+    padding-inline: var(--spacing-xs);
+  }
+
+  @media (min-width: 900px) {
+    .social-proof-container {
+      padding-inline: var(--spacing-m);
+    }
+  }
+
+  social-proof-carousel.is-initialized .social-proof-viewport {
+    cursor: grab;
+  }
+
+  social-proof-carousel.is-initialized .social-proof-viewport:active {
+    cursor: grabbing;
+  }
+
+  .social-proof-slide {
+    flex: 0 0 75%;
+    min-width: 0;
+  }
+
+  @media (min-width: 600px) {
+    .social-proof-slide {
+      flex: 0 0 40%;
+    }
+  }
+
+  /* Desktop+: fixed-width cards (not a share of the row) so they don't stretch
+     on wide screens; the carousel shows however many fit. */
+  @media (min-width: 900px) {
+    .social-proof-slide {
+      flex: 0 0 450px;
+    }
+  }
+
+  /* Arrow row — sits below the carousel (not overlaid), right-aligned to
+     echo the featured-collection-arrow's screen-edge anchoring. */
+  .social-proof-arrows {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-xxs);
+    margin-top: var(--spacing-s);
+  }
+
+  .social-proof-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--rad-s);
+    background: var(--color-accent);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+  }
+
+  .social-proof-arrow[hidden] {
+    display: none;
+  }
+
+  .social-proof-arrow:hover {
+    background: var(--color-text);
+    color: var(--color-accent);
+  }
+
+  /* Mirror the right-arrow icon for the prev button. */
+  .social-proof-arrow-icon.is-prev {
+    transform: scaleX(-1);
+  }
+
+  /* ───── Card ───── */
+
+  .social-proof-card {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    padding: var(--spacing-xs);
+    border-radius: var(--rad-s);
+    background-color: var(--color-bg-dark);
+  }
+
+  .social-proof-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-xxs);
+  }
+
+  .social-proof-card-name {
+    margin: 0;
+  }
+
+  /* Yellow "Verified" pill, top-right. */
+  .social-proof-card-verified {
+    flex: none;
+    padding: var(--spacing-xxxs) var(--spacing-xxs);
+    border-radius: var(--rad-s);
+    background-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  /* Stars, then the date, on one line. */
+  .social-proof-card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-xxs);
+    margin-top: var(--spacing-xxxs);
+    color: var(--color-text);
+  }
+
+  .social-proof-card-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .social-proof-card-star {
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  .social-proof-card-star.is-filled {
+    fill: currentColor;
+  }
+
+  /* Quote type comes from .text-quote (base.css). The card is auto height, so
+     the quote sits a fixed --spacing-m below the meta line rather than being
+     pinned to the card's base. */
+  .social-proof-card-quote {
+    margin: 0;
+    padding-top: var(--spacing-m);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Social proof",
+  "tag": "section",
+  "class": "social-proof-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow (h1 — small uppercase label)",
+      "info": "Leave blank to hide.",
+      "default": "Loved by our community"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading (h3)",
+      "info": "Press Enter to add a line break. Leave blank to hide.",
+      "default": "What people are saying."
+    },
+    {
+      "type": "text",
+      "id": "verified_label",
+      "label": "Verified badge text",
+      "info": "Shown on entries marked verified. Leave blank to hide the badge.",
+      "default": "Verified"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Social proof"
+    }
+  ]
+}
+{% endschema %}

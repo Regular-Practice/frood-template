@@ -1,220 +1,240 @@
 {%- comment -%}
-  Frood Media Tabs — three side-by-side cards. Each card has an h2 label at the top,
-  a step SVG icon centered, and a description at the bottom. The active card crossfades
-  its icon out and its media (video or image) in. Video tabs auto-advance on `ended`;
-  image-only tabs auto-advance after 4s. Cards are also clickable.
+  Frood Media Tabs — a static row of step cards under an optional section heading.
+  Each card is a full-bleed image (or looping muted video) with a yellow step-number
+  box and a white caption box sitting side by side along its bottom edge. No active
+  state, no JS. The step number is derived from the block position (1, 2, 3, 4).
 
   Media: video OR image (merchant convention is one or the other; video wins defensively
   if both are set, matching the news-card pattern).
-
-  Step icons are theme assets named `step-1.svg`, `step-2.svg`, `step-3.svg` (etc.) —
-  auto-derived from the block index. If you add a 4th block, drop a `step-4.svg` next
-  to the others.
 {%- endcomment -%}
 
 <section class="media-tabs-section">
-  <media-tabs class="media-tabs">
+  {%- if section.settings.heading != blank -%}
+    <h2 class="text-h3 media-tabs-heading">{{ section.settings.heading }}</h2>
+  {%- endif -%}
+
+  <ol class="media-tabs">
     {%- for block in section.blocks -%}
-      <button
-        type="button"
-        class="media-tab{% if forloop.first %} is-active{% endif %}"
-        data-tab-index="{{ forloop.index0 }}"
-        aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
-        {{ block.shopify_attributes }}
-      >
-        <div class="media-tab-bg" aria-hidden="true">
+      <li class="media-tab" {{ block.shopify_attributes }}>
+        <div class="media-tab-bg">
           {%- if block.settings.video != blank -%}
             <video
               class="media-tab-video"
+              autoplay
               muted
+              loop
               playsinline
               preload="metadata"
+              aria-hidden="true"
             >
               {%- for source in block.settings.video.sources -%}
                 <source src="{{ source.url }}" type="{{ source.mime_type }}">
               {%- endfor -%}
             </video>
           {%- elsif block.settings.image != blank -%}
-            {{ block.settings.image | image_url: width: 1200 | image_tag:
+            {%- assign tab_alt = block.settings.image.alt | default: block.settings.description | strip_html | truncate: 100 -%}
+            {{ block.settings.image | image_url: width: 900 | image_tag:
                 class: 'media-tab-image',
                 loading: 'lazy',
                 width: block.settings.image.width,
                 height: block.settings.image.height,
-                alt: block.settings.image.alt | default: block.settings.heading
+                alt: tab_alt
             }}
           {%- endif -%}
         </div>
 
-        <div class="media-tab-content">
-          {%- if block.settings.heading != blank -%}
-            <h2 class="text-h2 media-tab-heading">{{ block.settings.heading }}</h2>
-          {%- endif -%}
-
-          <div class="media-tab-icon-wrap" aria-hidden="true">
-            {{ 'step-' | append: forloop.index | append: '.svg' | inline_asset_content }}
-          </div>
-
+        <div class="media-tab-overlay">
+          <span class="text-ui media-tab-step" aria-hidden="true">{{ forloop.index }}</span>
           {%- if block.settings.description != blank -%}
-            <div class="text-h3 media-tab-description">{{ block.settings.description }}</div>
+            {%- comment -%}
+              Wrap the first sentence in .media-tab-lead (Medium weight). Split on the first
+              ". "; a single-sentence description wraps the whole first paragraph.
+            {%- endcomment -%}
+            {%- assign tab_desc = block.settings.description -%}
+            {%- assign tab_sentences = tab_desc | split: '. ' -%}
+            {%- if tab_sentences.size > 1 -%}
+              {%- assign tab_rest = tab_desc | remove_first: tab_sentences.first | remove_first: '.' -%}
+              {%- assign tab_lead = tab_sentences.first | replace_first: '<p>', '<p><span class="media-tab-lead">' | append: '.</span>' -%}
+              {%- assign tab_desc = tab_lead | append: tab_rest -%}
+            {%- else -%}
+              {%- assign tab_desc = tab_desc | replace_first: '<p>', '<p><span class="media-tab-lead">' | replace_first: '</p>', '</span></p>' -%}
+            {%- endif -%}
+            <div class="text-body media-tab-description">{{ tab_desc }}</div>
           {%- endif -%}
         </div>
-      </button>
+      </li>
     {%- endfor -%}
-  </media-tabs>
-</section>
+  </ol>
 
-<script type="module" src="{{ 'media-tabs.js' | asset_url }}"></script>
+  {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+    <div class="media-tabs-cta">
+      <a class="button" href="{{ section.settings.button_link }}">{{ section.settings.button_label }}</a>
+    </div>
+  {%- endif -%}
+</section>
 
 {% stylesheet %}
   .media-tabs-section {
     background-color: var(--color-bg);
     color: var(--color-text);
-    padding: var(--spacing-xs);
+    padding: var(--spacing-m) var(--spacing-xs);
   }
 
-  /* Phones-only: bump top/bottom for a touch more vertical breathing room. */
-  @media (max-width: 599.98px) {
+  @media (min-width: 600px) {
     .media-tabs-section {
-      padding-block: var(--spacing-m);
+      padding-block: var(--spacing-l);
     }
   }
 
   @media (min-width: 900px) {
     .media-tabs-section {
-      padding: var(--spacing-m);
+      padding-inline: var(--spacing-m);
     }
   }
 
+  .media-tabs-heading {
+    margin: 0 0 var(--spacing-xs);
+  }
+
+  @media (min-width: 900px) {
+    .media-tabs-heading {
+      margin-bottom: var(--spacing-m);
+    }
+  }
+
+  .media-tabs-cta {
+    margin-top: var(--spacing-m);
+    text-align: center;
+  }
+
+  /* Below 900px: 2x2 grid, image on top with the step chip + caption underneath.
+     From 900px: four across, chip + caption overlaid on the image. */
   .media-tabs {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--spacing-xs);
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-m) var(--spacing-xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   @media (min-width: 900px) {
     .media-tabs {
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--spacing-xxxs);
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-xxs);
     }
   }
 
   .media-tab {
     position: relative;
-    display: block;
-    width: 100%;
-    aspect-ratio: 4 / 5;
+  }
+
+  .media-tab-bg {
+    position: relative;
+    aspect-ratio: 51 / 40;
     overflow: hidden;
     border-radius: var(--rad-s);
     background-color: var(--color-accent-light);
-    color: var(--color-text);
-    border: 0;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    font: inherit;
-    text-align: left;
   }
 
-  /* Active state flips the text/icon color to cream so it reads over the video.
-     The step SVGs use fill="currentColor", so they follow this same color
-     property — no separate icon rule needed. */
-  .media-tab.is-active {
-    color: var(--color-bg);
-  }
+  @media (min-width: 900px) {
+    .media-tab {
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      border-radius: var(--rad-s);
+    }
 
-  /* Video background: crossfades in on .is-active. Sits behind .media-tab-content. */
-  .media-tab-bg {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    opacity: 0;
-    transition: opacity var(--transition-fast);
-  }
-
-  .media-tab.is-active .media-tab-bg {
-    opacity: 1;
+    .media-tab-bg {
+      position: absolute;
+      inset: 0;
+      aspect-ratio: auto;
+      border-radius: 0;
+    }
   }
 
   .media-tab-video,
   .media-tab-image {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  /* Scrim over the video for legibility of the overlaid heading + description.
-     Text @ 30% — stronger than the --color-overlay token's 10%. Sits inside
-     .media-tab-bg so it inherits the same opacity crossfade and is invisible
-     on inactive cards. */
-  .media-tab-bg::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-color: color-mix(in srgb, var(--color-text) 30%, transparent);
-    pointer-events: none;
-  }
-
-  /* Content sits above the video and uses flex column with the icon as a flexible
-     middle spacer, so heading lands at the top and description at the bottom — the
-     icon claims whatever vertical space is left. */
-  .media-tab-content {
-    position: relative;
-    z-index: 1;
+  /* Stacked under the image: small yellow chip, then the caption. */
+  .media-tab-overlay {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    padding: var(--spacing-xs);
+    align-items: flex-start;
+    gap: var(--spacing-xxs);
+    padding-top: var(--spacing-xs);
   }
 
-  .media-tab-heading {
-    margin: 0;
-  }
-
-  .media-tab-icon-wrap {
-    flex: 1;
+  .media-tab-step {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Lock the SVG's currentColor to --color-text so it stays dark during the
-       fade-out. Without this, .is-active flips the parent color to --color-bg
-       (cream) instantly while opacity transitions out over --transition-fast,
-       producing a brief "white icon" flash on the way out. */
+    width: var(--spacing-m);
+    height: var(--spacing-m);
+    padding-top: 2px;
+    border-radius: var(--rad-s);
+    background-color: var(--color-accent);
     color: var(--color-text);
-    /* Icon visible on inactive (over beige); fades out on active so the video shows */
-    opacity: 1;
-    transition: opacity var(--transition-fast);
-  }
-
-  .media-tab.is-active .media-tab-icon-wrap {
-    opacity: 0;
-  }
-
-  /* Inlined SVG (no class — sized via parent selector). */
-  .media-tab-icon-wrap > svg {
-    display: block;
-    width: 35%;
-    max-width: 96px;
-    height: auto;
   }
 
   .media-tab-description {
-    margin: 0;
+    min-width: 0;
+    color: var(--color-text);
+  }
+
+  /* Desktop: step box + caption box side by side along the image's bottom edge.
+     Stretch keeps the two the same height. */
+  @media (min-width: 900px) {
+    .media-tab-overlay {
+      position: absolute;
+      inset: auto 0 0 0;
+      flex-direction: row;
+      align-items: stretch;
+      gap: var(--spacing-xxxs);
+      padding: var(--spacing-xxs);
+    }
+
+    .media-tab-step {
+      flex: none;
+      width: var(--spacing-l);
+      height: auto;
+      min-height: var(--spacing-l);
+      font-size: var(--type-h2-size);
+      line-height: var(--type-h2-height);
+    }
+
+    .media-tab-description {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: var(--spacing-l);
+      padding: var(--spacing-xxs);
+      border-radius: var(--rad-s);
+      background-color: var(--color-bg);
+    }
   }
 
   .media-tab-description p {
     margin: 0;
   }
 
-  .media-tab-description p + p {
-    margin-top: var(--spacing-xxs);
+  /* The first sentence is wrapped in .media-tab-lead by the markup. The font only
+     ships 400/500, so any manual bold maps to Medium too rather than a faked one. */
+  .media-tab-lead,
+  .media-tab-description strong,
+  .media-tab-description b {
+    font-weight: var(--type-ui-weight);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .media-tab-bg,
-    .media-tab-icon-wrap {
-      transition: none;
-    }
+  .media-tab-description p + p {
+    margin-top: var(--spacing-xxs);
   }
 {% endstylesheet %}
 
@@ -223,43 +243,56 @@
   "name": "Media tabs",
   "tag": "section",
   "class": "media-tabs-section-wrapper",
-  "settings": [],
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "info": "The button shows under the cards only when both a label and a link are set."
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    }
+  ],
   "blocks": [
     {
       "type": "tab",
-      "name": "Tab",
+      "name": "Step",
       "settings": [
-        {
-          "type": "text",
-          "id": "heading",
-          "label": "Heading",
-          "info": "Shown as the large text at the top of the card (e.g. #1, #2, #3)."
-        },
         {
           "type": "richtext",
           "id": "description",
-          "label": "Description"
+          "label": "Description",
+          "info": "Shown in the white box beside the step number."
         },
         {
           "type": "video",
           "id": "video",
           "label": "Video",
-          "info": "Plays full-bleed as the card background when this tab is active. When it ends, the next tab auto-activates. Takes precedence over Image if both are set."
+          "info": "Plays muted on loop as the card background. Takes precedence over Image if both are set."
         },
         {
           "type": "image_picker",
           "id": "image",
           "label": "Image",
-          "info": "Used as the card background when this tab is active and no Video is set. The next tab auto-activates after 4 seconds."
+          "info": "Card background when no Video is set."
         }
       ]
     }
   ],
-  "max_blocks": 6,
+  "max_blocks": 4,
   "presets": [
     {
       "name": "Media tabs",
       "blocks": [
+        { "type": "tab" },
         { "type": "tab" },
         { "type": "tab" },
         { "type": "tab" }
