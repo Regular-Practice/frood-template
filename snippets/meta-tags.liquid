@@ -10,6 +10,18 @@
   <meta name="robots" content="noindex, nofollow">
 {%- endif -%}
 
+{%- comment -%}
+  Tag `hide-from-browse` marks the single-pack blends, which exist only to feed
+  the custom box builder. They have no designed PDP, so anyone landing on one
+  (old link, search engine) is sent to the custom box instead. Skipped in the
+  theme editor so the page stays previewable. JS first, meta refresh for no-JS.
+{%- endcomment -%}
+{%- if template.name == 'product' and product.tags contains 'hide-from-browse' and request.design_mode == false -%}
+  {%- assign hidden_redirect_url = all_products['custom-box'].url | default: routes.root_url -%}
+  <script>window.location.replace({{ hidden_redirect_url | json }});</script>
+  <noscript><meta http-equiv="refresh" content="0; url={{ hidden_redirect_url }}"></noscript>
+{%- endif -%}
+
 {%- comment -%} Open Graph {%- endcomment -%}
 <meta property="og:site_name" content="{{ shop.name }}">
 <meta property="og:url" content="{{ canonical_url }}">
