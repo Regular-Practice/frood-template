@@ -63,6 +63,9 @@
       "instructions": "Instructions",
       "ingredients": "Ingredients",
       "nutritional_info": "Nutritional info",
+      "benefits": "Benefits",
+      "who_is_it_for": "Who is it for",
+      "subscription_how": "How does the subscription work",
       "view_full_nutrition": "View full nutrition",
       "nutrition_typical_values": "Typical values",
       "nutrition_per_serving": "Per serving",
@@ -308,7 +311,10 @@
   },
   "stores": {
     "index": {
-      "empty": "Stockists are on the way — check back soon."
+      "empty": "Stockists are on the way — check back soon.",
+      "search_label": "Search stores",
+      "search_placeholder": "Search by town or store name",
+      "no_results": "No stores match your search."
     }
   },
   "recipes": {

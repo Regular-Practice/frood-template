@@ -17,12 +17,12 @@
       gate, and "Add to cart". Reads the .bundle-flavours JSON blob below for
       flavour name/notes/image.
 
-    <bundle-stage> (assets/bundle-stage.js)
-      Pure 2D PNG-compositing depth-stack visualiser (NO three.js). Listens for
-      `bundle:updated` and renders one box scene per box (last may be partial),
-      each stacking the box-back layer, the packs (newest at the front), and the
-      box-front lip. Box-layer <img>s are cloned from a server-rendered
-      <template>; pack images ride along in the event detail.
+    <bundle-v2-stage> (assets/bundle-v2-stage.js)
+      The v2 pack strip (NO three.js): the draft as one row of pouches in add
+      order. It reads `bundle-v2:updated`, which assets/bundle-v2-skin.js relays
+      from this builder's own `bundle:updated` — so the builder's logic is
+      untouched and only the look is v2's. The older <bundle-stage> box-scene
+      visualiser (assets/bundle-stage.js) is no longer loaded here.
 
   ----------------------------------------------------------------------------
   DATA MODEL
@@ -116,6 +116,7 @@
           "name": {{ flavour.name.value | json }},
           "attributes": {{ flavour.atrributes.value | default: '' | json }},
           "image": {% if flavour.image.value != blank %}{{ flavour.image.value | image_url: width: 1500 | json }}{% else %}""{% endif %},
+          "packImage": {% if flavour.v2_pack_render.value != blank %}{{ flavour.v2_pack_render.value | image_url: width: 600 | json }}{% else %}""{% endif %},
           "sku": {{ flavour.sku.value | default: '' | json }}
         }{%- unless forloop.last -%},{%- endunless -%}
       {%- endfor -%}
@@ -139,143 +140,186 @@
             class="bundle-flavour"
             data-flavour-card
             data-flavour-id="{{ flavour.system.handle }}"
-            {%- if flavour.dark_colour != blank or flavour.light_colour != blank -%}
-              style="
-                {%- if flavour.dark_colour != blank -%}--flavour-dark: {{ flavour.dark_colour }};{%- endif -%}
-                {%- if flavour.light_colour != blank -%}--flavour-light: {{ flavour.light_colour }};{%- endif -%}
-              "
-            {%- endif -%}
           >
-            <div class="bundle-flavour-header">
-              <div class="bundle-flavour-title">
-                <h3 class="text-ui">{{ flavour.name }}</h3>
-                {%- if flavour.atrributes != blank -%}
-                  <p class="bundle-flavour-attributes">{{ flavour.atrributes }}</p>
-                {%- endif -%}
+            {%- comment -%} Card photo is the flavour's `meal_image` (not the pouch render the visualiser uses). {%- endcomment -%}
+            {%- if flavour.meal_image.value != blank -%}
+              <div class="bundle-flavour-media">
+                {{ flavour.meal_image.value | image_url: width: 800 | image_tag:
+                  loading: 'lazy',
+                  widths: '300, 400, 600, 800',
+                  sizes: '(min-width: 900px) 22vw, 45vw',
+                  alt: flavour.name.value
+                }}
               </div>
-              {%- assign flavour_product = flavour.product_reference.value -%}
-              {%- if flavour_product != blank -%}
-                <a
-                  class="bundle-flavour-link"
-                  href="{{ flavour_product.url }}"
-                  aria-label="{{ 'sections.bundle_builder.view_product' | t: name: flavour.name }}"
-                >
-                  <svg width="10" height="10" viewBox="0 0 7 7" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                    <path d="M0.753846 7L0 6.24615L5.16923 1.07692H0.538462V0H7V6.46154H5.92308V1.83077L0.753846 7Z"/>
-                  </svg>
-                </a>
+            {%- endif -%}
+            <div class="bundle-flavour-body">
+              <h3 class="text-ui">{{ flavour.name }}</h3>
+              {%- if flavour.v2_description != blank -%}
+                <p class="bundle-flavour-description text-body">{{ flavour.v2_description }}</p>
               {%- endif -%}
             </div>
-            <div class="bundle-stepper">
-              <button
-                type="button"
-                data-action="remove"
-                data-flavour-id="{{ flavour.system.handle }}"
-                aria-label="{{ 'sections.bundle_builder.decrease' | t: name: flavour.name }}"
-                disabled
-              >
-                <svg width="10" height="10" viewBox="0 0 7 1" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                  <path d="M0 1V0H7V1H0Z"/>
-                </svg>
-              </button>
-              <span class="bundle-qty" data-qty="{{ flavour.system.handle }}">0</span>
-              <button
-                type="button"
-                data-action="add"
-                data-flavour-id="{{ flavour.system.handle }}"
-                aria-label="{{ 'sections.bundle_builder.increase' | t: name: flavour.name }}"
-              >
-                <svg width="10" height="10" viewBox="0 0 7 7" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-                  <path d="M3 4H0V3H3V0H4V3H7V4H4V7H3V4Z"/>
-                </svg>
-              </button>
+
+            {%- comment -%}
+              Qty 0: one full-width "Add" bar. Qty > 0 (.is-active, set by
+              bundle-builder.js): the − qty + stepper. Same two buttons and the
+              same data hooks either way — only CSS swaps what shows.
+            {%- endcomment -%}
+            <div class="bundle-flavour-action">
+              <div class="bundle-stepper">
+                <button
+                  type="button"
+                  data-action="remove"
+                  data-flavour-id="{{ flavour.system.handle }}"
+                  aria-label="{{ 'sections.bundle_builder.decrease' | t: name: flavour.name }}"
+                  disabled
+                >
+                  <svg width="10" height="10" viewBox="0 0 7 1" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                    <path d="M0 1V0H7V1H0Z"/>
+                  </svg>
+                </button>
+                <span class="bundle-qty text-h1" data-qty="{{ flavour.system.handle }}" aria-live="polite">0</span>
+                <button
+                  type="button"
+                  data-action="add"
+                  data-flavour-id="{{ flavour.system.handle }}"
+                  aria-label="{{ 'sections.bundle_builder.increase' | t: name: flavour.name }}"
+                >
+                  <span class="bundle-add-blend-label text-h1">{{ 'products.product.add' | t }}</span>
+                  <svg class="bundle-add-blend-icon" width="10" height="10" viewBox="0 0 7 7" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                    <path d="M3 4H0V3H3V0H4V3H7V4H4V7H3V4Z"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </article>
         {%- else -%}
-          <p class="bundle-flavour-attributes">{{ 'sections.bundle_builder.no_flavours' | t }}</p>
+          <p class="text-body">{{ 'sections.bundle_builder.no_flavours' | t }}</p>
         {%- endfor -%}
       </div>
-
-      <footer class="bundle-footer">
-        {%- comment -%}
-          Subscription control — only renders if the box product has Recharge
-          selling plans. Mirrors the PDP selector; bundle-builder.js attaches the
-          chosen selling_plan to every box line item on add-to-cart, so the
-          custom mix (line-item properties) recurs at the chosen frequency.
-        {%- endcomment -%}
-        {%- if box_variant.selling_plan_allocations.size > 0 -%}
-          {%- assign box_alloc = box_variant.selling_plan_allocations | first -%}
-          {%- assign box_discount = box_alloc.compare_at_price | minus: box_alloc.price | times: 100.0 | divided_by: box_alloc.compare_at_price | round -%}
-          <div class="bundle-subscription" data-subscription>
-            <fieldset class="bundle-sub-options">
-              <legend class="visually-hidden">{{ 'products.product.purchase_options' | t }}</legend>
-
-              <label class="bundle-sub-option is-selected">
-                <input type="radio" name="bundle-purchase-{{ section.id }}" value="onetime" checked data-sub-mode>
-                <span class="bundle-sub-box" aria-hidden="true"></span>
-                <span class="bundle-sub-label text-ui">{{ 'products.product.one_time' | t }}</span>
-              </label>
-
-              <label class="bundle-sub-option">
-                <input type="radio" name="bundle-purchase-{{ section.id }}" value="subscription" data-sub-mode>
-                <span class="bundle-sub-box" aria-hidden="true"></span>
-                <span class="bundle-sub-label text-ui">{{ 'products.product.subscribe_save' | t: percent: box_discount }}</span>
-              </label>
-            </fieldset>
-
-            <div class="bundle-sub-frequency" data-sub-frequency hidden>
-              <label class="visually-hidden" for="bundle-frequency-{{ section.id }}">{{ 'products.product.deliver_every' | t }}</label>
-              <select id="bundle-frequency-{{ section.id }}" class="select bundle-sub-select text-ui" data-sub-select>
-                {%- for allocation in box_variant.selling_plan_allocations -%}
-                  <option value="{{ allocation.selling_plan.id }}" data-price-cents="{{ allocation.price }}" data-compare-cents="{{ allocation.compare_at_price }}">
-                    {{ allocation.selling_plan.name | split: ' subscription' | first }}
-                  </option>
-                {%- endfor -%}
-              </select>
-            </div>
-          </div>
-        {%- endif -%}
-
-        <button type="button" class="button bundle-add" data-add disabled>
-          <span class="bundle-add-inner">
-            <span class="bundle-add-label" data-add-label>{{ 'sections.bundle_builder.add_to_cart' | t }}</span>
-            <span class="bundle-add-end">
-              {%- if box_variant -%}
-                <s class="bundle-add-was" data-add-was hidden></s>
-                <span class="bundle-add-price">{{ box_variant.price | money }}</span>
-              {%- endif -%}
-              {% render 'icon-arrow', class: 'bundle-add-icon' %}
-            </span>
-          </span>
-        </button>
-
-        <p class="bundle-hint" data-hint aria-live="polite"></p>
-
-        <div class="bundle-progress" data-progress role="progressbar" aria-valuemin="0" aria-valuemax="{{ capacity }}" aria-valuenow="0">
-          <div class="bundle-progress-fill" data-progress-fill></div>
-        </div>
-
-        <div class="form-error" data-error role="alert" hidden></div>
-      </footer>
     </section>
 
-    <div class="bundle-visualiser">
-      <bundle-stage class="bundle-stage" data-capacity="{{ capacity }}">
-        <div class="bundle-stage-track" data-stage></div>
-        {%- comment -%}
-          One box scene per box, cloned from this template by bundle-stage.js so
-          the box-layer image URLs / dimensions stay server-rendered here.
-        {%- endcomment -%}
-        <template data-box-template>
-          <div class="bundle-scene" data-scene>
-            <img class="bundle-layer bundle-box-back" src="{{ box_back_url }}" alt="" loading="lazy" width="{{ box_back_w }}" height="{{ box_back_h }}">
-            <img class="bundle-layer bundle-box-front" src="{{ box_front_url }}" alt="" loading="lazy" width="{{ box_front_w }}" height="{{ box_front_h }}">
+    <div class="bundle-v2-panel-column">
+      <aside class="bundle-v2-panel is-collapsed"{% if section.settings.panel_title != blank %} aria-labelledby="bundle-v2-panel-title-{{ section.id }}"{% endif %}>
+        <header class="bundle-v2-panel-header">
+          <div class="bundle-v2-panel-heading">
+            {%- if section.settings.panel_title != blank -%}
+              <h2 class="text-h1" id="bundle-v2-panel-title-{{ section.id }}">{{ section.settings.panel_title }}</h2>
+            {%- endif -%}
+            {%- comment -%}
+              Mobile only (hidden from 900px): the panel is pinned to the bottom of the
+              screen there and starts collapsed to just the frequency + add to cart.
+              The arrow points up while collapsed and flips when open. Toggled by
+              assets/bundle-v2-skin.js.
+            {%- endcomment -%}
+            <button
+              type="button"
+              class="bundle-v2-panel-toggle"
+              data-panel-toggle
+              aria-expanded="false"
+              aria-label="{{ 'products.product.details' | t }}"
+            >
+              <svg width="18" height="9" viewBox="0 0 18 9" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <path d="M18 9L0 9L0 7L18 7V9ZM14 5L4 5L9 0L14 5Z" fill="currentColor"/>
+              </svg>
+            </button>
           </div>
-        </template>
-      </bundle-stage>
+          {%- if section.settings.panel_subtitle != blank -%}
+            <p class="bundle-v2-panel-subtitle text-body">{{ section.settings.panel_subtitle }}</p>
+          {%- endif -%}
+        </header>
+
+        {%- comment -%}
+          The v2 pack strip. It listens for `bundle-v2:updated`, which
+          assets/bundle-v2-skin.js derives from this builder's `bundle:updated`
+          (the builder's own logic and events are unchanged).
+        {%- endcomment -%}
+        <bundle-v2-stage class="bundle-v2-stage">
+          <div class="bundle-v2-stage-track" data-stage></div>
+          <template data-box-template>
+            <div class="bundle-v2-row" data-scene></div>
+          </template>
+          <p class="bundle-v2-empty text-body">{{ 'sections.bundle_builder.empty_custom_box' | t }}</p>
+        </bundle-v2-stage>
+
+        <footer class="bundle-v2-footer">
+          {%- comment -%}
+            Subscription control — only renders if the box product has selling
+            plans. Same hooks bundle-builder.js has always used ([data-sub-mode],
+            [data-sub-frequency], [data-sub-select], .bundle-sub-option); only the
+            look is v2's. One-time stays the default selection.
+          {%- endcomment -%}
+          {%- if box_variant.selling_plan_allocations.size > 0 -%}
+            <div class="bundle-v2-subscription" data-subscription>
+              <fieldset class="bundle-v2-sub-options">
+                <legend class="visually-hidden">{{ 'products.product.purchase_options' | t }}</legend>
+
+                <label class="bundle-v2-sub-option bundle-sub-option">
+                  <input type="radio" name="bundle-purchase-{{ section.id }}" value="subscription" data-sub-mode>
+                  <span class="bundle-v2-sub-box" aria-hidden="true"></span>
+                  <span class="bundle-v2-sub-label text-ui">{{ section.settings.subscribe_label }}<span class="bundle-v2-sub-note"> {{ section.settings.subscribe_note }}</span></span>
+                </label>
+
+                <div class="bundle-v2-sub-details" data-sub-frequency hidden>
+                  <label class="visually-hidden" for="bundle-frequency-{{ section.id }}">{{ 'products.product.deliver_every' | t }}</label>
+                  <div class="bundle-v2-sub-select-wrap">
+                    <select id="bundle-frequency-{{ section.id }}" class="bundle-v2-sub-select text-ui" data-sub-select>
+                      {%- for allocation in box_variant.selling_plan_allocations -%}
+                        <option value="{{ allocation.selling_plan.id }}" data-price-cents="{{ allocation.price }}" data-compare-cents="{{ allocation.compare_at_price }}">
+                          {{ allocation.selling_plan.name | split: ' subscription' | first }}
+                        </option>
+                      {%- endfor -%}
+                    </select>
+                    <svg class="bundle-v2-sub-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false">
+                      <path d="M2 4l4 4 4-4"/>
+                    </svg>
+                  </div>
+                  <ul class="bundle-v2-sub-benefits text-body">
+                    {%- for i in (1..3) -%}
+                      {%- case i -%}
+                        {%- when 1 -%}{%- assign benefit = section.settings.benefit_1 -%}
+                        {%- when 2 -%}{%- assign benefit = section.settings.benefit_2 -%}
+                        {%- when 3 -%}{%- assign benefit = section.settings.benefit_3 -%}
+                      {%- endcase -%}
+                      {%- if benefit != blank -%}
+                        <li>{% render 'icon-check-circle' %}<span>{{ benefit }}</span></li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                </div>
+
+                <label class="bundle-v2-sub-option bundle-sub-option is-selected">
+                  <input type="radio" name="bundle-purchase-{{ section.id }}" value="onetime" checked data-sub-mode>
+                  <span class="bundle-v2-sub-box" aria-hidden="true"></span>
+                  <span class="bundle-v2-sub-label text-ui">{{ 'products.product.one_time' | t }}</span>
+                </label>
+              </fieldset>
+            </div>
+          {%- endif -%}
+
+          <button type="button" class="button bundle-v2-add" data-add disabled>
+            <span class="bundle-v2-add-inner">
+              <span class="bundle-v2-add-main">
+                <span class="bundle-v2-add-label" data-add-label>{{ 'sections.bundle_builder.add_to_cart' | t }}</span>
+                {% render 'icon-arrow', class: 'bundle-v2-add-icon' %}
+              </span>
+              {%- if box_variant -%}
+                <span class="bundle-v2-add-end">
+                  <s class="bundle-add-was" data-add-was hidden></s>
+                  <span class="bundle-v2-add-price bundle-add-price">{{ box_variant.price | money }}</span>
+                </span>
+              {%- endif -%}
+            </span>
+          </button>
+
+          <p class="bundle-v2-hint text-body" data-hint aria-live="polite"></p>
+
+          <div class="form-error" data-error role="alert" hidden></div>
+        </footer>
+      </aside>
     </div>
   </div>
 </bundle-builder>
+
 
 {% stylesheet %}
   .bundle-builder {
@@ -291,33 +335,28 @@
     }
   }
 
+  /* Stacked on mobile/tablet (cards, then the "Your box" panel); two columns on
+     desktop — the flavour grid, then the sticky yellow panel. */
   .bundle-layout {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     gap: var(--spacing-m);
-    align-items: center;
     max-width: 1400px;
     margin-inline: auto;
     padding-top: var(--spacing-l);
   }
 
-  /* Builder panel */
+  /* Selection column: section lockup + flavour cards. */
   .bundle-panel {
-    /* Positioned so .bundle-progress can anchor to the panel's outer edges
-       (left / right / bottom) and break out of the panel's inner padding. */
-    position: relative;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-m);
-    width: 100%;
-    max-width: 460px;
-    padding: var(--spacing-xs);
-    background-color: var(--color-bg-dark);
+    min-width: 0;
+    flex: 1;
   }
 
-  /* Cap the panel's section heading at 36ch — matches the rest of the theme.
-     Scoped via direct child of the lockup so the per-card flavour h3 stays
-     unconstrained. */
+  /* Cap the section heading at 36ch — matches the rest of the theme. Scoped via
+     direct child of the lockup so the per-card flavour h3 stays unconstrained. */
   .bundle-panel > .section-lockup h3 {
     max-width: 36ch;
   }
@@ -325,187 +364,326 @@
   .bundle-flavour-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xxs);
+  }
+
+  /* Flavour card: photo, name + description, then one full-width action bar —
+     "Add" at qty 0, the − qty + stepper once the flavour is in the box. */
+  .bundle-flavour {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+    padding: var(--spacing-xxs);
+    border-radius: var(--rad-s);
+    background-color: var(--color-bg-dark);
+    color: var(--color-text);
+  }
+
+  /* Extra room under the photo — with the card's own gap that makes the photo →
+     name spacing --spacing-s (16px). */
+  .bundle-flavour-media {
+    margin-bottom: var(--spacing-xxs);
+  }
+
+  .bundle-flavour-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .bundle-flavour-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     gap: var(--spacing-xxxs);
   }
 
-  /* Flavour card + stepper.
-     Local tokens (--c-text / --c-text-accent / --c-bg) so the .is-active state
-     can swap to the flavour's dark_colour + light_colour without re-stating
-     every rule. Defaults map to the theme tokens; the active state overrides. */
-  .bundle-flavour {
-    --c-text: var(--color-text);
-    --c-text-accent: var(--color-text-accent);
-    --c-bg: var(--color-bg);
-    --c-surface-muted: var(--color-bg-dark);
-
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--spacing-m);
-    padding: var(--spacing-xxs);
-    border-radius: var(--rad-s);
-    background: var(--c-bg);
-    color: var(--c-text);
-  }
-
-  .bundle-flavour.is-active {
-    --c-text: var(--flavour-dark, var(--color-text));
-    --c-text-accent: color-mix(in srgb, var(--flavour-dark, var(--color-text)) 50%, transparent);
-    /* Same dark @ 50% transparent as the attributes line — applied as bg for
-       the muted buttons (disabled stepper + expand link). */
-    --c-surface-muted: color-mix(in srgb, var(--flavour-dark, var(--color-text)) 50%, transparent);
-    /* Light colour @ 50% composited over --color-bg (off-white), rendered as
-       one opaque value so the result doesn't bleed through to the panel's
-       beige bg. Equivalent to 0.5 × light + 0.5 × bg. */
-    --c-bg: color-mix(in srgb, var(--flavour-light, var(--color-bg)) 50%, var(--color-bg));
-  }
-
-  .bundle-flavour-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-    width: 100%;
-  }
-
-  .bundle-flavour-title {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .bundle-flavour-title h3 {
+  .bundle-flavour-body h3,
+  .bundle-flavour-description {
     margin: 0;
   }
 
-  .bundle-flavour-link {
-    flex: none;
-    width: 24px;
-    height: 24px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--c-surface-muted);
-    color: var(--c-text);
-    border-radius: var(--rad-s);
-    transition: background-color var(--transition-fast), color var(--transition-fast);
+  .bundle-flavour-action {
+    display: flex;
+    /* Extra room above the action bar — with the card's own gap that makes
+       description → button --spacing-s (16px), at every width. */
+    margin-top: var(--spacing-xxs);
   }
 
-  .bundle-flavour-link:hover,
-  .bundle-flavour-link:focus-visible {
-    background-color: var(--c-text);
+  /* The stepper bar. bundle-builder.js toggles .is-active on the card (qty > 0)
+     and disables the buttons at the limits; everything else here is CSS. */
+  .bundle-stepper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-xxxs);
+    border-radius: var(--rad-s);
+    background-color: var(--color-text);
     color: var(--color-bg);
   }
 
-  .bundle-flavour-attributes {
-    margin: 0;
-    font-size: var(--type-mini-size);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--c-text-accent, var(--color-text-accent));
-  }
-
-  .bundle-stepper {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xxxs);
-  }
-
   .bundle-stepper button {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     padding: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--c-text);
-    color: var(--color-bg);
+    background-color: var(--color-accent);
+    color: var(--color-text);
     border-radius: var(--rad-s);
     cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .bundle-stepper button:hover {
+    background-color: var(--color-bg);
   }
 
   .bundle-stepper button:disabled {
-    background-color: var(--c-surface-muted);
-    color: var(--c-text);
+    opacity: 0.5;
     cursor: default;
   }
 
   .bundle-qty {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 24px;
-    font-size: var(--type-mini-size);
+    color: inherit;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Footer: add button (carries the flat box price) + progress bar */
-  .bundle-footer {
+  /* .text-h1 forces the muted grey; the label should follow the button. */
+  .bundle-add-blend-label {
+    display: none;
+    color: inherit;
+  }
+
+  /* Qty 0: collapse the stepper to a single dark "Add" bar (the + button, shown
+     as a label). Same button, same data hooks — so no JS involved. */
+  .bundle-flavour:not(.is-active) .bundle-stepper {
+    padding: 0;
+    background-color: transparent;
+  }
+
+  .bundle-flavour:not(.is-active) .bundle-qty,
+  .bundle-flavour:not(.is-active) [data-action="remove"],
+  .bundle-flavour:not(.is-active) .bundle-add-blend-icon {
+    display: none;
+  }
+
+  .bundle-flavour:not(.is-active) [data-action="add"] {
+    flex: 1;
+    width: auto;
+    height: auto;
+    padding: var(--spacing-xxs) var(--spacing-xs) calc(var(--spacing-xxs) - 2px);
+    background-color: var(--color-text);
+    color: var(--color-bg);
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .bundle-flavour:not(.is-active) [data-action="add"]:hover:not(:disabled) {
+    background-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .bundle-flavour:not(.is-active) .bundle-add-blend-label {
+    display: inline;
+  }
+
+  /* "Your box" panel — brand yellow, sticky beside the grid on desktop. */
+  .bundle-v2-panel {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    /* Pull the footer up so the gap from the flavour list reads as s, not the
-       panel's m (one step smaller between the cards and the subscription). */
-    margin-top: calc(var(--spacing-s) - var(--spacing-m));
+    padding: var(--spacing-xs);
+    border-radius: var(--rad-s);
+    background-color: var(--color-accent);
+    color: var(--color-text);
   }
 
-  /* Dark variant of the primary .button: same shape/type as .button but with
-     a muted bg until the box is full. Hover inverts to yellow on dark.
-     One step up from the .button label size (h1 12px → ui 14px) so this
-     primary CTA reads larger than a standard button. */
-  .bundle-add {
+  .bundle-v2-panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxxs);
+  }
+
+  .bundle-v2-panel-header h2 {
+    margin: 0;
+    /* The panel is yellow, so the grey eyebrow colour would fail contrast. */
+    color: var(--color-text);
+  }
+
+  .bundle-v2-panel-subtitle {
+    margin: 0;
+    color: color-mix(in srgb, var(--color-text) 55%, var(--color-accent));
+  }
+
+  /* Footer: subscription choice, add button, hint. */
+  .bundle-v2-footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 15%, var(--color-accent));
+  }
+
+  /* Dark variant of the primary .button (same shape and type). Muted until the
+     minimum is met, then brand dark. */
+  .bundle-v2-add {
     width: 100%;
-    font-size: var(--type-ui-size);
-    background-color: var(--color-text-accent);
+    background-color: color-mix(in srgb, var(--color-text) 40%, var(--color-accent));
     color: var(--color-bg);
     transition:
       background-color var(--transition-fast),
       color var(--transition-fast);
   }
 
-  /* When the box is full (= button enabled), bg shifts to the brand dark. */
-  .bundle-add:not(:disabled) {
+  .bundle-v2-add:not(:disabled) {
     background-color: var(--color-text);
   }
 
-  .bundle-add:hover {
-    background-color: var(--color-accent);
+  .bundle-v2-add:not(:disabled):hover {
+    background-color: var(--color-bg);
     color: var(--color-text);
   }
 
-  /* Disabled-until-full state: keep the button visible (the progress bar below
-     signals the build-up) but override .button:disabled's 0.6 opacity so the
-     muted bg colour does the "not yet" signalling on its own. */
-  .bundle-add:disabled {
+  /* Override .button:disabled's 0.6 opacity — the muted bg does the "not yet"
+     signalling on its own. */
+  .bundle-v2-add:disabled {
     opacity: 1;
   }
 
   /* Inner flex wrapper — keep .button as inline-block per the convention; flex
      an inner span when an icon + label need laying out side-by-side. */
-  .bundle-add-inner {
+  .bundle-v2-add-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: var(--spacing-s);
+    gap: var(--spacing-xs);
   }
 
-  /* Price + forward arrow, pinned to the button's trailing edge. */
-  .bundle-add-end {
+  .bundle-v2-add-main {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+  }
+
+  .bundle-v2-add-price {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 2px of padding-bottom nudges the arrow up to optically align with the
+     cap-line of the all-caps label. */
+  .bundle-v2-add-icon {
+    padding-bottom: 2px;
+  }
+
+  /* Minimum-order hint. Empty until the shopper starts building. */
+  .bundle-v2-hint {
+    margin: 0;
+    color: color-mix(in srgb, var(--color-text) 65%, var(--color-accent));
+  }
+
+  .bundle-v2-hint:empty {
+    display: none;
+  }
+
+  .bundle-v2-panel-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
+  .bundle-v2-panel-toggle {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 24px;
+    margin-left: auto;
+    padding: 0;
+    color: var(--color-text);
+    cursor: pointer;
+  }
+
+  /* Open: the arrow flips. */
+  .bundle-v2-panel:not(.is-collapsed) .bundle-v2-panel-toggle svg {
+    rotate: 180deg;
+  }
+
+  /* Subscribe row: label on the left, totals on the right. */
+  .bundle-v2-sub-price {
+    display: inline-flex;
+    gap: var(--spacing-xxs);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bundle-v2-sub-price s {
+    color: color-mix(in srgb, var(--color-text) 55%, var(--color-accent));
+  }
+
+  .bundle-v2-sub-price s[hidden] {
+    display: none;
+  }
+
+  /* The "(10% off)" note only stands in for the benefits list while collapsed. */
+  .bundle-v2-sub-note {
+    display: none;
+  }
+
+  /* Mobile + tablet: the panel is pinned to the bottom of the screen with the
+     small inset the section already has at the sides. Sticky rather than fixed,
+     so it pins while the cards scroll but lands at the end of the section
+     instead of covering the site footer (body uses overflow-x: clip, which
+     keeps sticky working). Below the header's z-index (9), above the cards. */
+  @media (max-width: 899.98px) {
+    .bundle-v2-panel-column {
+      position: sticky;
+      bottom: var(--spacing-xxs);
+      z-index: 8;
+      /* The builder pads its sides by xs; pull the panel out to an xxs inset so it
+         sits closer to the screen edge than the cards do. */
+      margin-inline: calc(var(--spacing-xxs) - var(--spacing-xs));
+    }
+
+    /* Keep the open panel reachable on short screens. */
+    .bundle-v2-panel {
+      max-height: calc(100dvh - var(--spacing-xl));
+      overflow-y: auto;
+    }
+
+    /* Collapsed: just the subscribe row, the frequency dropdown, one time and
+       add to cart. The pack strip and the benefits list are hidden. */
+    .bundle-v2-panel.is-collapsed .bundle-v2-stage,
+    .bundle-v2-panel.is-collapsed .bundle-v2-sub-benefits {
+      display: none;
+    }
+
+    .bundle-v2-panel.is-collapsed .bundle-v2-sub-details {
+      padding: 0;
+      background-color: transparent;
+    }
+
+    .bundle-v2-panel.is-collapsed .bundle-v2-sub-note {
+      display: inline;
+    }
+  }
+
+  /* Original (pre-discount) total, struck through — filled by bundle-builder.js
+     for subscriptions, next to the discounted total on the add button. */
+  .bundle-v2-add-end {
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-xs);
   }
 
-  /* 2px of padding-bottom nudges the arrow's bounding box up by ~1px within
-     the centered flex row — optically aligns it with the cap-line of the
-     all-caps label/price (compensates for the font's bottom-heavy baseline). */
-  .bundle-add-icon {
-    padding-bottom: 2px;
-  }
-
-  /* Original (pre-discount) total, struck through — shown by JS for
-     subscriptions next to the discounted total. */
   .bundle-add-was {
-    color: var(--color-text-accent);
+    color: color-mix(in srgb, var(--color-text) 55%, var(--color-accent));
     text-decoration: line-through;
   }
 
@@ -513,146 +691,210 @@
     display: none;
   }
 
-  /* Build hint — nudges the shopper to finish the in-progress box. Reserves a
-     line so the footer doesn't jump as the text toggles on/off. */
-  .bundle-hint {
-    margin: 0;
-    min-height: 1.2em;
-    font-size: var(--type-mini-size);
-    color: var(--color-text-accent);
-  }
-
-  /* Progress bar — thin track + fill that tracks the IN-PROGRESS box (the
-     partial last box), so it fills 0→100% per box. Anchored to the panel's
-     outer left/right/bottom edges so it sits as a flush bar on the container,
-     ignoring the panel's inner padding. The fill width is set inline by
-     bundle-builder.js render() from remainder / capacity. */
-  .bundle-progress {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 4px;
-    background-color: var(--color-text-accent);
-    overflow: hidden;
-  }
-
-  .bundle-progress-fill {
-    width: 0;
-    height: 100%;
-    background-color: var(--color-text);
-    transition: width var(--transition-slow);
-  }
-
-  /* Valid selection (every box full) — fill is pinned to 100% and shifts to the
-     brand accent to signal "ready to add". */
-  .bundle-progress.is-complete .bundle-progress-fill {
-    background-color: var(--color-accent);
-  }
-
-  /* Visualiser */
-  .bundle-visualiser {
-    width: 100%;
-    max-width: 460px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .bundle-stage {
+  /* Pack strip. Side by side in add order, newest at the right, never wrapping;
+     the track scrolls (drag, trackpad or touch) and stays pinned to the newest
+     pack. Each slot is the v2_pack_render's own shape (tight-cropped, portrait,
+     ~600:770) with height set here; re-check --pack-ratio if the renders are
+     re-exported at a different aspect. */
+  .bundle-v2-stage {
+    /* Pouches are sized off the strip's own width so it always fits 4½ of them:
+       the half-visible pack at the left edge shows there's more to scroll to,
+       whatever the panel width. */
+    --pack-visible: 4.5;
+    --pack-width: calc((100cqw - (var(--pack-visible) - 0.5) * var(--spacing-xxs)) / var(--pack-visible));
+    --pack-ratio: 600 / 770;
     display: block;
+    container-type: inline-size;
     position: relative;
-    width: 100%;
-    /* Keep the layer z-indexes (box-back/packs/box-front) local — without a
-       stacking context the box-front's z-index would leak to the root and paint
-       over the cart drawer (z-index 99). */
+    min-width: 0;
+    /* Keeps the pack z-indexes local so they can't paint over the cart drawer. */
     isolation: isolate;
   }
 
-  /* Grid of box scenes — one per box in the draft. A fixed 2-column grid (rather
-     than flex-wrap) keeps every box the SAME size no matter which row it lands
-     on; flex-grow would let a lone wrapped box swell to fill its row. */
-  .bundle-stage-track {
-    --box-max: 300px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: center;
-    justify-items: center;
-    gap: var(--spacing-s);
-    width: 100%;
+  .bundle-v2-stage-track {
+    display: block;
+    overflow-x: auto;
+    /* overflow-x: auto forces overflow-y to auto too; the enter/exit transforms
+       would otherwise flash a vertical scrollbar. */
+    overflow-y: hidden;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    cursor: grab;
+    padding-block: var(--spacing-xxs);
+    min-height: calc(var(--pack-width) * 770 / 600 + var(--spacing-xxs) * 2);
   }
 
-  /* Square frame matching the authoring render. overflow visible so packs
-     shifted up-left in the stack aren't clipped. */
-  .bundle-scene {
-    position: relative;
-    width: 100%;
-    max-width: var(--box-max);
-    aspect-ratio: 1 / 1;
-    overflow: visible;
+  .bundle-v2-stage-track::-webkit-scrollbar {
+    display: none;
   }
 
-  /* A lone box spans both columns and gets more room (hero when building one). */
-  .bundle-scene:only-child {
-    grid-column: 1 / -1;
-    max-width: 460px;
+  .bundle-v2-stage.is-dragging .bundle-v2-stage-track {
+    cursor: grabbing;
+    user-select: none;
   }
 
-  /* Exactly three boxes: center the orphaned third under the gap while holding
-     it to the same size as the two above it (its grid cell width, capped to the
-     per-box max). */
-  .bundle-stage-track:has(.bundle-scene:nth-child(3):last-child) .bundle-scene:nth-child(3) {
-    grid-column: 1 / -1;
-    justify-self: center;
-    max-width: min(var(--box-max), calc((100% - var(--spacing-s)) / 2));
-  }
-
-  .bundle-layer,
-  .bundle-slot,
-  .bundle-pack {
+  /* Empty state — centred over the reserved strip. */
+  .bundle-v2-empty {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: color-mix(in srgb, var(--color-text) 55%, var(--color-accent));
     pointer-events: none;
   }
 
-  .bundle-layer,
-  .bundle-pack {
+  .bundle-v2-stage:not(.is-empty) .bundle-v2-empty {
+    display: none;
+  }
+
+  .bundle-v2-row {
+    display: flex;
+    gap: var(--spacing-xxs);
+    /* Packs pin to the right when the row is narrower than the track. */
+    justify-content: flex-end;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .bundle-v2-slot {
+    position: relative;
+    flex: none;
+    width: var(--pack-width);
+    aspect-ratio: var(--pack-ratio);
+    pointer-events: none;
+  }
+
+  .bundle-v2-pack {
+    display: block;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
-  }
-
-  .bundle-box-back {
-    z-index: 0;
-  }
-
-  .bundle-box-front {
-    z-index: 200;
-  }
-
-  /* A slot carries the depth transform; the inner pack carries enter/exit. */
-  .bundle-slot {
-    transform-origin: 50% 82%;
-    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .bundle-pack {
     filter: drop-shadow(0 4px 8px var(--color-shadow-soft));
-    transition: transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.34s ease;
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease;
   }
 
-  .bundle-slot.is-entering .bundle-pack {
+  .bundle-v2-slot.is-entering .bundle-v2-pack {
     transform: translateY(-12%);
     opacity: 0;
   }
 
-  .bundle-slot.is-leaving .bundle-pack {
+  .bundle-v2-slot.is-leaving .bundle-v2-pack {
     transform: translateY(-8%);
     opacity: 0;
     transition-duration: 0.18s;
   }
 
-  /* Desktop: builder left, visualiser fills remaining space and centers the scene */
+  /* Subscription control. */
+  .bundle-v2-subscription {
+    margin: 0;
+    padding: 0;
+  }
+
+  .bundle-v2-sub-options {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .bundle-v2-sub-option {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+  }
+
+  .bundle-v2-sub-option input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .bundle-v2-sub-box {
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--color-text);
+    border-radius: var(--rad-s);
+    background-color: transparent;
+    transition: background-color var(--transition-fast);
+  }
+
+  .bundle-v2-sub-option input:checked ~ .bundle-v2-sub-box {
+    background-color: var(--color-text);
+  }
+
+  .bundle-v2-sub-option input:focus-visible ~ .bundle-v2-sub-box {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .bundle-v2-sub-label {
+    flex: 1 1 auto;
+  }
+
+  /* Frequency + benefits, in a slightly darker yellow well under the option. */
+  .bundle-v2-sub-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xxs);
+    border-radius: var(--rad-s);
+    background-color: color-mix(in srgb, var(--color-text) 8%, var(--color-accent));
+  }
+
+  .bundle-v2-sub-details[hidden] {
+    display: none;
+  }
+
+  .bundle-v2-sub-select-wrap {
+    position: relative;
+  }
+
+  .bundle-v2-sub-select {
+    width: 100%;
+    padding: var(--spacing-xxs) var(--spacing-m) var(--spacing-xxs) var(--spacing-xxs);
+    color: var(--color-text);
+    background-color: color-mix(in srgb, var(--color-text) 12%, var(--color-accent));
+    border: 0;
+    border-radius: var(--rad-s);
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .bundle-v2-sub-chevron {
+    position: absolute;
+    top: 50%;
+    right: var(--spacing-xxs);
+    translate: 0 -50%;
+    pointer-events: none;
+  }
+
+  .bundle-v2-sub-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxxs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .bundle-v2-sub-benefits li {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+  }
+
+  .bundle-v2-sub-benefits svg {
+    flex: none;
+  }
+
   @media (min-width: 900px) {
     .bundle-builder {
       padding: var(--spacing-m);
@@ -661,43 +903,42 @@
     .bundle-layout {
       flex-direction: row;
       align-items: stretch;
-      justify-content: flex-start;
-      gap: var(--spacing-xl);
+      gap: var(--spacing-m);
     }
 
+    /* Cards take a fixed two-column block. The panel column fills the rest and
+       is as tall as the grid; auto margins centre the panel both ways within it,
+       and sticky keeps it in view while the grid scrolls past. */
     .bundle-panel {
-      flex: none;
-      width: 440px;
-      max-width: 440px;
-      gap: var(--spacing-l);
-      justify-content: space-between;
+      flex: 0 1 640px;
     }
 
-    .bundle-visualiser {
+    .bundle-v2-panel-column {
       flex: 1;
-      max-width: none;
-    }
-
-    /* Roomier box scenes on desktop, where the visualiser has the width. Bumping
-       --box-max flows through to the per-box cap and the three-box orphan rule. */
-    .bundle-stage-track {
-      --box-max: 340px;
-    }
-
-    .bundle-scene:only-child {
-      max-width: 560px;
-    }
-
-    .bundle-flavour-list {
       display: flex;
       flex-direction: column;
+      min-width: 0;
+    }
+
+    /* Pinned in the vertical middle of the window while the section is on screen
+       (--panel-h is the panel's own height, kept current by bundle-v2-stage.js),
+       then it scrolls away with the page as the section ends. Never closer to the
+       top than --spacing-l if the panel is taller than the window. */
+    .bundle-v2-panel {
+      width: 100%;
+      max-width: 370px;
+      margin: 0 auto;
+      position: sticky;
+      top: max(var(--spacing-l), calc((100vh - var(--panel-h, 480px)) / 2));
+    }
+
+    /* The collapse toggle is a mobile control. */
+    .bundle-v2-panel-toggle {
+      display: none;
     }
 
     /* Full-screen toggle (in section settings): adds extra vertical breathing
-       room above and below the builder on desktop so the visualiser has room
-       to breathe in a dedicated bundle page. Steps up at 1500px (`large`).
-       Horizontal padding stays at the default --spacing-m. Mobile + tablet
-       are untouched. */
+       room above and below the builder on desktop. Steps up at 1500px. */
     .bundle-builder.full-screen {
       padding-top: var(--spacing-l);
       padding-bottom: var(--spacing-l);
@@ -711,120 +952,18 @@
     }
   }
 
-  /* Dev-only calibration overlay (toggle with ?bundle-calibrate in the URL) */
-  .bundle-calib {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 400;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xxxs);
-    width: 220px;
-    padding: var(--spacing-xxs);
-    border-radius: var(--rad-s);
-    background: var(--color-bg);
-    color: var(--color-text);
-    font-size: var(--type-mini-size);
-  }
-
-  .bundle-calib label {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .bundle-calib input[type='range'] {
-    width: 100%;
-  }
-
-  .bundle-calib code {
-    word-break: break-all;
-    font-size: 0.6rem;
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .bundle-slot,
-    .bundle-pack {
-      transition: none;
-    }
-  }
-  /* Subscription control — mirrors the PDP selector (snippets/product-subscription). */
-  .bundle-subscription {
-    background-color: var(--color-bg-dark);
-    border-radius: var(--rad-m);
-    padding: 0;
-    margin: 0;
-  }
-
-  .bundle-sub-options {
-    border: 0;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-
-  .bundle-sub-option {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    cursor: pointer;
-  }
-
-  .bundle-sub-option input[type="radio"] {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-  }
-
-  .bundle-sub-box {
-    flex: 0 0 auto;
-    width: 12px;
-    height: 12px;
-    border: 2px solid var(--color-text);
-    border-radius: var(--rad-s);
-    background-color: transparent;
-    transition: background-color var(--transition-fast);
-  }
-
-  .bundle-sub-option input:checked ~ .bundle-sub-box {
-    background-color: var(--color-text);
-  }
-
-  .bundle-sub-option input:focus-visible ~ .bundle-sub-box {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
-  }
-
-  .bundle-sub-label {
-    flex: 1 1 auto;
-  }
-
-  .bundle-sub-frequency {
-    margin-top: var(--spacing-xs);
-  }
-
-  .bundle-sub-select {
-    width: 100%;
-    padding: var(--spacing-xxs) var(--spacing-m) var(--spacing-xxs) var(--spacing-xxs);
-    color: var(--color-text);
-    background-color: color-mix(in srgb, var(--color-text) 14%, var(--color-bg-dark));
-    border: 0;
-    border-radius: var(--rad-s);
-    cursor: pointer;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .bundle-sub-box {
+    .bundle-v2-pack,
+    .bundle-stepper button,
+    .bundle-v2-sub-box {
       transition: none;
     }
   }
 {% endstylesheet %}
 
 <script type="module" src="{{ 'bundle-builder.js' | asset_url }}"></script>
-<script type="module" src="{{ 'bundle-stage.js' | asset_url }}"></script>
+<script type="module" src="{{ 'bundle-v2-skin.js' | asset_url }}"></script>
+<script type="module" src="{{ 'bundle-v2-stage.js' | asset_url }}"></script>
 
 {% schema %}
 {
@@ -840,7 +979,7 @@
     },
     {
       "type": "paragraph",
-      "content": "Flavours come from this product's 'Included flavours' metafield (custom.included_flavours) — a list of flavour metaobjects. Reorder there to reorder the cards. Each flavour needs a name, optional attributes, and an image. Each box always holds 4 packs."
+      "content": "Flavours come from this product's 'Included flavours' metafield (custom.included_flavours) — a list of flavour metaobjects. Reorder there to reorder the cards. Each flavour needs a name, a photo (meal_image), a description (v2_description) and the pouch render (image) used by the visualiser. Each box always holds 4 packs."
     },
     {
       "type": "range",
@@ -867,6 +1006,57 @@
       "id": "heading",
       "label": "Heading",
       "default": "Create and customise your box from the Frood selection."
+    },
+    {
+      "type": "header",
+      "content": "\"Your box\" panel"
+    },
+    {
+      "type": "text",
+      "id": "panel_title",
+      "label": "Panel title",
+      "default": "Your box"
+    },
+    {
+      "type": "text",
+      "id": "panel_subtitle",
+      "label": "Panel subtitle",
+      "default": "Fill each box with 4 blends"
+    },
+    {
+      "type": "header",
+      "content": "Subscription option"
+    },
+    {
+      "type": "text",
+      "id": "subscribe_label",
+      "label": "Subscribe option label",
+      "default": "Subscribe & Save"
+    },
+    {
+      "type": "text",
+      "id": "subscribe_note",
+      "label": "Subscribe note (mobile, collapsed only)",
+      "default": "(10% off)",
+      "info": "Shown after the label when the mobile panel is collapsed, since the benefits list is hidden then."
+    },
+    {
+      "type": "text",
+      "id": "benefit_1",
+      "label": "Benefit 1",
+      "default": "10% off"
+    },
+    {
+      "type": "text",
+      "id": "benefit_2",
+      "label": "Benefit 2",
+      "default": "Delicious meals made simple"
+    },
+    {
+      "type": "text",
+      "id": "benefit_3",
+      "label": "Benefit 3",
+      "default": "Pause, skip or adjust anytime"
     },
     {
       "type": "header",

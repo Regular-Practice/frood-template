@@ -15,10 +15,24 @@
         "recharge_subscriptions_subscription_widget_v2_fmVdA4": {
           "type": "shopify://apps/recharge-subscriptions/blocks/subscription-widget-v2/371eed76-0b44-4869-9813-730372ea378e",
           "settings": {}
+        },
+        "klaviyo_reviews_average_rating_Ypxb9E": {
+          "type": "shopify://apps/klaviyo-reviews/blocks/average-rating/db20e365-d984-4ac4-9655-e1588d951ca9",
+          "settings": {
+            "product": "{{product}}"
+          }
+        },
+        "klaviyo_reviews_average_rating_7LaGQc": {
+          "type": "shopify://apps/klaviyo-reviews/blocks/average-rating/db20e365-d984-4ac4-9655-e1588d951ca9",
+          "settings": {
+            "product": "{{product}}"
+          }
         }
       },
       "block_order": [
-        "recharge_subscriptions_subscription_widget_v2_fmVdA4"
+        "recharge_subscriptions_subscription_widget_v2_fmVdA4",
+        "klaviyo_reviews_average_rating_Ypxb9E",
+        "klaviyo_reviews_average_rating_7LaGQc"
       ],
       "settings": {
         "show_quantity": true
@@ -58,12 +72,41 @@
         "products_to_show": 4,
         "grid_columns": "4"
       }
+    },
+    "1789566343ba407cf5": {
+      "type": "apps",
+      "blocks": {
+        "klaviyo_reviews_product_reviews_PNNAEQ": {
+          "type": "shopify://apps/klaviyo-reviews/blocks/product-reviews/db20e365-d984-4ac4-9655-e1588d951ca9",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "klaviyo_reviews_product_reviews_PNNAEQ"
+      ],
+      "settings": {}
+    },
+    "1789566433046d32bf": {
+      "type": "apps",
+      "settings": {}
+    },
+    "1789638949d639ca1c": {
+      "type": "apps",
+      "settings": {}
+    },
+    "17896393695b008504": {
+      "type": "apps",
+      "settings": {}
     }
   },
   "order": [
     "main",
     "recipe_recommendations",
     "fullbleed_EN6NHa",
-    "product_recommendations_hc87aa"
+    "product_recommendations_hc87aa",
+    "1789566343ba407cf5",
+    "1789566433046d32bf",
+    "1789638949d639ca1c",
+    "17896393695b008504"
   ]
 }

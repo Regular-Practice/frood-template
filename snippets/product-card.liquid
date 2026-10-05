@@ -167,12 +167,10 @@
     <div class="product-card-meta text-ui">
       {% render 'product-price', product: product %}
 
-      {%- assign current_variant = product.selected_or_first_available_variant -%}
-      {%- if current_variant.weight > 0 -%}
+      {%- assign pack_size = product.metafields.custom.pack_size.value -%}
+      {%- if pack_size != blank -%}
         <span class="product-card-separator" aria-hidden="true">|</span>
-        <span class="product-card-weight">
-          {{- current_variant.weight | round -}}{{- current_variant.weight_unit -}}
-        </span>
+        <span class="product-card-pack-size">{{ pack_size }}</span>
       {%- endif -%}
     </div>
   </a>

@@ -1,0 +1,47 @@
+{%- comment -%}
+  One gallery item on the PDP: an image, video, external video or 3D model
+  wrapped in .product-media-item. Used for both the product's own media and the
+  images from the `custom.info_image` metafield. Those file references resolve
+  to plain image objects, which have no `media_type` — so a blank type means
+  image.
+  Expects: media (media drop or image object), product (product object, for
+  fallback alt/title)
+  Owner: sections/main-product.liquid
+{%- endcomment -%}
+
+{%- assign media_kind = media.media_type | default: 'image' -%}
+<div class="product-media-item">
+  {%- case media_kind -%}
+    {%- when 'image' -%}
+      {{ media | image_url: width: 2400 | image_tag:
+        loading: 'lazy',
+        alt: media.alt | default: product.title,
+        widths: '750, 1100, 1500, 2000, 2400',
+        sizes: '(min-width: 900px) 70vw, 100vw',
+        width: media.width,
+        height: media.height
+      }}
+    {%- when 'video' -%}
+      {{ media | video_tag: autoplay: true, loop: true, muted: true, controls: false, playsinline: true }}
+    {%- when 'external_video' -%}
+      {%- if media.host == 'youtube' -%}
+        <iframe
+          src="https://www.youtube.com/embed/{{ media.external_id }}?autoplay=1&mute=1&loop=1&controls=0&playlist={{ media.external_id }}"
+          allow="autoplay; encrypted-media"
+          allowfullscreen
+          loading="lazy"
+          title="{{ product.title }}"
+        ></iframe>
+      {%- elsif media.host == 'vimeo' -%}
+        <iframe
+          src="https://player.vimeo.com/video/{{ media.external_id }}?autoplay=1&muted=1&loop=1&controls=0"
+          allow="autoplay; encrypted-media"
+          allowfullscreen
+          loading="lazy"
+          title="{{ product.title }}"
+        ></iframe>
+      {%- endif -%}
+    {%- when 'model' -%}
+      {{ media | model_viewer_tag }}
+  {%- endcase -%}
+</div>

@@ -1,3 +1,14 @@
+{%- capture accordion_icon -%}
+  <span class="product-accordion-icon" aria-hidden="true">
+    <svg class="icon-plus" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+      <path d="M5.14286 6.85714H0V5.14286H5.14286V0H6.85714V5.14286H12V6.85714H6.85714V12H5.14286V6.85714Z" fill="currentColor"/>
+    </svg>
+    <svg class="icon-minus" width="12" height="2" viewBox="0 0 12 2" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
+      <path d="M0 1.75V0H12V1.75H0Z" fill="currentColor"/>
+    </svg>
+  </span>
+{%- endcapture -%}
+
 <section class="main-product">
   {% render 'json-ld-product', product: product %}
 
@@ -13,257 +24,232 @@
     {%- form 'product', product -%}
       <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
 
-      {%- comment -%} Box 1: eyebrow + title + product render. Each content
-                       section (Details / Instructions / Nutritional info) is
-                       its own card below — separate boxes, not hairlines. {%- endcomment -%}
-      <div class="product-box product-box-main">
-        <header class="section-lockup">
-          {%- comment -%}
-            Pack-size eyebrow. Per-product via the `custom.pack_size` choice-list
-            metafield ("4 Pack" / "6 Pack"); upcased here so the stored value stays
-            readable in admin while the PDP follows the all-caps h1 convention.
-            Omitted entirely when the metafield is unset.
-          {%- endcomment -%}
-          {%- assign pack_size = product.metafields.custom.pack_size.value -%}
-          {%- if pack_size != blank -%}
-            <p class="text-h1">{{ pack_size | upcase }}</p>
-          {%- endif -%}
-          <h1 class="text-h2 product-box-title">{{ product.title }}</h1>
-        </header>
+      {%- comment -%}
+        Two-column PDP: this left column (eyebrow, title, blurb, purchase
+        options, buy row, then hairline accordions pinned to the bottom) sits
+        beside the image slider. No cards — everything sits on the page bg.
+      {%- endcomment -%}
+      <header class="section-lockup product-header">
+        {%- comment -%}
+          Pack-size eyebrow. Per-product via the `custom.pack_size` choice-list
+          metafield ("4 Pack" / "6 Pack"); upcased here so the stored value stays
+          readable in admin while the PDP follows the all-caps h1 convention.
+          Omitted entirely when the metafield is unset.
+        {%- endcomment -%}
+        {%- assign pack_size = product.metafields.custom.pack_size.value -%}
+        {%- if pack_size != blank -%}
+          <p class="text-h1">{{ pack_size | upcase }}</p>
+        {%- endif -%}
+        <h1 class="text-h3 product-title">{{ product.title }}</h1>
+      </header>
+
+      {%- comment -%}
+        Blurb: the first ~40 words of the description, as plain text. There is
+        no separate "Details" accordion any more, so a description longer than
+        the blurb is only shown truncated here.
+      {%- endcomment -%}
+      {%- assign description_text = product.description | strip_html | strip -%}
+      {%- assign blurb = description_text | truncatewords: 40 -%}
+      {%- if description_text != blank -%}
+        <p class="text-body product-blurb">{{ blurb }}</p>
+      {%- endif -%}
+
+      <div class="product-purchase">
+        {%- unless product.has_only_default_variant -%}
+          <div class="product-variants-wrap">
+            {% render 'product-variant-selector', product: product %}
+          </div>
+        {%- endunless -%}
 
         {%- comment -%}
-          Box render: prefer `custom.product_render_video` (hand-rendered 3D loop)
-          over product.media[0]. Falls back so unauthored products still display.
+          Subscription selector: native Frood-styled one-time / subscribe picker.
+          Renders only when the product has Recharge selling plans; writes the
+          chosen selling_plan into a hidden input read by product-form.js.
         {%- endcomment -%}
-        {%- assign render_video = product.metafields.custom.product_render_video.value -%}
-        {%- assign primary_media = product.media[0] -%}
-        {%- if render_video != blank or primary_media -%}
-          <div class="product-box-render">
-            {%- if render_video != blank -%}
-              {%- comment -%}
-                File-reference metafield pointing to a video file — .value is a
-                media_video drop. video_tag renders the <video> with all the
-                derived sources (mp4 / webm). Plays once on load (autoplay) and
-                re-plays from 0 whenever it scrolls back into view, via the
-                wrapping <product-render-video> custom element.
-              {%- endcomment -%}
-              <product-render-video class="product-render-video">
-                {{ render_video | video_tag: autoplay: true, muted: true, controls: false, playsinline: true }}
-              </product-render-video>
-            {%- else -%}
-              {%- case primary_media.media_type -%}
-                {%- when 'image' -%}
-                  {{ primary_media | image_url: width: 1200 | image_tag:
-                    loading: 'eager',
-                    alt: primary_media.alt | default: product.title,
-                    width: primary_media.width,
-                    height: primary_media.height
-                  }}
-                {%- when 'video' -%}
-                  {{ primary_media | video_tag: autoplay: true, loop: true, muted: true, controls: false, playsinline: true }}
-                {%- when 'external_video' -%}
-                  {%- if primary_media.host == 'youtube' -%}
-                    <iframe
-                      src="https://www.youtube.com/embed/{{ primary_media.external_id }}?autoplay=1&mute=1&loop=1&controls=0&playlist={{ primary_media.external_id }}"
-                      allow="autoplay; encrypted-media"
-                      allowfullscreen
-                      loading="lazy"
-                      title="{{ product.title }}"
-                    ></iframe>
-                  {%- elsif primary_media.host == 'vimeo' -%}
-                    <iframe
-                      src="https://player.vimeo.com/video/{{ primary_media.external_id }}?autoplay=1&muted=1&loop=1&controls=0"
-                      allow="autoplay; encrypted-media"
-                      allowfullscreen
-                      loading="lazy"
-                      title="{{ product.title }}"
-                    ></iframe>
-                  {%- endif -%}
-                {%- when 'model' -%}
-                  {{ primary_media | model_viewer_tag }}
-              {%- endcase -%}
-            {%- endif -%}
+        {% render 'product-subscription', product: product, info_link: section.settings.subscription_info_link %}
+
+        {%- comment -%}
+          Buy row: bare qty selector (left) + Add to cart button (right), each
+          showing its own surface (warm-beige slab, yellow button).
+        {%- endcomment -%}
+        <div class="product-buy-row">
+          <div class="product-buy-qty">
+            {% render 'quantity-selector' %}
           </div>
+
+          <div class="product-buy-add" data-variant-render="buy-buttons">
+            {% render 'product-buy-buttons', product: product, show_quantity: false %}
+          </div>
+        </div>
+      </div>
+
+      <accordion-list class="product-accordions">
+        {%- comment -%} How to Frood (instructions metafield) {%- endcomment -%}
+        {%- if product.metafields.custom.instructions != blank -%}
+          <details class="product-accordion">
+            <summary>
+              <span class="text-ui">{{ 'products.product.instructions' | t }}</span>
+              {{ accordion_icon }}
+            </summary>
+            <div class="accordion-content">
+              <div class="accordion-content-inner">
+                <div tabindex="0" class="product-accordion-content typeset">
+                  {{ product.metafields.custom.instructions | metafield_tag }}
+                </div>
+              </div>
+            </div>
+          </details>
         {%- endif -%}
-      </div>
 
-      <accordion-list>
+        {%- comment -%}
+          Nutrition: the merchant's `custom.nutritional_info` richtext, plus a
+          "View full nutrition" link opening the per-flavour tables in an
+          overlay. The tables live in the dialog rather than inline so the
+          accordion stays short — the mixed box stacks four of them.
 
-      {%- comment -%} Details box: product description (closed by default — opens on click) {%- endcomment -%}
-      {%- if product.description != blank -%}
-        <details class="product-box product-accordion">
-          <summary>
-            <span class="text-ui">{{ 'products.product.details' | t }}</span>
-            <span class="product-accordion-icon" aria-hidden="true">
-            <svg class="icon-plus" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-              <path d="M5.14286 6.85714H0V5.14286H5.14286V0H6.85714V5.14286H12V6.85714H6.85714V12H5.14286V6.85714Z" fill="currentColor"/>
-            </svg>
-            <svg class="icon-minus" width="12" height="2" viewBox="0 0 12 2" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-              <path d="M0 1.75V0H12V1.75H0Z" fill="currentColor"/>
-            </svg>
-          </span>
-          </summary>
-          <div class="accordion-content">
-            <div class="accordion-content-inner">
-              <div class="product-accordion-content typeset">
-                {{ product.description }}
+          Captured rather than tested via a metafield: whether there's a dialog
+          to offer depends on the flavours' own nutrition fields, and
+          nutrition-modal already owns that logic — re-deriving it here would be
+          two copies to keep in step. Section styles are hoisted at compile
+          time, so the capture holds markup only. The row shows if either half
+          has something.
+        {%- endcomment -%}
+        {%- capture nutrition_modal -%}{% render 'nutrition-modal', product: product %}{%- endcapture -%}
+        {%- assign nutrition_modal = nutrition_modal | strip -%}
+        {%- if nutrition_modal != blank or product.metafields.custom.nutritional_info != blank -%}
+          <details class="product-accordion">
+            <summary>
+              <span class="text-ui">{{ 'products.product.nutritional_info' | t }}</span>
+              {{ accordion_icon }}
+            </summary>
+            <div class="accordion-content">
+              <div class="accordion-content-inner">
+                <div tabindex="0" class="product-accordion-content product-nutrition-body">
+                  {%- if product.metafields.custom.nutritional_info != blank -%}
+                    <div class="typeset">
+                      {{ product.metafields.custom.nutritional_info | metafield_tag }}
+                    </div>
+                  {%- endif -%}
+                  {{ nutrition_modal }}
+                </div>
               </div>
             </div>
-          </div>
-        </details>
-      {%- endif -%}
+          </details>
+        {%- endif -%}
 
-      {%- comment -%} Instructions box (metafield) {%- endcomment -%}
-      {%- if product.metafields.custom.instructions != blank -%}
-        <details class="product-box product-accordion">
-          <summary>
-            <span class="text-ui">{{ 'products.product.instructions' | t }}</span>
-            <span class="product-accordion-icon" aria-hidden="true">
-            <svg class="icon-plus" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-              <path d="M5.14286 6.85714H0V5.14286H5.14286V0H6.85714V5.14286H12V6.85714H6.85714V12H5.14286V6.85714Z" fill="currentColor"/>
-            </svg>
-            <svg class="icon-minus" width="12" height="2" viewBox="0 0 12 2" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-              <path d="M0 1.75V0H12V1.75H0Z" fill="currentColor"/>
-            </svg>
-          </span>
-          </summary>
-          <div class="accordion-content">
-            <div class="accordion-content-inner">
-              <div class="product-accordion-content typeset">
-                {{ product.metafields.custom.instructions | metafield_tag }}
+        {%- comment -%}
+          Benefits / Who is it for / How does the subscription work: one rich
+          text metafield each (custom.benefits, custom.who_is_it_for,
+          custom.how_does_the_subscription_work). Each row only renders when
+          its metafield has content. Order: Instructions, Nutritional info,
+          Benefits, Who is it for, How does the subscription work.
+        {%- endcomment -%}
+        {%- if product.metafields.custom.benefits != blank -%}
+          <details class="product-accordion">
+            <summary>
+              <span class="text-ui">{{ 'products.product.benefits' | t }}</span>
+              {{ accordion_icon }}
+            </summary>
+            <div class="accordion-content">
+              <div class="accordion-content-inner">
+                <div tabindex="0" class="product-accordion-content typeset">
+                  {{ product.metafields.custom.benefits | metafield_tag }}
+                </div>
               </div>
             </div>
-          </div>
-        </details>
-      {%- endif -%}
+          </details>
+        {%- endif -%}
 
-      {%- comment -%}
-        Nutritional info box: the merchant's `custom.nutritional_info` richtext,
-        plus a "View full nutrition" link opening the per-flavour tables in an
-        overlay. The tables live in the dialog rather than inline so the
-        accordion stays short — the mixed box stacks four of them.
-
-        Captured rather than tested via a metafield: whether there's a dialog to
-        offer depends on the flavours' own nutrition fields, and nutrition-modal
-        already owns that logic — re-deriving it here would be two copies to keep
-        in step. {% stylesheet %} is hoisted at compile time, so the capture
-        holds markup only. The box shows if either half has something.
-      {%- endcomment -%}
-      {%- capture nutrition_modal -%}{% render 'nutrition-modal', product: product %}{%- endcapture -%}
-      {%- assign nutrition_modal = nutrition_modal | strip -%}
-      {%- if nutrition_modal != blank or product.metafields.custom.nutritional_info != blank -%}
-        <details class="product-box product-accordion">
-          <summary>
-            <span class="text-ui">{{ 'products.product.nutritional_info' | t }}</span>
-            <span class="product-accordion-icon" aria-hidden="true">
-            <svg class="icon-plus" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-              <path d="M5.14286 6.85714H0V5.14286H5.14286V0H6.85714V5.14286H12V6.85714H6.85714V12H5.14286V6.85714Z" fill="currentColor"/>
-            </svg>
-            <svg class="icon-minus" width="12" height="2" viewBox="0 0 12 2" fill="none" xmlns="http://www.w3.org/2000/svg" focusable="false">
-              <path d="M0 1.75V0H12V1.75H0Z" fill="currentColor"/>
-            </svg>
-          </span>
-          </summary>
-          <div class="accordion-content">
-            <div class="accordion-content-inner">
-              <div class="product-accordion-content product-nutrition-body">
-                {%- if product.metafields.custom.nutritional_info != blank -%}
-                  <div class="typeset">
-                    {{ product.metafields.custom.nutritional_info | metafield_tag }}
-                  </div>
-                {%- endif -%}
-                {{ nutrition_modal }}
+        {%- if product.metafields.custom.who_is_it_for != blank -%}
+          <details class="product-accordion">
+            <summary>
+              <span class="text-ui">{{ 'products.product.who_is_it_for' | t }}</span>
+              {{ accordion_icon }}
+            </summary>
+            <div class="accordion-content">
+              <div class="accordion-content-inner">
+                <div tabindex="0" class="product-accordion-content typeset">
+                  {{ product.metafields.custom.who_is_it_for | metafield_tag }}
+                </div>
               </div>
             </div>
-          </div>
-        </details>
-      {%- endif -%}
+          </details>
+        {%- endif -%}
 
+        {%- if product.metafields.custom.how_does_the_subscription_work != blank -%}
+          <details class="product-accordion">
+            <summary>
+              <span class="text-ui">{{ 'products.product.subscription_how' | t }}</span>
+              {{ accordion_icon }}
+            </summary>
+            <div class="accordion-content">
+              <div class="accordion-content-inner">
+                <div tabindex="0" class="product-accordion-content typeset">
+                  {{ product.metafields.custom.how_does_the_subscription_work | metafield_tag }}
+                </div>
+              </div>
+            </div>
+          </details>
+        {%- endif -%}
       </accordion-list>
-
-      {%- comment -%} Variants (own box, only when the product has real variant options) {%- endcomment -%}
-      {%- unless product.has_only_default_variant -%}
-        <div class="product-box product-box-variants">
-          {% render 'product-variant-selector', product: product %}
-        </div>
-      {%- endunless -%}
-
-      {%- comment -%}
-        Subscription selector: native Frood-styled one-time / subscribe picker.
-        Renders only when the product has Recharge selling plans; writes the
-        chosen selling_plan into a hidden input read by product-form.js.
-      {%- endcomment -%}
-      {% render 'product-subscription', product: product, info_link: section.settings.subscription_info_link %}
-
-      {%- comment -%}
-        Buy row: bare Qty selector (left) + Add to cart button (right) —
-        no .product-box wrapper, so each element shows its own surface
-        (warm-beige qty slab, yellow button) directly on the bg slider.
-      {%- endcomment -%}
-      <div class="product-buy-row">
-        <div class="product-buy-qty">
-          {% render 'quantity-selector' %}
-        </div>
-
-        <div class="product-buy-add" data-variant-render="buy-buttons">
-          {% render 'product-buy-buttons', product: product, show_quantity: false %}
-        </div>
-      </div>
     {%- endform -%}
   </product-form>
 
   {%- comment -%}
-    Background slider: product.media from index 1 onwards. media[0] is reserved
-    for Box 1's product render, so the slider picks up every media item after it.
+    Gallery sequence: the product's own media (minus media[0], the box render /
+    pack shot) interleaved with the `custom.info_image` metafield, starting with a
+    product image: product 1, info 1, product 2, info 2 … whichever list is
+    longer just carries on alone at the end. With no info images the gallery is
+    the product media as-is.
+
+    Each item is captured once and output in two containers, only one of which
+    is visible at a time:
+      - <900px: a square Embla slider with prev/next pills.
+      - ≥900px: one column of squares; the text column beside it is sticky,
+        so the images scroll past it until the section ends.
   {%- endcomment -%}
-  {%- if product.media.size > 1 -%}
+  {%- assign gallery_media = product.media | slice: 1, 100 -%}
+  {%- assign info_images = product.metafields.custom.info_image.value | default: product.metafields.custom.image.value -%}
+  {%- comment -%} Works whether the metafield is a single file or a list of files. {%- endcomment -%}
+  {%- if info_images.media_type != blank -%}
+    {%- assign info_single = true -%}
+    {%- assign info_count = 1 -%}
+  {%- else -%}
+    {%- assign info_single = false -%}
+    {%- assign info_count = info_images.size | default: 0 -%}
+  {%- endif -%}
+  {%- assign gallery_count = gallery_media.size -%}
+  {%- if info_count > gallery_count -%}
+    {%- assign gallery_count = info_count -%}
+  {%- endif -%}
+  {%- if gallery_count > 0 -%}
+    {%- capture media_items -%}
+      {%- for i in (1..gallery_count) -%}
+        {%- assign index = i | minus: 1 -%}
+        {%- if gallery_media[index] -%}
+          {% render 'product-media-item', media: gallery_media[index], product: product %}
+        {%- endif -%}
+        {%- comment -%} The metafield list can be looped but not indexed, so pick item N by iterating. {%- endcomment -%}
+        {%- if info_single -%}
+          {%- if index == 0 -%}
+            {% render 'product-media-item', media: info_images, product: product %}
+          {%- endif -%}
+        {%- else -%}
+          {%- for info_image in info_images -%}
+            {%- if forloop.index0 == index -%}
+              {% render 'product-media-item', media: info_image, product: product %}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+
     <product-bg-slider class="product-bg-slider">
       <div class="product-bg-slider-viewport">
         <div class="product-bg-slider-container">
-          {%- for media in product.media offset: 1 -%}
-            <div class="product-bg-slider-slide">
-              {%- case media.media_type -%}
-                {%- when 'image' -%}
-                  {{ media | image_url: width: 2400 | image_tag:
-                    loading: 'lazy',
-                    alt: '',
-                    width: media.width,
-                    height: media.height
-                  }}
-                {%- when 'video' -%}
-                  {{ media | video_tag: autoplay: true, loop: true, muted: true, controls: false, playsinline: true }}
-                {%- when 'external_video' -%}
-                  {%- if media.host == 'youtube' -%}
-                    <iframe
-                      src="https://www.youtube.com/embed/{{ media.external_id }}?autoplay=1&mute=1&loop=1&controls=0&playlist={{ media.external_id }}"
-                      allow="autoplay; encrypted-media"
-                      allowfullscreen
-                      loading="lazy"
-                      title=""
-                    ></iframe>
-                  {%- elsif media.host == 'vimeo' -%}
-                    <iframe
-                      src="https://player.vimeo.com/video/{{ media.external_id }}?autoplay=1&muted=1&loop=1&controls=0"
-                      allow="autoplay; encrypted-media"
-                      allowfullscreen
-                      loading="lazy"
-                      title=""
-                    ></iframe>
-                  {%- endif -%}
-                {%- when 'model' -%}
-                  {{ media | model_viewer_tag }}
-              {%- endcase -%}
-            </div>
-          {%- endfor -%}
+          {{ media_items }}
         </div>
       </div>
-
-      {%- comment -%}
-        Slider nav — prev/next pills pinned to the bottom-right of the slider
-        container. Hidden via CSS until embla initialises (.is-initialized),
-        so they don't show when there's only one slide and embla bails.
-        Styling mirrors the recipe video play/pause pill (.recipe-control-pill).
-      {%- endcomment -%}
       <div class="product-bg-slider-nav">
         <button type="button" class="product-bg-slider-btn product-bg-slider-prev" aria-label="Previous slide">
           {% render 'icon-arrow' %}
@@ -273,6 +259,10 @@
         </button>
       </div>
     </product-bg-slider>
+
+    <div class="product-images">
+      {{ media_items }}
+    </div>
   {%- endif -%}
 </section>
 
@@ -281,28 +271,66 @@
 <script src="{{ 'embla-carousel.umd.js' | asset_url }}" defer></script>
 <script src="{{ 'product-bg-slider.js' | asset_url }}" defer></script>
 <script src="{{ 'quantity-selector.js' | asset_url }}" defer></script>
-<script src="{{ 'product-render-video.js' | asset_url }}" defer></script>
-<script src="{{ 'product-boxes-scroll.js' | asset_url }}" defer></script>
 <script type="module" src="{{ 'accordion.js' | asset_url }}"></script>
 
 {% stylesheet %}
-  /* Tight padding so the boxes column reads as a floating panel rather than a
-     section with broad chrome. (Previously gated on .color-scheme-1, which the PDP
-     always used — its higher specificity meant xxs was already the live padding on
-     every viewport, so the old m/xs rules never actually applied.) */
+  /* Two-column PDP. Mobile/tablet: details on top, slider below in normal
+     flow. Desktop (≥900px): details column left, slider right, both filling
+     the viewport height. Everything sits on the page bg — no cards. */
   .main-product {
     position: relative;
-    min-height: 100vh;
-    padding: var(--spacing-xxs);
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-xs);
   }
 
-  /* Background slider — fills section, sits behind boxes */
+  .product-boxes {
+    display: block;
+    min-width: 0;
+  }
+
+  /* The {% form 'product' %} tag renders the <form> holding the column. */
+  .product-boxes form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+    height: 100%;
+  }
+
+  .product-header .product-title {
+    margin: 0;
+  }
+
+  .product-blurb {
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  .product-purchase {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  /* Accordions sit at the bottom of the column on desktop; on smaller screens
+     they just follow the buy row. */
+  .product-accordions {
+    display: block;
+    margin-top: var(--spacing-m);
+  }
+
+  /* Mobile/tablet: a square slider leads, clearing the fixed header, and the
+     text column follows below it. (Visual order only — the DOM keeps the text
+     first.) The stacked column is desktop-only. */
   .product-bg-slider {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
+    order: -1;
+    position: relative;
     display: block;
     overflow: hidden;
+    margin-top: var(--header-height);
+    margin-bottom: var(--spacing-m);
+    aspect-ratio: 1 / 1;
+    border-radius: var(--rad-s);
   }
 
   .product-bg-slider-viewport {
@@ -315,38 +343,28 @@
     height: 100%;
   }
 
-  /* Each slide shrinks to fit its image so multiple slides can sit side-by-side
-     in the flex row — neighbours peek at the edges of the viewport. */
-  .product-bg-slider-slide {
-    flex: 0 0 auto;
+  /* One slide per view. */
+  .product-bg-slider .product-media-item {
+    flex: 0 0 100%;
     min-width: 0;
     height: 100%;
   }
 
-  /* Images / videos: fill container height, width auto so the intrinsic aspect
-     ratio is preserved (object-fit is irrelevant when the box matches the
-     media's natural ratio). */
-  .product-bg-slider-slide img,
-  .product-bg-slider-slide video,
-  .product-bg-slider-slide model-viewer {
-    width: auto;
-    height: 100%;
+  .product-bg-slider .product-media-item img,
+  .product-bg-slider .product-media-item video,
+  .product-bg-slider .product-media-item model-viewer,
+  .product-bg-slider .product-media-item iframe {
     display: block;
-  }
-
-  /* iframes (YouTube/Vimeo) have no intrinsic ratio — give them a 16:9 box. */
-  .product-bg-slider-slide iframe {
+    width: 100%;
     height: 100%;
-    aspect-ratio: 16 / 9;
+    object-fit: cover;
     border: 0;
-    display: block;
   }
 
-  /* Slider nav — prev/next pills anchored to the bottom-right of the slider
-     container. Styling mirrors .recipe-control-pill (snippets/video.liquid):
-     beige bg, dark burgundy icon, pale-yellow on hover, --rad-s rounded,
-     --spacing-xxs padding. Hidden until embla initialises so single-slide
-     products don't show dead controls. */
+  /* Slider nav — prev/next pills anchored bottom-right. Styling mirrors
+     .recipe-control-pill (snippets/video.liquid): beige bg, dark burgundy
+     icon, pale-yellow on hover, --rad-s rounded. Hidden until embla
+     initialises so single-slide products don't show dead controls. */
   .product-bg-slider-nav {
     position: absolute;
     bottom: var(--spacing-xs);
@@ -386,158 +404,74 @@
     transform: rotate(180deg);
   }
 
-  /* Boxes column — left-aligned, sits on top of slider. The actual flex
-     stack (gap between .product-box children) lives on the inner <form> below,
-     since <product-form>'s direct children are <script> + <form>, not the
-     boxes themselves. Applying the gap here would just gap script/form. */
-  /* Boxes column — left-aligned, sits on top of slider. Caps at 386px wide.
-     At ≥900px the header's bento nav (400px wide) is centered in the viewport;
-     once the viewport narrows enough that the boxes' right edge would cross
-     into the bento (with less than --spacing-m of clearance), the `min()`
-     clamp shrinks the column so its right edge keeps M away from the bento's
-     left edge. Bento's left edge = (100vw - 400px) / 2; subtracting section's
-     left padding (--spacing-m) + the M gap gives the max allowable width. */
-  /* Always fixed at top-left with xxs offsets so the column doesn't scroll
-     away while the user is on the section. Compact form (toggled by
-     product-boxes-scroll.js) just hides the render/accordions/variants. */
-  .product-boxes {
-    position: fixed;
-    top: var(--spacing-xxs);
-    left: var(--spacing-xxs);
-    z-index: 50;
-    display: block;
-    width: auto;
-    max-width: 386px;
+  .product-images {
+    display: none;
   }
 
   @media (min-width: 900px) {
+    .main-product {
+      display: grid;
+      /* Same clamp as before: the header's bento nav (400px, centred) must
+         keep --spacing-m clear of this column's right edge. */
+      grid-template-columns: min(386px, calc((100vw - 400px) / 2 - var(--spacing-m) - var(--spacing-m))) 1fr;
+      gap: var(--spacing-l);
+      min-height: 100vh;
+      padding: var(--spacing-m);
+    }
+
+    .product-accordions {
+      margin-top: auto;
+    }
+
+    /* Text column sticks to the top for as long as the images scroll past it
+       (its grid cell ends with the section). Full viewport height so the
+       accordions stay pinned to the bottom edge. */
     .product-boxes {
-      max-width: min(386px, calc((100vw - 400px) / 2 - var(--spacing-m) - var(--spacing-m)));
+      position: sticky;
+      top: var(--spacing-m);
+      align-self: start;
+      height: calc(100vh - var(--spacing-m) * 2);
+    }
+
+    .product-bg-slider {
+      display: none;
+    }
+
+    .product-images {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xxs);
     }
   }
 
-  /* Animated full↔compact transition. Each element that disappears in compact
-     collapses its max-height + padding + margin and fades out, so the column
-     visibly shrinks rather than snapping. */
-  .product-box-render,
-  .product-boxes .product-accordion,
-  .product-boxes .product-box-variants {
-    max-height: 1200px;
-    overflow: hidden;
-    opacity: 1;
-    transition:
-      max-height 0.35s ease,
-      opacity 0.2s ease 0.05s,
-      margin-top 0.3s ease,
-      margin-bottom 0.3s ease,
-      padding-block 0.3s ease;
-  }
-
-  .product-boxes.is-compact .product-box-render {
-    max-height: 0;
-    opacity: 0;
-    margin-block: 0;
-    padding-block: 0;
-    pointer-events: none;
-  }
-
-  /* Accordions + variants are direct children of <form> and inherit its
-     xxxs flex gap. With max-height: 0 each one collapses to 0 height but
-     the flex gap above it is still painted — multiple collapsed siblings
-     stack those gaps. Negative margin-top of -xxxs cancels each preceding
-     flex gap, so the only surviving gap is the one before the (visible)
-     buy row: exactly one xxxs between Box 1 and the buy row. */
-  .product-boxes.is-compact .product-accordion,
-  .product-boxes.is-compact .product-box-variants {
-    max-height: 0;
-    opacity: 0;
-    margin-top: calc(-1 * var(--spacing-xxxs));
-    margin-bottom: 0;
-    padding-block: 0;
-    pointer-events: none;
-  }
-
-  /* Kill the .product-box-main flex gap above the (now-collapsed) render so
-     the header sits flush with the next visible element. */
-  .product-boxes.is-compact .product-box-main {
-    gap: 0;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .product-box-render,
-    .product-boxes .product-accordion,
-    .product-boxes .product-box-variants {
-      transition: none;
-    }
-  }
-
-  /* The {% form 'product' %} tag renders a <form> that holds the actual
-     .product-box children. This is where the gap needs to apply. */
-  .product-boxes form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xxxs);
-  }
-
-  /* Shared box treatment — warm beige bg, xxs inset, brand radius. */
-  .product-box {
-    background: var(--color-bg-dark);
-    color: var(--color-text);
+  /* Every item is a square, cropped to fill (object-fit: cover) — same ratio
+     as the mobile slider. */
+  .product-images .product-media-item {
+    aspect-ratio: 1 / 1;
     border-radius: var(--rad-s);
-    padding: var(--spacing-xxs);
-  }
-
-  /* Box 1: main content stack. The eyebrow + title pair is wrapped in a
-     .section-lockup which bakes in the canonical xxs gap between them. The
-     lockup already sets margin: 0 on children and margin-top: xxs between
-     siblings, so no per-element overrides needed here. */
-  .product-box-main {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-s);
-  }
-
-  .product-box-render {
-    width: 65%;
-    margin-inline: auto;
-    aspect-ratio: 3 / 4;
     overflow: hidden;
-    border-radius: var(--rad-s);
-    background: var(--color-bg-dark);
   }
 
-  .product-box-render img,
-  .product-box-render video,
-  .product-box-render iframe,
-  .product-box-render model-viewer {
+  .product-images .product-media-item img,
+  .product-images .product-media-item video,
+  .product-images .product-media-item iframe,
+  .product-images .product-media-item model-viewer {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
     border: 0;
   }
 
-  /* Buy row: bare qty stepper + button, no .product-box wrapper.
+  /* When the frequency dropdown is showing, the buy row tucks up under it with
+     the same xxxs gap as qty ↔ add to cart (cancels the purchase stack's xs). */
+  .product-subscription:has(.subscription-frequency:not([hidden])) + .product-buy-row {
+    margin-top: calc(var(--spacing-xxxs) - var(--spacing-xs));
+  }
 
-     LAYOUT — CSS Grid, two columns:
-       auto  → qty stepper column (.product-buy-qty, source order 1, left)
-       1fr   → add-to-cart button column (.product-buy-add, source order 2, right)
-     Grid is used (not flex) because flex was letting the qty stepper's
-     intrinsic content push it past the row's right edge — `auto` in Grid is
-     a hard "size to content, no more" constraint, and `1fr` only takes the
-     remaining space. Column placement follows source order (no grid-column
-     overrides) — qty sits left because it's the first child in the markup.
-
-     WIDTH — fills the full .product-boxes column (max-width 386px in this
-     theme). The row is a flex item of the form's column flex (default
-     align-items: stretch), but width: 100% is set explicitly so the
-     relationship to the boxes above is obvious in the code.
-
-     HEIGHT — matches a closed .product-accordion: .product-box xxs padding × 2
-     plus one rendered line of the summary's .text-ui label (font-size × 1.2em
-     line-height). align-items: stretch fills the two grid cells, and the
-     inner button + qty surfaces fill their cells, so both read as the same
-     height as the dropdown summaries above. */
+  /* Buy row: bare qty stepper + button. CSS Grid (not flex): `auto` sizes the
+     qty column to its content and `1fr` takes the rest, so the stepper can't
+     push past the row's right edge. Height matches an accordion summary row. */
   .product-buy-row {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -554,11 +488,9 @@
     display: flex;
   }
 
-  /* Add-to-cart label overrides for this PDP context only:
-     – text-align left (vs default .button center)
-     – typography switches from .text-h1 base (uppercase 12px) to .text-ui
-       (14px / 1.2em / 0 letter-spacing / no transform). Weight stays 500
-       (same as default .button), so only size/height/spacing/case change. */
+  /* Add-to-cart label overrides for this PDP context only: left-aligned,
+     .text-ui typography (14px / 1.2em / no transform) instead of the
+     uppercase .text-h1 base. Weight stays 500. */
   .product-buy-add .button {
     text-align: left;
     font-size: var(--type-ui-size);
@@ -567,8 +499,8 @@
     text-transform: none;
   }
 
-  /* Label on the left, price on the right, pushed apart. Inner flex wrapper
-     because .button itself stays inline-block per the convention. */
+  /* Label on the left, price on the right. Inner flex wrapper because
+     .button itself stays inline-block per the convention. */
   .buy-button-inner {
     display: flex;
     justify-content: space-between;
@@ -582,13 +514,9 @@
     min-width: 0;
   }
 
-  /* Qty cell. The snippet renders:
-       .product-buy-qty > <quantity-selector> > .quantity-selector (visible slab)
-     <quantity-selector> is inline-block by default and .quantity-selector is
-     inline-flex — neither stretches to fill the grid cell's height on its
-     own. Make each layer a flex container with explicit `align-self: stretch`
-     so cross-axis stretch flows all the way down to the visible slab and
-     matches the add-to-cart button height. */
+  /* Qty cell: each layer (.product-buy-qty > <quantity-selector> >
+     .quantity-selector) stretches so the visible slab matches the button
+     height. */
   .product-buy-qty {
     display: flex;
     align-items: stretch;
@@ -628,13 +556,20 @@
     flex: 1;
   }
 
-  /* Accordion boxes (Details / Instructions / Nutritional info) — each is its
-     own .product-box card; the .product-box's xxs padding wraps the summary +
-     (when open) content. */
+  /* Hairline accordion rows: a rule above each, plus one under the last. */
+  .product-accordion {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .product-accordion:last-child {
+    border-bottom: 1px solid var(--color-border);
+  }
+
   .product-accordion summary {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: var(--spacing-xs) 0;
     cursor: pointer;
     list-style: none;
   }
@@ -702,8 +637,27 @@
     opacity: 1;
   }
 
+  /* Long content (the Mixed Box's nutrition runs to four tables' worth) scrolls
+     inside the dropdown instead of stretching the column. The scroll lives on
+     this box, not on .accordion-content-inner, so the open/close height tween
+     in accordion.js is unaffected. Scrollbar: both the standard properties
+     (Chrome/Firefox) and ::-webkit-scrollbar (Safari) — keep both. */
   .product-accordion-content {
-    padding-top: var(--spacing-xxs);
+    padding-bottom: var(--spacing-xs);
+    max-height: 320px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-text-accent) transparent;
+  }
+
+  .product-accordion-content::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .product-accordion-content::-webkit-scrollbar-thumb {
+    background-color: var(--color-text-accent);
+    border-radius: 3px;
   }
 
   /* Richtext + the "View full nutrition" trigger stack with a consistent gap,
@@ -715,21 +669,9 @@
     align-items: flex-start;
   }
 
-  /* The global open-summary gap is dropped under [data-enhanced] (base.css);
-     re-add it inside the animated body so it tweens with the height. */
-  accordion-list[data-enhanced] .product-accordion-content {
-    padding-top: var(--spacing-xs);
-  }
-
-  /* The wrapper is layout-transparent: the three .product-accordion <details>
-     stay flex children of <form>, so the form gap + the .is-compact collapse
-     keep working unchanged. It only carries the JS state hook + data-enhanced. */
-  .product-boxes accordion-list {
-    display: contents;
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .product-accordion-icon svg {
+    .product-accordion-icon svg,
+    .product-bg-slider-btn {
       transition: none;
     }
   }
@@ -738,176 +680,6 @@
     opacity: 0.6;
     pointer-events: none;
   }
-
-  /* Tablet (600–899px): boxes column anchors to the bottom-left corner of
-     the bg slider area (was sticky top-left on desktop). Box 1 lays its
-     section-lockup (eyebrow + title) and the render side-by-side instead
-     of stacked, since the column is shorter when bottom-anchored. */
-  @media (min-width: 600px) and (max-width: 899px) {
-    .product-boxes {
-      position: absolute;
-      inset: auto auto var(--spacing-xs) var(--spacing-xs);
-      top: auto;
-    }
-
-    /* Compact form on tablet: once scrolled past the section, switch from
-       absolute (anchored to section's bottom-left) to fixed (anchored to
-       viewport's bottom-left). The bottom/left offsets come from the base
-       .product-boxes rule above via cascade; only position needs to change.
-       Max-width 386px (from the base rule) is preserved so the compact panel
-       sits as a small floating bar rather than spanning the full width.
-
-       Entry animation: same slide-up-from-below + fade as mobile (the
-       @keyframes is defined once near the bottom of this stylesheet and
-       reused at both breakpoints). The per-child collapse transitions are
-       skipped here too so the bar slides in as a solid unit. */
-    .product-boxes.is-compact {
-      position: fixed;
-      animation: product-boxes-compact-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* Tablet-only override: keep the product render visible inside the
-       compact panel. The desktop .is-compact rule collapses .product-box-render
-       to max-height: 0; opacity: 0 — but on tablet the compact card is wider
-       and benefits from showing the render alongside the section-lockup.
-       Mobile still collapses it (matches the default rule).  */
-    .product-boxes.is-compact .product-box-render {
-      max-height: 1200px;
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    /* The desktop .is-compact rule zeroes .product-box-main's gap to flush
-       header against next-visible element; on tablet we still have the
-       render visible, so restore the tablet gap (xs) between section-lockup
-       and render in the row-reverse flex. */
-    .product-boxes.is-compact .product-box-main {
-      gap: var(--spacing-xs);
-    }
-
-    /* Tablet-only: skip the inner collapse transitions so accordions and
-       variants snap to their compact state alongside the parent's slide-up
-       (mirrors the mobile rule). The render stays visible on tablet so its
-       transition wouldn't fire either way. */
-    .product-box-render,
-    .product-boxes .product-accordion,
-    .product-boxes .product-box-variants {
-      transition: none;
-    }
-
-    /* row-reverse so the render visually leads (left) and the section-lockup
-       sits to the right of it, without touching the source order. */
-    .product-box-main {
-      flex-direction: row-reverse;
-      align-items: center;
-      gap: var(--spacing-xs);
-    }
-
-    .product-box-main .section-lockup {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .product-box-render {
-      width: 28%;
-      flex-shrink: 0;
-      margin-inline: 0;
-    }
-  }
-
-  /* Mobile only (<600px): break the desktop/tablet overlay layout — the
-     product boxes and bg slider stack vertically in normal block flow.
-     DOM order is boxes first, then slider, so the boxes sit at the top of
-     the section and the slider sits below them.
-
-     This block MUST come after the .product-boxes base rule (which sets
-     position: fixed + max-width: 386px) so the cascade lets these overrides
-     win at mobile widths. Tablet keeps its own overlay arrangement in the
-     600–899px block directly above. */
-  @media (max-width: 599px) {
-    .main-product {
-      /* Section is content-sized once children are in normal flow; the
-         100vh min-height was only there to give the absolute-positioned
-         slider something to fill. */
-      min-height: 0;
-    }
-
-    /* Boxes flow at the top of the section, full section width — drops the
-       386px cap and the fixed positioning used on desktop. padding-top equals
-       the fixed header's height plus xs of breathing room, so the title sits
-       just below the header with a small gap. */
-    .product-boxes {
-      position: static;
-      width: 100%;
-      max-width: none;
-      top: auto;
-      left: auto;
-      right: auto;
-      padding-top: var(--header-height);
-    }
-
-    /* Slider sits in-flow below the boxes, 85svh tall (svh, not dvh, keeps
-       the height stable as mobile browser chrome collapses). Negative inline
-       margins pull it out of the section's --spacing-xs padding so it runs
-       full-bleed edge-to-edge. margin-top adds a clear gap from the buy row
-       above so the slider doesn't visually butt up against / "cut into" the
-       boxes. position: relative (not static) keeps the slider in flow but
-       still acts as a positioning context for the absolute nav inside. */
-    .product-bg-slider {
-      position: relative;
-      height: 85svh;
-      margin-top: var(--spacing-m);
-      margin-inline: calc(-1 * var(--spacing-xs));
-    }
-
-    /* Compact form on mobile: once the user has scrolled past the static
-       boxes column, the .is-compact class re-pins the column — but to the
-       BOTTOM of the viewport rather than the top, so it reads as a sticky
-       add-to-cart bar. The desktop .is-compact rules above already collapse
-       the render, accordions, and variants, so only Box 1 (eyebrow + title)
-       and the buy row remain visible inside the pinned panel.
-
-       Entry animation: slide up from below the viewport with a fade. The
-       per-child max-height/opacity transitions are skipped on mobile (see
-       below) so the bar slides in as a single solid unit at its compact
-       size, rather than tall-then-collapsing while it slides. */
-    .product-boxes.is-compact {
-      position: fixed;
-      top: auto;
-      bottom: var(--spacing-xs);
-      left: var(--spacing-xs);
-      right: var(--spacing-xs);
-      width: auto;
-      max-width: none;
-      margin-top: 0;
-      animation: product-boxes-compact-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* Mobile-only: skip the inner collapse transitions so the children jump
-       straight to their compact state. The visible motion is the parent
-       bar sliding up from below; the children's internal collapse would
-       compete with that and read as a jitter. */
-    .product-box-render,
-    .product-boxes .product-accordion,
-    .product-boxes .product-box-variants {
-      transition: none;
-    }
-  }
-
-  /* Compact-state entry animation for mobile (referenced inside the <600px
-     media query above). Kept at top level so the @keyframes is parsed once,
-     not redefined per media query. */
-  @keyframes product-boxes-compact-in {
-    from {
-      transform: translateY(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
 {% endstylesheet %}
 
 {% schema %}
@@ -919,6 +691,19 @@
       "id": "show_quantity",
       "label": "Show quantity selector",
       "default": true
+    },
+    {
+      "type": "text",
+      "id": "subscription_title",
+      "label": "Subscription accordion title",
+      "default": "Subscription"
+    },
+    {
+      "type": "richtext",
+      "id": "subscription_info",
+      "label": "Subscription accordion text",
+      "info": "Shown in the Subscription accordion on products with a subscription plan. Leave empty to hide the accordion.",
+      "default": "<p>Subscribe and save 10% on every delivery. Skip, pause or cancel any time.</p>"
     },
     {
       "type": "url",

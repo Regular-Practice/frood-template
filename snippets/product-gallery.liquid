@@ -23,7 +23,7 @@
         height: media.height
       }}
     {%- elsif media.media_type == 'video' -%}
-      {% render 'video', media: media, controls: true, label: media.alt | default: product.title %}
+      {% render 'video', media: media, controls: true, label: media.alt, default: product.title %}
     {%- elsif media.media_type == 'external_video' -%}
       {%- if media.host == 'youtube' -%}
         <iframe
@@ -73,7 +73,7 @@
                 height: media.height
               }}
             {%- elsif media.media_type == 'video' -%}
-              {% render 'video', media: media, controls: true, label: media.alt | default: product.title %}
+              {% render 'video', media: media, controls: true, label: media.alt, default: product.title %}
             {%- elsif media.media_type == 'external_video' -%}
               {%- if media.host == 'youtube' -%}
                 <iframe
@@ -293,3 +293,20 @@
     }
   }
 {% endstylesheet %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% render 'video', media: media, controls: true, label: media.alt | default:
+    product.title %}"
+  to: "{% render 'video', media: media, controls: true, label: media.alt, default:
+    product.title %}"
+  position: 997..1089
+- from: "{% render 'video', media: media, controls: true, label: media.alt | default:
+    product.title %}"
+  to: "{% render 'video', media: media, controls: true, label: media.alt, default:
+    product.title %}"
+  position: 3019..3111
+{% endcomment %}

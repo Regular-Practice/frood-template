@@ -12,148 +12,293 @@
     "hero": {
       "type": "hero",
       "settings": {
-        "overlay_opacity": 15,
-        "product": "mixed-box-old",
-        "attributes": "Rich • Tangy • Tasty"
-      }
-    },
-    "featured_collection": {
-      "type": "featured-collection",
-      "settings": {
-        "eyebrow": "Our collection",
-        "heading": "Real food, made simple.\nMade for modern home cooks.",
-        "button_text": "Our range",
-        "button_link": "shopify://collections/shop",
-        "collection": "shop",
-        "products_to_show": 5,
-        "enable_carousel": true,
-        "mobile_layout": "grid"
-      }
-    },
-    "quote": {
-      "type": "quote",
-      "settings": {
-        "eyebrow": "We are about",
-        "heading": "Real ingredients, real flavour, less effort.",
-        "button_text": "",
-        "button_link": "",
-        "use_card": false,
-        "card_bg": "accent",
-        "card_color": "text"
+        "background_image": "shopify://shop_images/Frood_Dec25_JamesMoyle_LOWRES_-103.jpg",
+        "secondary_image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-17.jpg",
+        "overlay_opacity": 10,
+        "heading": "<p>We prep. You cook. Home-made dinner in 20 minutes.</p>",
+        "text": "<p>Frood is a ready-to-cook vegetable and spice blend made from real ingredients and nothing else. Just add your protein for a meal packed with flavour.</p>",
+        "button_label": "Get dinner sorted",
+        "button_link": "shopify://collections/shop"
       }
     },
     "media_tabs": {
       "type": "media-tabs",
       "blocks": {
+        "tab_ENatHy": {
+          "type": "tab",
+          "settings": {
+            "description": "<p><strong>Real ingredients, chopped & measured. </strong>Veg, herbs and spices, gently dried and blended for flavour.</p>",
+            "image": "shopify://shop_images/672464872_17918866359335112_7784430358043577824_n.jpg"
+          }
+        },
         "tab_1": {
           "type": "tab",
           "settings": {
-            "heading": "#1",
-            "description": "<p>Whole produce is gently dehydrated to keep nutrients, flavour and shelf-life.</p>",
-            "image": "shopify://shop_images/672464872_17918866359335112_7784430358043577824_n.jpg"
+            "description": "<p><strong>Pick a flavour + protein</strong>. Pick one of our 4 blends plus your favourite protein.</p>",
+            "image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-44_165fca35-119b-46e9-b09c-348b9d748a06.jpg"
           }
         },
         "tab_2": {
           "type": "tab",
           "settings": {
-            "heading": "#2",
-            "description": "<p>Combine Frood with a protein, add water and cook. Within 15 mins you will have a delicious meal.</p>",
-            "video": "shopify://files/videos/curry-trimmed.mp4"
+            "description": "<p><strong>One pan on the hob</strong>. Your Frood blend + protein prepared in one pan.&nbsp;</p>",
+            "image": "shopify://shop_images/Frood_Dec25_JamesMoyle_LOWRES_-3.jpg"
           }
         },
         "tab_3": {
           "type": "tab",
           "settings": {
-            "heading": "#3",
-            "description": "<p>From vegan to meat-eater, dairy-free to picky kids - our blends work for every diet, dish and kitchen.</p>",
-            "video": "shopify://files/videos/Table Spread.mov"
+            "description": "<p><strong>Dinner that does you good</strong>. Real vegetables, high in fibre.</p>",
+            "image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-4.jpg"
           }
         }
       },
       "block_order": [
+        "tab_ENatHy",
         "tab_1",
         "tab_2",
         "tab_3"
       ],
-      "settings": {}
-    },
-    "bundle_builder_mNULHm": {
-      "type": "bundle-builder",
-      "name": "Bundle builder",
       "settings": {
-        "box_product": "custom-box",
-        "max_boxes": 4,
-        "eyebrow": "Build your box",
-        "heading": "Create and customise your box from the Frood selection.",
-        "full_screen": true
+        "heading": "How Frood works",
+        "button_label": "Learn More",
+        "button_link": "shopify://pages/about"
       }
     },
-    "text_image_split_Yx6jAX": {
+    "featured_collection": {
+      "type": "featured-collection",
+      "settings": {
+        "eyebrow": "",
+        "heading": "Recipes from Frida's kitchen",
+        "button_text": "Shop Our range",
+        "button_link": "shopify://collections/shop",
+        "collection": "shop",
+        "products_to_show": 5
+      }
+    },
+    "text_image_split_BYBfYc": {
       "type": "text-image-split",
       "blocks": {
-        "media_rgb7jh": {
+        "media_thMtgW": {
           "type": "media",
           "settings": {
-            "video": "shopify://files/videos/c91ffce7e72546b4ba99c321f960b581_bf5126f4-3ee9-4802-8abf-948ddaf45c1c.mp4",
+            "image": "shopify://shop_images/20260929-111912_custom-box-landscape.jpg",
             "caption": ""
-          }
-        },
-        "media_tAJbmY": {
-          "type": "media",
-          "settings": {
-            "image": "shopify://shop_images/IMG_9712.jpg",
-            "caption": "<p>Delicious tacos with toppings made with the Swedish Meatball Blend, <a href=\"/pages/recipes\" target=\"_blank\" title=\"Recipes\">see recipe here</a></p>"
           }
         }
       },
       "block_order": [
-        "media_rgb7jh",
-        "media_tAJbmY"
+        "media_thMtgW"
       ],
       "name": "Text + image split",
       "settings": {
-        "eyebrow": "Recipes",
-        "heading": "Nourishing recipes that don't ask too much of you. Simple ingredients, big flavour, eating well the Frood way.",
-        "button_text": "Explore",
-        "button_link": "shopify://pages/recipes",
-        "text_vertical_alignment": "top"
+        "eyebrow": "",
+        "heading": "Pick your own box",
+        "text": "<p>Pick exactly which Frood flavours go in your box and how many of each, so your order is always made to your taste.</p>",
+        "button_text": "Make your Box",
+        "button_link": "shopify://products/custom-box",
+        "yellow_box": true,
+        "media_alignment": "left",
+        "media_size": "big",
+        "text_vertical_alignment": "middle"
       }
     },
-    "fullbleed": {
-      "type": "fullbleed",
+    "benefits_grid_Txjmr8": {
+      "type": "benefits-grid",
+      "blocks": {
+        "benefit_fgE34T": {
+          "type": "benefit",
+          "disabled": true,
+          "settings": {
+            "icon": "shopify://shop_images/Icon.svg",
+            "text": "FULL NUTRITION FOR EVERY BLEND."
+          }
+        },
+        "benefit_YpkGC7": {
+          "type": "benefit",
+          "disabled": true,
+          "settings": {
+            "icon": "shopify://shop_images/Icon.svg",
+            "text": "MIX AND MATCH OUR BLENDS."
+          }
+        },
+        "benefit_CiA3my": {
+          "type": "benefit",
+          "settings": {
+            "icon": "shopify://shop_images/Icon.svg",
+            "text": "Real ingredients"
+          }
+        },
+        "benefit_9Ritwf": {
+          "type": "benefit",
+          "settings": {
+            "icon": "shopify://shop_images/Icon.svg",
+            "text": "Nothing ultra-processed"
+          }
+        },
+        "benefit_pRcLLP": {
+          "type": "benefit",
+          "settings": {
+            "icon": "shopify://shop_images/Icon.svg",
+            "text": "high in fibre"
+          }
+        },
+        "benefit_Qmmcn4": {
+          "type": "benefit",
+          "settings": {
+            "icon": "shopify://shop_images/Icon.svg",
+            "text": "works with any portion"
+          }
+        }
+      },
+      "block_order": [
+        "benefit_fgE34T",
+        "benefit_YpkGC7",
+        "benefit_CiA3my",
+        "benefit_9Ritwf",
+        "benefit_pRcLLP",
+        "benefit_Qmmcn4"
+      ],
+      "name": "Benefits grid",
       "settings": {
-        "image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-8.jpg",
-        "height": "75",
-        "keep_ratio": false,
-        "margins": true,
-        "caption_heading": "The ultimate kitchen hack",
-        "caption_body": "<p>We all want to eat better. But between busy schedules and long ingredient lists, cooking from scratch demands time we just don’t have. </p>",
-        "add_quote": false,
-        "quote_eyebrow": "",
-        "quote_heading": "",
-        "quote_button_text": "",
-        "quote_button_link": ""
+        "eyebrow": "Benefits",
+        "heading": "Wholesome home cooking, made easy.",
+        "button_text": "",
+        "button_link": ""
       }
     },
     "feature_card": {
       "type": "feature-card",
       "settings": {
-        "featured_entry": "25-05-2026",
-        "link_text": "Link",
-        "heading": "Whether it's events, new recipes or the latest from the Frood kitchen, keep up to date!",
+        "featured_entry": "",
+        "fallback_image": "shopify://shop_images/Frood_WebVideo_PHOTOS_May26_JamesMoyle_HIGHRES_-5.jpg",
+        "fallback_meta": "Frida Redknapp",
+        "fallback_title": "Founder of Frood, Swedish-born mother of five and trusted voice in family, food, and wellbeing.",
+        "fallback_link": "https://www.instagram.com/froodworld/?hl=en",
+        "link_text": "See more",
+        "heading": "\"Some days there just isn't the time to cook properly, and I've never believed convenience has to mean ultra processed. That's why I started Frood in my own kitchen.”",
         "card_bg": "text",
         "card_color": "bg"
+      }
+    },
+    "social_proof_Jt3Pzz": {
+      "type": "social-proof",
+      "name": "Social proof",
+      "settings": {
+        "eyebrow": "Loved by our community",
+        "heading": "What people are saying.",
+        "verified_label": "Verified"
+      }
+    },
+    "logo_section_nHTHKM": {
+      "type": "logo-section",
+      "blocks": {
+        "logo_xjqT4m": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/MandS_logo-text-trimmed.png",
+            "link": ""
+          }
+        },
+        "logo_ixCqnU": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/Group_18795-text-trimmed.png",
+            "link": ""
+          }
+        },
+        "logo_RaPFDW": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/Tesco_logo-text.png",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "logo_xjqT4m",
+        "logo_ixCqnU",
+        "logo_RaPFDW"
+      ],
+      "name": "Logo section",
+      "settings": {
+        "eyebrow": "",
+        "heading": "In collaboration with",
+        "button_text": "",
+        "button_link": ""
+      }
+    },
+    "faq_section_H6aeXd": {
+      "type": "faq-section",
+      "blocks": {
+        "question_Pfrbbe": {
+          "type": "question",
+          "settings": {
+            "question": "What exactly is Frood?",
+            "answer": "<p>Frood is a ready-to-cook vegetable and spice blend made from real ingredients and nothing else. The vegetables, herbs and spices are gently dehydrated to keep their flavour and nutrients, then blended to Frida's recipes that have been perfected in her kitchen. Add your protein and you have a home-made dinner for four in 15 to 20 minutes, high in fibre and nothing ultra-processed.</p>"
+          }
+        },
+        "question_7UN3x4": {
+          "type": "question",
+          "settings": {
+            "question": "What do I need to add?",
+            "answer": "<p>Your protein, and a little water. Mince, chicken, beans, lentils and tofu all work, so pick whatever suits the meal and your taste. The exact amounts are on the pack and on every <a href=\"https://frood.com/collections/shop\"><span style=\"text-decoration:underline\">product page.</span></a></p>"
+          }
+        },
+        "question_engyRn": {
+          "type": "question",
+          "settings": {
+            "question": "Can I cook it more than one way?",
+            "answer": "<p>Yes, and in two ways. Start with any protein you like and serve it however suits your table, with pasta, rice, mash or flatbreads. Then there is what else the blends can do: Bella Bolognese layered into a lasagne, Swedish Meatball shaped into burgers, Golden Curry in savoury pancakes, Mexi Fiesta in savoury cupcakes. You can find them all on our <a href=\"https://frood.com/pages/recipes\"><span style=\"text-decoration:underline\">recipe page</span></a>.</p>"
+          }
+        },
+        "question_RJHrei": {
+          "type": "question",
+          "settings": {
+            "question": "What are the benefits of using Frood?",
+            "answer": "<p>The prep is done, so a home-made dinner takes 15 to 20 minutes. Every blend is made from real ingredients and nothing else: high in fibre, nothing ultra-processed, and no artificial colours, flavours or preservatives. One pack feeds four and works with any protein, so it is one dinner for the whole family or batch cooked for a busy week. At £12 for a box of four, that is 75p a portion, and you still cooked it yourself. Made in the UK, in recyclable packaging.</p>"
+          }
+        },
+        "question_6VQR9y": {
+          "type": "question",
+          "settings": {
+            "question": "Who is it for?",
+            "answer": "<p>Anyone with a busy life who still wants to eat wholesome, home-made food. Every blend is dairy free and vegan, and you choose the protein, so the same pack works whether dinner is meat, fish or plant-based. Full ingredients and allergens are listed on every pack and product page.</p>"
+          }
+        },
+        "question_GC8ek4": {
+          "type": "question",
+          "settings": {
+            "question": "Where can I buy it?",
+            "answer": "<p>Frood is in Tesco and Ocado, and here at frood.com. Online you can pick your own box of four blends for £12, or subscribe and save 10%.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "question_Pfrbbe",
+        "question_7UN3x4",
+        "question_engyRn",
+        "question_RJHrei",
+        "question_6VQR9y",
+        "question_GC8ek4"
+      ],
+      "name": "FAQ section",
+      "settings": {
+        "eyebrow": "FAQ",
+        "heading": "Everything you need to know.",
+        "even_spacing": false
       }
     }
   },
   "order": [
     "hero",
-    "featured_collection",
-    "quote",
     "media_tabs",
-    "bundle_builder_mNULHm",
-    "text_image_split_Yx6jAX",
-    "fullbleed",
-    "feature_card"
+    "featured_collection",
+    "text_image_split_BYBfYc",
+    "benefits_grid_Txjmr8",
+    "feature_card",
+    "social_proof_Jt3Pzz",
+    "logo_section_nHTHKM",
+    "faq_section_H6aeXd"
   ]
 }

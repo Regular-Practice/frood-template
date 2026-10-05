@@ -1,0 +1,192 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "hero-landing",
+      "blocks": {
+        "benefit_pwqG89": {
+          "type": "benefit",
+          "settings": {
+            "text": "Real whole produce"
+          }
+        },
+        "benefit_j6bKLq": {
+          "type": "benefit",
+          "settings": {
+            "text": "No long ingredient list"
+          }
+        },
+        "benefit_CmBNt9": {
+          "type": "benefit",
+          "settings": {
+            "text": "works for every diet"
+          }
+        }
+      },
+      "block_order": [
+        "benefit_pwqG89",
+        "benefit_j6bKLq",
+        "benefit_CmBNt9"
+      ],
+      "settings": {
+        "overlay_opacity": 15,
+        "product": "mixed-box",
+        "heading": "<p>The hours are already in the pouch. Dinner is fifteen minutes away.</p>"
+      }
+    },
+    "quote": {
+      "type": "quote",
+      "settings": {
+        "eyebrow": "We are about",
+        "heading": "Real ingredients, real flavour, less effort.",
+        "button_text": "Find out More",
+        "button_link": "shopify://collections/shop",
+        "use_card": false,
+        "card_bg": "accent",
+        "card_color": "text"
+      }
+    },
+    "media_tabs": {
+      "type": "media-tabs",
+      "blocks": {
+        "tab_1": {
+          "type": "tab",
+          "settings": {
+            "heading": "#1",
+            "description": "<p>Whole produce is gently dehydrated to keep nutrients, flavour and shelf-life.</p>",
+            "image": "shopify://shop_images/672464872_17918866359335112_7784430358043577824_n.jpg"
+          }
+        },
+        "tab_2": {
+          "type": "tab",
+          "settings": {
+            "heading": "#2",
+            "description": "<p>Combine Frood with a protein, add water and cook. Within 15 mins you will have a delicious meal.</p>",
+            "video": "shopify://files/videos/curry-trimmed.mp4"
+          }
+        },
+        "tab_3": {
+          "type": "tab",
+          "settings": {
+            "heading": "#3",
+            "description": "<p>From vegan to meat-eater, dairy-free to picky kids - our blends work for every diet, dish and kitchen.</p>",
+            "video": "shopify://files/videos/Table Spread.mov"
+          }
+        }
+      },
+      "block_order": [
+        "tab_1",
+        "tab_2",
+        "tab_3"
+      ],
+      "settings": {}
+    },
+    "bundle_builder_mNULHm": {
+      "type": "bundle-builder",
+      "name": "Bundle builder",
+      "settings": {
+        "box_product": "custom-box",
+        "max_boxes": 4,
+        "eyebrow": "Build your box",
+        "heading": "Create and customise your box from the Frood selection.",
+        "full_screen": true
+      }
+    },
+    "text_image_split_Yx6jAX": {
+      "type": "text-image-split-landing",
+      "blocks": {
+        "benefit_EEqrGr": {
+          "type": "benefit",
+          "settings": {
+            "text": "Real whole produce"
+          }
+        },
+        "benefit_MzhfWF": {
+          "type": "benefit",
+          "settings": {
+            "text": "No long ingredient lists"
+          }
+        },
+        "benefit_RFxGrY": {
+          "type": "benefit",
+          "settings": {
+            "text": "Build your own box"
+          }
+        },
+        "media_rgb7jh": {
+          "type": "media",
+          "settings": {
+            "video": "shopify://files/videos/c91ffce7e72546b4ba99c321f960b581_bf5126f4-3ee9-4802-8abf-948ddaf45c1c.mp4",
+            "caption": ""
+          }
+        },
+        "media_tAJbmY": {
+          "type": "media",
+          "settings": {
+            "image": "shopify://shop_images/IMG_9712.jpg",
+            "caption": "<p>Delicious tacos with toppings made with the Swedish Meatball Blend, <a href=\"/pages/recipes\" target=\"_blank\" title=\"Recipes\">see recipe here</a></p>"
+          }
+        }
+      },
+      "block_order": [
+        "benefit_EEqrGr",
+        "benefit_MzhfWF",
+        "benefit_RFxGrY",
+        "media_rgb7jh",
+        "media_tAJbmY"
+      ],
+      "name": "Text + image split",
+      "settings": {
+        "eyebrow": "Benefits",
+        "heading": "Nourishing recipes that don't ask too much of you. Simple ingredients, big flavour, eating well the Frood way.",
+        "button_text": "",
+        "button_link": "shopify://pages/recipes",
+        "text_vertical_alignment": "top"
+      }
+    },
+    "feature_card": {
+      "type": "feature-card-landing",
+      "settings": {
+        "featured_entry": "",
+        "fallback_image": "shopify://shop_images/Frood_WebVideo_PHOTOS_May26_JamesMoyle_HIGHRES_-5.jpg",
+        "fallback_meta": "our founder",
+        "fallback_title": "Frida Redknapp built Frood in her own kitchen",
+        "fallback_link": "https://www.instagram.com/froodworld/?hl=en",
+        "link_text": "See more",
+        "heading": "Frood began in Frida Redknapp's kitchen. A Swedish-born mother of five, she set out to redefine convenience food — meals you can whip up fast, that still taste good and do you good.Frood began in Frida Redknapp's kitchen. A Swedish-born mother of five, she set out to redefine convenience food — meals you can whip up fast, that still taste good and do you good.",
+        "card_bg": "text",
+        "card_color": "bg"
+      }
+    },
+    "featured_collection": {
+      "type": "featured-collection",
+      "settings": {
+        "eyebrow": "Our collection",
+        "heading": "Real food, made simple.\nMade for modern home cooks.",
+        "button_text": "Our range",
+        "button_link": "shopify://collections/shop",
+        "collection": "shop",
+        "products_to_show": 5,
+        "enable_carousel": true,
+        "mobile_layout": "grid"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "quote",
+    "media_tabs",
+    "bundle_builder_mNULHm",
+    "text_image_split_Yx6jAX",
+    "feature_card",
+    "featured_collection"
+  ]
+}

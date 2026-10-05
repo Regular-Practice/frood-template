@@ -1,5 +1,5 @@
 {%- form 'customer', id: 'newsletter-form' -%}
-  <input type="hidden" name="contact[tags]" value="newsletter">
+  <input type="hidden" name="contact[tags]" value="newsletter, signup-footer">
   {%- if form.posted_successfully? -%}
     <p class="form-success text-body" role="alert">{{ 'newsletter.success' | t }}</p>
   {%- endif -%}
