@@ -71,7 +71,10 @@
         {%- if collection.products.size > 0 -%}
           <div class="collection-grid grid grid-{{ section.settings.grid_columns }}">
             {%- for product in collection.products -%}
-              {% render 'product-card', product: product %}
+              {%- comment -%} Tag `hide-from-browse` keeps the single-pack blends (bundle-builder only) out of grids. {%- endcomment -%}
+              {%- unless product.tags contains 'hide-from-browse' -%}
+                {% render 'product-card', product: product %}
+              {%- endunless -%}
             {%- endfor -%}
           </div>
 

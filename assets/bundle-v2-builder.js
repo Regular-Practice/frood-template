@@ -35,6 +35,9 @@
         [data-flavour-card][data-flavour-id]        (one per flavour)
           [data-qty="<id>"]                         (qty readout)
           [data-action="add"|"remove"][data-flavour-id]
+            ("Add +" bar and the stepper's + both carry add; CSS shows one)
+      [data-panel-toggle]                           (mobile: expand/collapse the panel —
+                                                     toggles `is-collapsed` on .bundle-v2-panel)
       [data-add] > [data-add-label]                 (add-to-cart button)
       [data-hint]                                   (minimum-order hint)
       [data-error]                                  (inline error, role=alert)
@@ -116,8 +119,6 @@ class BundleV2Builder extends HTMLElement {
 
     this.addButton = this.querySelector('[data-add]');
     this.addLabel = this.querySelector('[data-add-label]');
-    this.progressEl = this.querySelector('[data-progress]');
-    this.progressFillEl = this.querySelector('[data-progress-fill]');
     this.hintEl = this.querySelector('[data-hint]');
     this.errorEl = this.querySelector('[data-error]');
 
@@ -126,7 +127,9 @@ class BundleV2Builder extends HTMLElement {
     this.subFrequency = this.querySelector('[data-sub-frequency]');
     this.subSelect = this.querySelector('[data-sub-select]');
     this.addPriceEl = this.querySelector('.bundle-v2-add-price');
-    this.addWasEl = this.querySelector('[data-add-was]');
+    // Subscribe row totals: the original struck through, then the subscription price.
+    this.subWasEl = this.querySelector('[data-sub-was]');
+    this.subPriceEl = this.querySelector('[data-sub-price]');
     this.boxPriceCents = parseInt(this.dataset.boxPriceCents, 10);
     this.moneyFormat = this.dataset.moneyFormat || '';
 
@@ -345,24 +348,26 @@ class BundleV2Builder extends HTMLElement {
   // ---- Events -----------------------------------------------------------
 
   handleClick(e) {
-    const trigger = e.target.closest('[data-action]');
-    if (trigger && this.contains(trigger)) {
-      const { action, flavourId } = trigger.dataset;
-      if (action === 'add') this.add(flavourId);
-      else if (action === 'remove') this.remove(flavourId);
+    // Mobile panel: expand/collapse. CSS only reacts to `is-collapsed` below 900px.
+    const panelToggle = e.target.closest('[data-panel-toggle]');
+    if (panelToggle && this.contains(panelToggle)) {
+      const panel = panelToggle.closest('.bundle-v2-panel');
+      const collapsed = panel.classList.toggle('is-collapsed');
+      panelToggle.setAttribute('aria-expanded', String(!collapsed));
       return;
     }
 
-    const flavourLink = e.target.closest('.bundle-v2-flavour-link');
-    if (flavourLink && this.contains(flavourLink)) {
-      const card = flavourLink.closest('[data-flavour-card]');
-      const id = card?.dataset.flavourId || '';
-      this.track('bundle_flavour_link_clicked', {
-        flavour_id: id,
-        flavour_name: this.flavours[id]?.name || '',
-        filled: this.total,
-        min_packs: this.minPacks
-      });
+    const trigger = e.target.closest('[data-action]');
+    if (trigger && this.contains(trigger)) {
+      const { action, flavourId } = trigger.dataset;
+      // The card's "Add +" bar is swapped for the stepper once its flavour has a
+      // pack, which would drop keyboard focus — so hand it to the stepper's +.
+      const wasAddBar = trigger.classList.contains('bundle-v2-add-blend');
+      if (action === 'add') this.add(flavourId);
+      else if (action === 'remove') this.remove(flavourId);
+      if (wasAddBar) {
+        trigger.closest('[data-flavour-card]')?.querySelector('.bundle-v2-stepper [data-action="add"]')?.focus();
+      }
       return;
     }
 
@@ -382,7 +387,6 @@ class BundleV2Builder extends HTMLElement {
       const qtyEl = card.querySelector('[data-qty]');
       if (qtyEl) qtyEl.textContent = qty;
       card.classList.toggle('is-active', qty > 0);
-      const addBtn = card.querySelector('[data-action="add"]');
       const removeBtn = card.querySelector('[data-action="remove"]');
       if (removeBtn) removeBtn.disabled = qty === 0;
     });
@@ -391,23 +395,16 @@ class BundleV2Builder extends HTMLElement {
     if (this.addLabel) this.addLabel.textContent = this.dataset.i18nAdd || 'Add to cart';
 
     // Hint counts the shopper up to the order minimum, then goes quiet — above
-    // it any quantity is addable, so there is nothing left to nudge toward.
+    // it any quantity is addable, so there is nothing left to nudge toward. It
+    // also stays quiet on an empty draft: the panel subtitle already states the
+    // minimum, so repeating it would just be noise.
     if (this.hintEl) {
-      if (this.shortfall > 0) {
+      if (this.total > 0 && this.shortfall > 0) {
         const tmpl = this.dataset.i18nAddMore || 'Add {count} more';
         this.hintEl.textContent = tmpl.replace('{count}', String(this.shortfall));
       } else {
         this.hintEl.textContent = '';
       }
-    }
-
-    // Progress bar fills toward the minimum and then stays full.
-    if (this.progressFillEl) {
-      this.progressFillEl.style.width = `${Math.min(100, (this.total / this.minPacks) * 100)}%`;
-    }
-    if (this.progressEl) {
-      this.progressEl.classList.toggle('is-complete', this.isValid);
-      this.progressEl.setAttribute('aria-valuenow', String(Math.min(this.total, this.minPacks)));
     }
 
     this.updateSubscription();
@@ -451,6 +448,10 @@ class BundleV2Builder extends HTMLElement {
   // flavour list is fixed for the life of the section.
   pruneFrequencies() {
     if (!this.subSelect) return;
+    // The design placeholder's dummy frequencies belong to no blend, so pruning
+    // would empty the list and hide it. Skip it — planFor() finds nothing for
+    // them, so nothing is sent as a selling plan.
+    if (this.querySelector('[data-subscription][data-placeholder]')) return;
     const common = this.commonPlanNames();
     for (const option of [...this.subSelect.options]) {
       if (!common.includes(option.value)) option.remove();
@@ -458,6 +459,9 @@ class BundleV2Builder extends HTMLElement {
     // Nothing shared: subscriptions aren't offerable for this mix at all.
     if (!this.subSelect.options.length) {
       this.querySelector('[data-subscription]')?.setAttribute('hidden', '');
+      // Subscribe is the default choice, so hiding the control has to reset it.
+      const oneTime = [...this.subModeInputs].find((input) => input.value === 'onetime');
+      if (oneTime) oneTime.checked = true;
     }
   }
 
@@ -475,25 +479,36 @@ class BundleV2Builder extends HTMLElement {
     if (this.subFrequency) this.subFrequency.hidden = !isSub;
   }
 
-  // Add-button price = the sum of the blend lines. An empty draft previews the
-  // minimum order at the cheapest blend rather than £0. Subscriptions show the
-  // discounted total plus the struck-through original.
+  // True while the subscription block is the design placeholder (no real plans).
+  get isPlaceholder() {
+    return !!this.querySelector('[data-subscription][data-placeholder]');
+  }
+
+  // Prices are the sum of the blend lines. An empty draft previews the minimum
+  // order at the cheapest blend rather than £0.
+  //   - Subscribe row: the original total struck through + the subscription total,
+  //     shown whichever option is selected.
+  //   - Add button: the total for the selected option.
   updateAddPrice() {
-    if (!this.addPriceEl) return;
     const fullCents = this.draftCents();
     if (fullCents == null) return;
 
     // Each blend carries its own plan price, so a subscription total is summed
-    // per blend rather than derived from one rate.
-    const subCents = this.isSubscription ? this.draftCents({ subscription: true }) : null;
-    const showCents = subCents == null ? fullCents : subCents;
+    // per blend rather than derived from one rate. The placeholder has no plan
+    // prices, so it previews a flat 10% off — design review only.
+    let subCents = this.draftCents({ subscription: true });
+    if (subCents == null && this.isPlaceholder) subCents = Math.round(fullCents * 0.9);
+    const hasDiscount = subCents != null && subCents < fullCents;
 
-    this.addPriceEl.textContent = formatMoney(showCents, this.moneyFormat);
+    const showCents = this.isSubscription && subCents != null ? subCents : fullCents;
+    if (this.addPriceEl) this.addPriceEl.textContent = formatMoney(showCents, this.moneyFormat);
 
-    if (this.addWasEl) {
-      const showWas = subCents != null && subCents < fullCents;
-      this.addWasEl.textContent = showWas ? formatMoney(fullCents, this.moneyFormat) : '';
-      this.addWasEl.hidden = !showWas;
+    if (this.subPriceEl) {
+      this.subPriceEl.textContent = formatMoney(subCents ?? fullCents, this.moneyFormat);
+    }
+    if (this.subWasEl) {
+      this.subWasEl.textContent = hasDiscount ? formatMoney(fullCents, this.moneyFormat) : '';
+      this.subWasEl.hidden = !hasDiscount;
     }
   }
 

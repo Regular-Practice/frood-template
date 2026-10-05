@@ -6,7 +6,7 @@
 <link rel="canonical" href="{{ canonical_url }}">
 
 {%- comment -%} Noindex pages {%- endcomment -%}
-{%- if template.name == 'cart' or template.name == 'search' or template == 'password' -%}
+{%- if template.name == 'cart' or template.name == 'search' or template == 'password' or product.tags contains 'hide-from-browse' -%}
   <meta name="robots" content="noindex, nofollow">
 {%- endif -%}
 

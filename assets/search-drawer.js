@@ -178,7 +178,10 @@ class SearchDrawer extends HTMLElement {
       return;
     }
 
-    const products = resources.products || [];
+    // Single-pack blends are tagged `hide-from-browse` — bundle-builder only.
+    const products = (resources.products || []).filter(
+      (p) => !(p.tags || []).includes('hide-from-browse')
+    );
     const articles = resources.articles || [];
     const pages = resources.pages || [];
 

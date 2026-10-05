@@ -62,7 +62,10 @@
             <div class="search-products grid grid-{{ section.settings.grid_columns }}">
               {%- for item in search.results -%}
                 {%- if item.object_type == 'product' -%}
-                  {% render 'product-card', product: item %}
+                  {%- comment -%} Tag `hide-from-browse` keeps the single-pack blends out of results. {%- endcomment -%}
+                  {%- unless item.tags contains 'hide-from-browse' -%}
+                    {% render 'product-card', product: item %}
+                  {%- endunless -%}
                 {%- endif -%}
               {%- endfor -%}
             </div>

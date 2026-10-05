@@ -230,6 +230,11 @@ summary::-webkit-details-marker {
   --type-ui-spacing: 0em;
   --type-ui-weight: 500;
 
+  --type-quote-size: 16px;
+  --type-quote-height: 1.2em;
+  --type-quote-spacing: 0em;
+  --type-quote-weight: 400;
+
   /* Spacing */
   --spacing-xxxs: 4px;
   --spacing-xxs: 8px;
@@ -259,6 +264,9 @@ summary::-webkit-details-marker {
   :root {
     /* Mobile/tablet keep h2 at 32px; desktop bumps it to the 36px Figma spec. */
     --type-h2-size: 36px;
+
+    /* Quote style: 16px on mobile/tablet, 19px on desktop. */
+    --type-quote-size: 19px;
 
     --type-base-size: 14px;
     --type-base-height: 16px;
@@ -397,6 +405,14 @@ body {
   line-height: var(--type-ui-height);
   letter-spacing: var(--type-ui-spacing);
   font-weight: var(--type-ui-weight);
+}
+
+.text-quote {
+  font-family: "HW Left", sans-serif;
+  font-size: var(--type-quote-size);
+  line-height: var(--type-quote-height);
+  letter-spacing: var(--type-quote-spacing);
+  font-weight: var(--type-quote-weight);
 }
 
 .text-cap {
