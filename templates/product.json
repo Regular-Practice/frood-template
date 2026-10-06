@@ -27,15 +27,25 @@
           "settings": {
             "product": "{{product}}"
           }
+        },
+        "klaviyo_reviews_average_rating_7VTPET": {
+          "type": "shopify://apps/klaviyo-reviews/blocks/average-rating/db20e365-d984-4ac4-9655-e1588d951ca9",
+          "settings": {
+            "product": "{{product}}"
+          }
         }
       },
       "block_order": [
         "recharge_subscriptions_subscription_widget_v2_fmVdA4",
         "klaviyo_reviews_average_rating_Ypxb9E",
-        "klaviyo_reviews_average_rating_7LaGQc"
+        "klaviyo_reviews_average_rating_7LaGQc",
+        "klaviyo_reviews_average_rating_7VTPET"
       ],
       "settings": {
-        "show_quantity": true
+        "show_quantity": true,
+        "subscription_title": "Subscription",
+        "subscription_info": "<p>Subscribe and save 10% on every delivery. Skip, pause or cancel any time.</p>",
+        "subscription_info_link": ""
       }
     },
     "recipe_recommendations": {
