@@ -30,8 +30,8 @@
 
     <div class="cart-drawer-main" data-drawer-body>
       {%- if cart.item_count > 0 -%}
-        {%- if section.settings.free_shipping_enabled and section.settings.free_shipping_threshold > 0 -%}
-          {% render 'cart-shipping-progress', threshold: section.settings.free_shipping_threshold %}
+        {%- if section.settings.free_shipping_enabled and section.settings.free_shipping_boxes > 0 -%}
+          {% render 'cart-shipping-progress', threshold: section.settings.free_shipping_boxes %}
         {%- endif -%}
 
         <cart-items
@@ -472,10 +472,10 @@
     },
     {
       "type": "number",
-      "id": "free_shipping_threshold",
-      "label": "Free shipping threshold",
-      "info": "Amount in your store currency (e.g. 24 for £24). Match this to your free-shipping automatic discount's minimum — Shopify can't share that value with the theme, so keep them in sync. Set to 0 to hide the bar.",
-      "default": 24
+      "id": "free_shipping_boxes",
+      "label": "Boxes needed for free shipping",
+      "info": "Number of boxes in the cart that unlocks free shipping (e.g. 2). Match this to your free-shipping automatic discount's minimum quantity of items — Shopify can't share that value with the theme, so keep them in sync. Set to 0 to hide the bar.",
+      "default": 2
     }
   ]
 }
