@@ -163,6 +163,9 @@
 
   <a href="{{ product.url }}" class="product-card-info">
     <h3 class="product-card-title text-ui">{{ product.title }}</h3>
+    {%- if product.metafields.reviews.rating_count.value > 0 -%}
+      <div class="klaviyo-star-rating-widget" data-id="{{ product.id }}"></div>
+    {%- endif -%}
 
     <div class="product-card-meta text-ui">
       {% render 'product-price', product: product %}

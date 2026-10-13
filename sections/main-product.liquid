@@ -41,6 +41,10 @@
           <p class="text-h1">{{ pack_size | upcase }}</p>
         {%- endif -%}
         <h1 class="text-h3 product-title">{{ product.title }}</h1>
+        {%- comment -%} Klaviyo Reviews star rating; the app fills it in (only rendered once the product has reviews). {%- endcomment -%}
+        {%- if product.metafields.reviews.rating_count.value > 0 -%}
+          <div class="klaviyo-star-rating-widget" data-id="{{ product.id }}"></div>
+        {%- endif -%}
       </header>
 
       {%- comment -%}
@@ -196,11 +200,8 @@
   </product-form>
 
   {%- comment -%}
-    Gallery sequence: the product's own media (minus media[0], the box render /
-    pack shot) interleaved with the `custom.info_image` metafield, starting with a
-    product image: product 1, info 1, product 2, info 2 … whichever list is
-    longer just carries on alone at the end. With no info images the gallery is
-    the product media as-is.
+    Gallery: the product's own media, minus media[0] (the box render / pack
+    shot). All imagery lives in the product media, in the order set in admin.
 
     Each item is captured once and output in two containers, only one of which
     is visible at a time:
@@ -209,38 +210,10 @@
         so the images scroll past it until the section ends.
   {%- endcomment -%}
   {%- assign gallery_media = product.media | slice: 1, 100 -%}
-  {%- assign info_images = product.metafields.custom.info_image.value | default: product.metafields.custom.image.value -%}
-  {%- comment -%} Works whether the metafield is a single file or a list of files. {%- endcomment -%}
-  {%- if info_images.media_type != blank -%}
-    {%- assign info_single = true -%}
-    {%- assign info_count = 1 -%}
-  {%- else -%}
-    {%- assign info_single = false -%}
-    {%- assign info_count = info_images.size | default: 0 -%}
-  {%- endif -%}
-  {%- assign gallery_count = gallery_media.size -%}
-  {%- if info_count > gallery_count -%}
-    {%- assign gallery_count = info_count -%}
-  {%- endif -%}
-  {%- if gallery_count > 0 -%}
+  {%- if gallery_media.size > 0 -%}
     {%- capture media_items -%}
-      {%- for i in (1..gallery_count) -%}
-        {%- assign index = i | minus: 1 -%}
-        {%- if gallery_media[index] -%}
-          {% render 'product-media-item', media: gallery_media[index], product: product %}
-        {%- endif -%}
-        {%- comment -%} The metafield list can be looped but not indexed, so pick item N by iterating. {%- endcomment -%}
-        {%- if info_single -%}
-          {%- if index == 0 -%}
-            {% render 'product-media-item', media: info_images, product: product %}
-          {%- endif -%}
-        {%- else -%}
-          {%- for info_image in info_images -%}
-            {%- if forloop.index0 == index -%}
-              {% render 'product-media-item', media: info_image, product: product %}
-            {%- endif -%}
-          {%- endfor -%}
-        {%- endif -%}
+      {%- for media in gallery_media -%}
+        {% render 'product-media-item', media: media, product: product %}
       {%- endfor -%}
     {%- endcapture -%}
 

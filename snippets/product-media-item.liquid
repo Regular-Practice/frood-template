@@ -1,11 +1,7 @@
 {%- comment -%}
   One gallery item on the PDP: an image, video, external video or 3D model
-  wrapped in .product-media-item. Used for both the product's own media and the
-  images from the `custom.info_image` metafield. Those file references resolve
-  to plain image objects, which have no `media_type` — so a blank type means
-  image.
-  Expects: media (media drop or image object), product (product object, for
-  fallback alt/title)
+  wrapped in .product-media-item.
+  Expects: media (media drop), product (product object, for fallback alt/title)
   Owner: sections/main-product.liquid
 {%- endcomment -%}
 
