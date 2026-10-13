@@ -41,10 +41,8 @@
           <p class="text-h1">{{ pack_size | upcase }}</p>
         {%- endif -%}
         <h1 class="text-h3 product-title">{{ product.title }}</h1>
-        {%- comment -%} Klaviyo Reviews star rating; the app fills it in (only rendered once the product has reviews). {%- endcomment -%}
-        {%- if product.metafields.reviews.rating_count.value > 0 -%}
-          <div class="klaviyo-star-rating-widget" data-id="{{ product.id }}"></div>
-        {%- endif -%}
+        {%- comment -%} Klaviyo Reviews star rating; the app fills it in (empty if no reviews). {%- endcomment -%}
+        <div class="klaviyo-star-rating-widget" data-id="{{ product.id }}"></div>
       </header>
 
       {%- comment -%}
