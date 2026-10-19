@@ -37,8 +37,7 @@
   Contract: the rendered <video> is always a real HTMLVideoElement in light DOM
   (it is slotted into <media-controller> when controls:true, not moved into a
   shadow root). So `container.querySelector('video')` resolves it in BOTH modes
-  — relied on by product-gallery.js (pause on slide leave) and recipe-modal.js
-  (play / pause / currentTime reset). The control bar reflects play/seek/mute
+  — relied on by product-gallery.js (pause on slide leave). The control bar reflects play/seek/mute
   state automatically because it observes that same element.
 {%- endcomment -%}
 

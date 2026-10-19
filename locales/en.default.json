@@ -324,6 +324,13 @@
     "card": {
       "watch": "Watch"
     },
+    "page": {
+      "shop_blend": "Shop the Blend",
+      "ingredients": "Ingredients",
+      "method": "Preparation Method",
+      "step": "Step {{ number }}",
+      "related": "Recipes built around this pack."
+    },
     "modal": {
       "close": "Close video",
       "play": "Play",

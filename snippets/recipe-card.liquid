@@ -1,14 +1,16 @@
 {%- comment -%}
-  Placeholder Recipe Card — owned by sections/main-recipes.liquid.
-  The whole card is the modal trigger: recipe-modal.js binds to the
-  `.recipe-card-link` button, whose stretched ::after overlay (see stylesheet)
-  makes a click anywhere on the card open the inline <recipe-modal> with the
-  recipe video. The visible "Watch →" label stays as the affordance.
+  Recipe Card — owned by sections/main-recipes.liquid.
+  The whole card links to the recipe's own page (recipe.system.url): the
+  `.recipe-card-link` anchor's stretched ::after overlay (see stylesheet) makes a
+  click anywhere on the card follow it. The visible "Watch →" label stays as the
+  affordance.
 
-  Expects: recipe (metaobject) with handles: name, image, description, video.
+  Expects: recipe (metaobject) with handles: name, image, description.
+  Optional: stacked (bool) — below 900px, lay the card out image-over-text with
+  the description visible (used by the recipe page's related list).
 {%- endcomment -%}
 
-<recipe-modal class="recipe-card">
+<article class="recipe-card{% if stacked %} stacked{% endif %}">
   <div class="recipe-card-image">
     {%- if recipe.image != blank -%}
       {{
@@ -34,110 +36,17 @@
       </div>
     {%- endif -%}
 
-    <button type="button" class="recipe-card-link text-h1" aria-haspopup="dialog">
+    <a href="{{ recipe.system.url }}" class="recipe-card-link text-h1">
       <span>{{ 'recipes.card.watch' | t }}</span>
       {% render 'icon-arrow', class: 'recipe-card-watch-icon' %}
-    </button>
+    </a>
   </div>
-
-  <div class="recipe-modal" role="dialog" aria-modal="true" aria-label="{{ recipe.name | escape }}" hidden>
-    <button type="button" class="recipe-modal-close" aria-label="{{ 'recipes.modal.close' | t }}">
-      {% render 'icon-close' %}
-    </button>
-
-    <div class="recipe-modal-inner">
-      {%- assign recipe_video = recipe.video.value -%}
-      {%- if recipe_video != blank -%}
-        <div class="recipe-modal-video">
-          {%- comment -%}
-            No `autoplay` and preload:'none' — the video is hidden until the
-            modal opens, at which point recipe-modal.js calls play(). This keeps
-            hidden cards from fetching video bytes on page load and guarantees
-            the video only ever plays while the modal is open.
-          {%- endcomment -%}
-          {% render 'video',
-            media: recipe_video,
-            controls: true,
-            chrome: 'minimal',
-            preload: 'none',
-            loop: true,
-            playsinline: true,
-            label: recipe.name
-          %}
-        </div>
-      {%- endif -%}
-
-      <div class="recipe-modal-info">
-        <div class="recipe-info-card">
-          <h2 class="text-ui recipe-info-title">{{ recipe.name }}</h2>
-
-          {%- if recipe.description != blank -%}
-            <div class="text-body recipe-info-description">
-              {{ recipe.description | metafield_tag }}
-            </div>
-          {%- endif -%}
-
-          {%- if recipe.duration != blank -%}
-            <hr class="recipe-info-rule">
-            {%- comment -%}
-              Only `duration` exists on the metaobject today; a `serves` (and any
-              further) detail joins this list once those fields are added.
-            {%- endcomment -%}
-            <ul class="text-body recipe-info-details">
-              <li>{{ recipe.duration }}</li>
-            </ul>
-          {%- endif -%}
-        </div>
-
-        {%- comment -%}
-          "Made with" product card — lights up when the recipes metaobject has a
-          `products` field (a LIST of product references). Loops every linked
-          product, rendering each one's thumbnail, title and a VIEW link, in the
-          order curated on the recipe. Empty or absent → the card is omitted.
-        {%- endcomment -%}
-        {%- assign made_with_products = recipe.products.value -%}
-        {%- if made_with_products != blank -%}
-          <div class="recipe-madewith-card">
-            <p class="text-body recipe-madewith-label">{{ 'recipes.modal.made_with' | t }}</p>
-            {%- for product in made_with_products -%}
-              <a class="recipe-madewith-product" href="{{ product.url }}">
-                <span class="recipe-madewith-image">
-                  {%- comment -%}
-                    First media's preview image — when the product leads with a
-                    video this is its poster frame, so the thumbnail still shows
-                    something. (featured_image is image-only and would be blank
-                    for a video-first product.)
-                  {%- endcomment -%}
-                  {%- assign made_with_thumb = product.featured_media.preview_image -%}
-                  {%- if made_with_thumb != blank -%}
-                    {{
-                      made_with_thumb
-                      | image_url: width: 800
-                      | image_tag:
-                        loading: 'lazy',
-                        width: made_with_thumb.width,
-                        height: made_with_thumb.height,
-                        alt: product.title
-                    }}
-                  {%- endif -%}
-                </span>
-                <span class="recipe-madewith-text">
-                  <span class="text-ui recipe-madewith-name">{{ product.title }}</span>
-                  <span class="text-h1 recipe-madewith-view">{{ 'recipes.modal.view' | t }}</span>
-                </span>
-              </a>
-            {%- endfor -%}
-          </div>
-        {%- endif -%}
-      </div>
-    </div>
-  </div>
-</recipe-modal>
+</article>
 
 {% stylesheet %}
-  /* The card is the flex row (image left, info right) AND the modal trigger:
+  /* The card is the flex row (image left, info right) AND the link target:
      the `.recipe-card-link` button stretches a transparent ::after across the
-     whole card (see below), so a click anywhere opens the modal. position:
+     whole card (see below), so a click anywhere follows the link. position:
      relative anchors that overlay; the hover/focus tint highlights the card as
      one clickable unit. The xxs padding lets that tint frame the image + text
      evenly rather than only lighting up the info column. */
@@ -262,263 +171,25 @@
     .recipe-card:has(.recipe-card-link:focus-visible) .recipe-card-watch-icon { transform: none; }
   }
 
-  .recipe-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-gutter: stable both-edges;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* In/out animation matched to the cart drawer: the backdrop (::before) and
-     the content (.recipe-modal-inner) each fade on their OWN layer, and the
-     content also scales up. recipe-modal.js toggles `is-open` around the
-     [hidden] flip — display:none stays the at-rest state so the many per-card
-     modals on the index stay out of the tab order; the fade-out plays, then JS
-     sets [hidden] once it ends.
-
-     The opacity transition is deliberately NOT on .recipe-modal itself: on the
-     parent it wraps the backdrop-filter ::before in a group-opacity compositing
-     pass that re-samples the blur every frame and makes it judder. Fading a
-     dedicated backdrop layer (like .cart-drawer-overlay) keeps it smooth. */
-
-  /* Not display:none yet during the fade-out — keep it click-through so the
-     closing 0.2s window can't be re-triggered. */
-  .recipe-modal:not(.is-open) {
-    pointer-events: none;
-  }
-
-  /* Scale on the inner content (NOT .recipe-modal): a transform on the modal
-     itself would make it the containing block for the position:fixed backdrop
-     (::before) and close button and break their viewport pinning. Centered
-     scale, no translate — the drawer's translateY is specific to its top-right
-     corner anchoring. */
-  .recipe-modal-inner {
-    opacity: 0;
-    transform: scale(0.96);
-    transition: opacity var(--transition-fast), transform var(--transition-fast);
-  }
-
-  .recipe-modal.is-open .recipe-modal-inner {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .recipe-modal::before,
-    .recipe-modal-inner,
-    .recipe-modal-close { transition: none; }
-  }
-
-  /* Frosted backdrop (tint + blur) on its own fixed layer, pinned to the
-     viewport (position:fixed, not absolute) so it keeps covering the screen
-     while the dialog scrolls rather than scrolling away with the content. Kept
-     off the video's ancestors to avoid a GPU compositing bug that renders
-     <video> solid black when an ancestor is backdrop-filtered. Fades on its own
-     opacity — matched to .cart-drawer-overlay — which keeps the blur smooth. */
-  .recipe-modal::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background-color: var(--color-overlay);
-    backdrop-filter: blur(var(--blur));
-    -webkit-backdrop-filter: blur(var(--blur));
-    opacity: 0;
-    transition: opacity var(--transition-fast);
-  }
-
-  .recipe-modal.is-open::before {
-    opacity: 1;
-  }
-
-  .recipe-modal[hidden] {
-    display: none;
-  }
-
-  /* Icon-only close — no background, matching the drawer close buttons: muted
-     at rest, full text colour on hover. Fixed to the viewport corner so it
-     stays reachable while the dialog scrolls. */
-  .recipe-modal-close {
-    position: fixed;
-    top: var(--spacing-s);
-    right: var(--spacing-s);
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-xxs);
-    color: var(--color-text-accent);
-    opacity: 0;
-    transition: color var(--transition-fast), opacity var(--transition-fast);
-  }
-
-  .recipe-modal.is-open .recipe-modal-close {
-    opacity: 1;
-  }
-
-  .recipe-modal-close:hover {
-    color: var(--color-text);
-  }
-
-  .recipe-modal-inner {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-s);
-    padding: var(--spacing-xs) var(--spacing-xs) var(--spacing-m);
-  }
-
-  /* Video frame — clipped, controls overlaid (no beige frame; the v2 design
-     sits the controls directly on the video). Full-bleed on mobile. */
-  .recipe-modal-video {
-    flex: 0 0 auto;
-    display: flex;
-    align-self: stretch;
-    overflow: hidden;
-    border-radius: var(--rad-s);
-  }
-
-  /* Mobile: the video fills the column width and is capped at 88svh so it always
-     fits the viewport (svh, not vh, stays correct under the mobile browser bar)
-     while leaving just the top edge of the info card peeking below. object-fit:
-     cover keeps it flush to the card's edges — matching the Figma full-frame
-     treatment — at the cost of a small top/bottom crop. */
-  .recipe-modal-video media-controller {
-    display: block;
-    width: 100%;
-    height: 88vh;
-    height: 88svh;
-    line-height: 0;
-  }
-
-  .recipe-modal-video media-controller video[slot="media"] {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .recipe-modal-info {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-s);
-  }
-
-  /* Desktop: centred, non-scrolling two columns — video left (height-driven, so
-     the frame matches the video's true aspect with no letterbox; rounded), the
-     348px info column right, both top-aligned. */
-  @media (min-width: 900px) {
-    .recipe-modal {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--spacing-m);
-      overflow: hidden;
-      scrollbar-gutter: auto;
+  /* Stacked variant (recipe page "related" list): below 900px the image sits
+     above the text and the description is shown, as in the mobile design. */
+  @media (max-width: 899.98px) {
+    .recipe-card.stacked {
+      flex-direction: column;
+      align-items: stretch;
     }
 
-    .recipe-modal-close {
-      top: var(--spacing-m);
-      right: var(--spacing-m);
+    .recipe-card.stacked .recipe-card-image {
+      flex: none;
+      width: 100%;
     }
 
-    .recipe-modal-inner {
-      flex-direction: row;
-      align-items: flex-start;
-      justify-content: center;
-      max-width: 100%;
-      padding: 0;
+    .recipe-card.stacked .recipe-card-info {
+      gap: var(--spacing-xs);
     }
 
-    .recipe-modal-video {
-      align-self: flex-start;
+    .recipe-card.stacked .recipe-card-description {
+      display: block;
     }
-
-    .recipe-modal-video media-controller {
-      display: inline-block;
-      width: auto;
-      height: auto;
-      max-width: 100%;
-    }
-
-    .recipe-modal-video media-controller video[slot="media"] {
-      width: auto;
-      height: 85vh;
-      max-width: 100%;
-      max-height: 85vh;
-      object-fit: contain;
-    }
-
-    .recipe-modal-info {
-      width: 348px;
-    }
-  }
-
-  .recipe-info-card,
-  .recipe-madewith-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-xs);
-    background-color: var(--color-bg);
-    border-radius: var(--rad-s);
-  }
-
-  .recipe-info-rule {
-    width: 100%;
-    height: 0;
-    margin: 0;
-    border: 0;
-    border-top: 1px solid var(--color-border);
-  }
-
-  .recipe-info-details {
-    margin: 0;
-    padding-left: 1.25em;
-    list-style: disc;
-    color: var(--color-text-accent);
-  }
-
-  .recipe-info-details li + li {
-    margin-top: var(--spacing-xxs);
-  }
-
-  .recipe-madewith-label {
-    color: var(--color-text-accent);
-  }
-
-  .recipe-madewith-product {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-xxs);
-  }
-
-  .recipe-madewith-image {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  .recipe-madewith-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  .recipe-madewith-text {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-xxs);
-    text-align: left;
   }
 {% endstylesheet %}
