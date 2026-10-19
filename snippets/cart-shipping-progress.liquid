@@ -6,6 +6,12 @@
   under the threshold. Two states: a goal prompt ("buy two boxes" / "buy
   another box" once one is in, partial fill) and "unlocked" (full fill +
   success message), pluralised on boxes-needed.
+
+  Qualified = ANY line is a subscription (it carries a selling plan, from
+  ReCharge or Loop alike — subscribers get free shipping regardless of box
+  count) OR the box count reaches the threshold. One-off carts below the
+  threshold keep the progress prompt. Mirrors the two automatic free-shipping
+  discounts in Shopify admin (purchase type Subscription; minimum 2 items).
   Pure Liquid — it reads cart.item_count and is re-rendered
   on every cart change because it lives inside the drawer's [data-drawer-body],
   which cart-drawer.js swaps via the Section Rendering API. No client JS.
@@ -37,8 +43,18 @@
   assign boxes_goal = threshold | round
   assign boxes_in_cart = cart.item_count
 
+  assign has_subscription = false
+  for item in cart.items
+    if item.selling_plan_allocation != blank
+      assign has_subscription = true
+      break
+    endif
+  endfor
+
   assign qualified = false
-  if boxes_goal > 0 and boxes_in_cart >= boxes_goal
+  if has_subscription
+    assign qualified = true
+  elsif boxes_goal > 0 and boxes_in_cart >= boxes_goal
     assign qualified = true
   endif
 
@@ -47,7 +63,9 @@
   assign boxes_needed = boxes_goal | minus: boxes_in_cart
 
   assign percent = 0
-  if boxes_goal > 0
+  if qualified
+    assign percent = 100
+  elsif boxes_goal > 0
     assign percent = boxes_in_cart | times: 100.00 | divided_by: boxes_goal
     if percent > 100
       assign percent = 100
