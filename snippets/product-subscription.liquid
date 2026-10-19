@@ -20,8 +20,15 @@
 
 {%- if variant.selling_plan_allocations.size > 0 -%}
   {%- assign first_alloc = variant.selling_plan_allocations | first -%}
-  {%- comment -%} Discount % from the first allocation (e.g. 1200→1080 = 10%). {%- endcomment -%}
-  {%- assign discount = first_alloc.compare_at_price | minus: first_alloc.price | times: 100.0 | divided_by: first_alloc.compare_at_price | round -%}
+  {%- comment -%}
+    Discount % from the first allocation (e.g. 1200→1080 = 10%). Plans with no
+    price discount (compare-at equal to price, or none) give 0 — the label then
+    falls back to the free-shipping wording and the struck-through price hides.
+  {%- endcomment -%}
+  {%- assign discount = 0 -%}
+  {%- if first_alloc.compare_at_price > first_alloc.price -%}
+    {%- assign discount = first_alloc.compare_at_price | minus: first_alloc.price | times: 100.0 | divided_by: first_alloc.compare_at_price | round -%}
+  {%- endif -%}
 
   <product-subscription
     class="product-subscription"
@@ -45,7 +52,11 @@
         <input type="radio" name="purchase_option" value="subscription">
         <span class="subscription-box" aria-hidden="true"></span>
         <span class="subscription-option-label text-ui">
-          {{ 'products.product.subscribe_save' | t: percent: discount }}
+          {%- if discount > 0 -%}
+            {{ 'products.product.subscribe_save' | t: percent: discount }}
+          {%- else -%}
+            {{ 'products.product.subscribe_free_shipping' | t }}
+          {%- endif -%}
           {%- if info_link != blank -%}
             <a
               class="subscription-info"
@@ -57,7 +68,7 @@
           {%- endif -%}
         </span>
         <span class="subscription-option-price text-ui">
-          <s class="subscription-price-was">{{ first_alloc.compare_at_price | money }}</s>
+          <s class="subscription-price-was"{% unless discount > 0 %} hidden{% endunless %}>{{ first_alloc.compare_at_price | money }}</s>
           <span class="subscription-price-now">{{ first_alloc.price | money }}</span>
         </span>
       </label>

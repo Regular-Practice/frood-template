@@ -132,8 +132,13 @@ class ProductSubscription extends HTMLElement {
     if (this.priceNowEl && !isNaN(nowCents)) {
       this.priceNowEl.textContent = formatMoney(nowCents * qty, this.moneyFormat);
     }
-    if (this.priceWasEl && !isNaN(wasCents)) {
-      this.priceWasEl.textContent = formatMoney(wasCents * qty, this.moneyFormat);
+    if (this.priceWasEl) {
+      // Only strike through a real discount (plans with no price cut have none).
+      const hasDiscount = !isNaN(wasCents) && !isNaN(nowCents) && wasCents > nowCents;
+      this.priceWasEl.hidden = !hasDiscount;
+      if (hasDiscount) {
+        this.priceWasEl.textContent = formatMoney(wasCents * qty, this.moneyFormat);
+      }
     }
   }
 
