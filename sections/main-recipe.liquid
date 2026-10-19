@@ -1,0 +1,453 @@
+{%- comment -%}
+  Recipe page — the template for a single `recipes` metaobject entry
+  (templates/metaobject/recipes.json). Reached from the "Watch" link on
+  recipe-card; replaces the old inline video modal.
+
+  The entry is the global `metaobject` object on these pages.
+
+  Layout (Figma 1732-1465 desktop / 1732-1663 mobile):
+    – yellow hero card: meta line, name, description, "Shop the Blend", image
+    – video | ingredients | preparation method (video drops below the steps on
+      mobile)
+    – "Recipes built around this pack." — up to two other recipes that use the
+      same first product
+
+  Fields read: name, image, video, duration, description, products,
+  ingredients (list of `ingredient_group`: name + rich-text list), instruction
+  (list of single-line steps). Anything blank is simply left out.
+{%- endcomment -%}
+
+{%- assign recipe = metaobject -%}
+{%- assign recipe_video = recipe.video.value -%}
+{%- assign recipe_products = recipe.products.value -%}
+{%- assign ingredient_groups = recipe.ingredients.value -%}
+{%- assign steps = recipe.instruction.value -%}
+{%- for product in recipe_products limit: 1 -%}
+  {%- assign main_product = product -%}
+{%- endfor -%}
+
+{%- if recipe_video != blank -%}
+  <script type="module" src="{{ 'media-chrome.js' | asset_url }}"></script>
+{%- endif -%}
+
+<article class="recipe-page">
+  <header class="recipe-hero">
+    <div class="recipe-hero-text">
+      <div class="recipe-hero-title">
+        {%- if recipe.duration != blank -%}
+          <p class="text-h1 recipe-hero-meta">{{ recipe.duration }}</p>
+        {%- endif -%}
+        <h1 class="text-h3">{{ recipe.name }}</h1>
+      </div>
+
+      <div class="recipe-hero-body">
+        {%- if recipe.description != blank -%}
+          <div class="recipe-hero-description">{{ recipe.description | metafield_tag }}</div>
+        {%- endif -%}
+
+        {%- if main_product != blank -%}
+          <a class="button recipe-hero-cta" href="{{ main_product.url }}">
+            {{- 'recipes.page.shop_blend' | t -}}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="recipe-hero-image">
+      {%- if recipe.image != blank -%}
+        {{
+          recipe.image
+          | image_url: width: 1200
+          | image_tag:
+            sizes: '(min-width: 900px) 40vw, 100vw',
+            width: recipe.image.width,
+            height: recipe.image.height,
+            alt: recipe.name
+        }}
+      {%- endif -%}
+    </div>
+  </header>
+
+  <div class="recipe-body{% if recipe_video != blank %} has-video{% endif %}">
+    <div class="recipe-method">
+      {%- if ingredient_groups != blank -%}
+        <section class="recipe-ingredients">
+          <h2 class="text-h1">{{ 'recipes.page.ingredients' | t }}</h2>
+          <div class="recipe-ingredient-groups">
+            {%- for group in ingredient_groups -%}
+              <div class="recipe-ingredient-group">
+                {%- if group.name != blank -%}
+                  <h3 class="text-ui">{{ group.name }}</h3>
+                {%- endif -%}
+                <div class="recipe-ingredient-list text-body">
+                  {{ group.ingredients_list | metafield_tag }}
+                </div>
+              </div>
+            {%- endfor -%}
+          </div>
+        </section>
+      {%- endif -%}
+
+      {%- if steps != blank -%}
+        <section class="recipe-steps">
+          <h2 class="text-h1">{{ 'recipes.page.method' | t }}</h2>
+          <ol class="recipe-step-list">
+            {%- for step in steps -%}
+              <li class="recipe-step">
+                <span class="recipe-step-tag text-ui">{{ 'recipes.page.step' | t: number: forloop.index }}</span>
+                <p class="recipe-step-text">{{ step }}</p>
+              </li>
+            {%- endfor -%}
+          </ol>
+        </section>
+      {%- endif -%}
+    </div>
+
+    {%- if recipe_video != blank -%}
+      <div class="recipe-video">
+        {% render 'video',
+          media: recipe_video,
+          controls: true,
+          chrome: 'minimal',
+          preload: 'metadata',
+          autoplay: true,
+          muted: true,
+          loop: true,
+          playsinline: true,
+          label: recipe.name
+        %}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%}
+    Related: other recipes built around the same first product. Capped at two
+    to match the design; the section drops out when nothing else uses it.
+  {%- endcomment -%}
+  {%- assign related_count = 0 -%}
+  {%- capture related_cards -%}
+    {%- if main_product != blank -%}
+      {%- for other in shop.metaobjects.recipes.values -%}
+        {%- if related_count < 2 and other.system.handle != recipe.system.handle -%}
+          {%- for other_product in other.products.value limit: 1 -%}
+            {%- if other_product.id == main_product.id -%}
+              {%- assign related_count = related_count | plus: 1 -%}
+              {% render 'recipe-card', recipe: other, stacked: true %}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+  {%- endcapture -%}
+
+  {%- if related_count > 0 -%}
+    <section class="recipe-related">
+      <h2 class="text-h3">{{ 'recipes.page.related' | t }}</h2>
+      <div class="recipe-related-grid">{{ related_cards }}</div>
+    </section>
+  {%- endif -%}
+</article>
+
+{% stylesheet %}
+  .recipe-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-l);
+    padding: var(--spacing-l) var(--spacing-xs) var(--spacing-m);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+  }
+
+  @media (min-width: 600px) {
+    .recipe-page {
+      padding-top: var(--spacing-xl);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .recipe-page {
+      padding-inline: var(--spacing-m);
+      padding-bottom: var(--spacing-l);
+    }
+  }
+
+  /* Hero: text first (mobile reads title → image); on desktop the square image
+     moves to the left and the text column stretches to its height. */
+  .recipe-hero {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+    padding: var(--spacing-m);
+    background-color: var(--color-accent);
+    border-radius: var(--rad-m);
+    overflow: hidden;
+  }
+
+  @media (min-width: 900px) {
+    .recipe-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 471px) minmax(0, 1fr);
+      grid-template-areas: 'image text';
+      align-items: stretch;
+      max-width: 1169px;
+      margin-inline: auto;
+      width: 100%;
+    }
+  }
+
+  .recipe-hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+  }
+
+  @media (min-width: 900px) {
+    .recipe-hero-text {
+      grid-area: text;
+      justify-content: space-between;
+    }
+  }
+
+  .recipe-hero-title {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+  }
+
+  .recipe-hero-title h1 {
+    margin: 0;
+  }
+
+  .recipe-hero-meta {
+    display: flex;
+    gap: var(--spacing-xxs);
+    margin: 0;
+  }
+
+  .recipe-hero-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-s);
+  }
+
+  .recipe-hero-description {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  @media (min-width: 900px) {
+    .recipe-hero-description {
+      font-size: var(--type-h3-size);
+    }
+  }
+
+  /* The brand button is yellow, which vanishes on the yellow card — the design
+     inverts it here (dark fill, yellow label). Scoped to this one button. */
+  .recipe-hero-cta {
+    background-color: var(--color-text);
+    color: var(--color-accent);
+  }
+
+  .recipe-hero-cta:hover {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .recipe-hero-image {
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: var(--rad-s);
+  }
+
+  @media (min-width: 900px) {
+    .recipe-hero-image {
+      grid-area: image;
+    }
+  }
+
+  .recipe-hero-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Body: ingredients + method stack on mobile with the video underneath; from
+     900px the video takes a fixed 9:16 column on the left. */
+  .recipe-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+  }
+
+  @media (min-width: 900px) {
+    .recipe-body.has-video {
+      display: grid;
+      grid-template-columns: minmax(0, 410px) minmax(0, 1fr);
+      grid-template-areas: 'video method';
+      align-items: start;
+    }
+
+    .recipe-body.has-video .recipe-video {
+      grid-area: video;
+    }
+
+    .recipe-body.has-video .recipe-method {
+      grid-area: method;
+    }
+  }
+
+  .recipe-method {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+  }
+
+  @media (min-width: 900px) {
+    .recipe-method {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: var(--spacing-m);
+    }
+
+    .recipe-ingredients {
+      flex: 0 1 400px;
+    }
+
+    .recipe-steps {
+      flex: 0 1 584px;
+    }
+  }
+
+  .recipe-ingredients,
+  .recipe-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-s);
+    min-width: 0;
+  }
+
+  .recipe-ingredients h2,
+  .recipe-steps h2 {
+    margin: 0;
+  }
+
+  .recipe-ingredient-groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+  }
+
+  .recipe-ingredient-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-s);
+  }
+
+  .recipe-ingredient-group h3 {
+    margin: 0;
+  }
+
+  /* Rich-text list: bullets, hairline between items (none above the first). */
+  .recipe-ingredient-list ul {
+    margin: 0;
+    padding-left: 21px;
+    list-style: disc;
+  }
+
+  .recipe-ingredient-list li + li {
+    margin-top: var(--spacing-xxs);
+    padding-top: var(--spacing-xxs);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .recipe-step-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .recipe-step {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-s);
+  }
+
+  .recipe-step-tag {
+    display: inline-block;
+    padding: var(--spacing-xxs);
+    background-color: var(--color-accent);
+    border-radius: var(--rad-s);
+  }
+
+  .recipe-step-text {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.1;
+  }
+
+  /* Video: 9:16 frame, clipped to the radius; the minimal chrome sits on it. */
+  .recipe-video {
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    background-color: var(--color-bg-dark);
+    border-radius: var(--rad-s);
+  }
+
+  .recipe-video media-controller {
+    display: block;
+    width: 100%;
+    height: 100%;
+    line-height: 0;
+  }
+
+  .recipe-video media-controller video[slot="media"] {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .recipe-related {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+  }
+
+  .recipe-related h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  @media (min-width: 900px) {
+    .recipe-related h2 {
+      font-size: var(--type-h3-size);
+    }
+  }
+
+  .recipe-related-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-s);
+  }
+
+  @media (min-width: 900px) {
+    .recipe-related-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Recipe page",
+  "tag": "section",
+  "class": "recipe-page-section",
+  "settings": []
+}
+{% endschema %}
