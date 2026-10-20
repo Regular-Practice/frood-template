@@ -347,14 +347,14 @@
         "question_GC8ek4"
       ],
       "custom_css": [
-        ".faq-section, .faq-section.even-spacing {padding-top: 8px; padding-bottom: 24px; }",
-        ".faq-section-header {margin-bottom: 16px; }",
-        ".faq-question {padding: 12px 0; }"
+        ".faq-section,.faq-section.even-spacing {padding-top: 8px; padding-bottom: 24px;}",
+        ".faq-section-header {margin-bottom: 16px;}",
+        ".faq-question {padding: 12px 0;}"
       ],
       "name": "FAQ section",
       "settings": {
         "eyebrow": "FAQ",
-        "heading": "Everything you need to know.",
+        "heading": "Everything you need to know",
         "even_spacing": false
       }
     }
