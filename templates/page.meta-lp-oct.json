@@ -244,9 +244,9 @@
         "benefit_Qmmcn4"
       ],
       "custom_css": [
-        ".benefits-grid {padding-top: 8px; gap: 16px; }",
-        ".benefits-grid-list {gap: 8px; }",
-        ".benefit {padding: 12px 8px; gap: 6px; }"
+        ".benefits-grid {padding-top: 8px; gap: 16px;}",
+        ".benefits-grid-list {gap: 8px;}",
+        ".benefit {padding: 12px 8px; gap: 6px;}"
       ],
       "name": "Benefits grid",
       "settings": {
@@ -258,13 +258,18 @@
     },
     "feature_card": {
       "type": "feature-card",
+      "custom_css": [
+        ".feature-card-entry-link {display: none; }",
+        ".feature-card-section {padding-top: 8px; }",
+        ".feature-card {gap: 24px; }"
+      ],
       "settings": {
         "featured_entry": "",
         "fallback_image": "shopify://shop_images/Frood_WebVideo_PHOTOS_May26_JamesMoyle_HIGHRES_-5.jpg",
         "fallback_meta": "Frida Redknapp",
-        "fallback_title": "Founder of Frood, Swedish-born mother of five and trusted voice in family, food, and wellbeing.",
+        "fallback_title": "Founder of Frood",
         "fallback_link": "https://www.instagram.com/froodworld/?hl=en",
-        "link_text": "See more",
+        "link_text": "",
         "heading": "\"Some days there just isn't the time to cook properly, and I've never believed convenience has to mean ultra processed. That's why I started Frood in my own kitchen.”",
         "card_bg": "text",
         "card_color": "bg"
