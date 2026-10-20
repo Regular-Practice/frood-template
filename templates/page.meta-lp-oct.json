@@ -125,7 +125,7 @@
         "media_thMtgW"
       ],
       "custom_css": [
-        ".text-image-split {padding-top: 8px; }"
+        ".text-image-split {padding-top: 8px;}"
       ],
       "name": "Text + image split",
       "settings": {
@@ -177,6 +177,9 @@
         "tab_1",
         "tab_2",
         "tab_3"
+      ],
+      "custom_css": [
+        "@media (max-width: 899px) {.media-tabs-section {padding-top: 8px; } .media-tabs {row-gap: 12px; } .media-tab-overlay {flex-direction: row; align-items: flex-start; gap: 8px; padding-top: 8px; } .media-tab-step {flex: none; width: 20px; height: 20px; font-size: 12px; } .media-tab-description {padding-top: 1px; }}"
       ],
       "settings": {
         "heading": "How Frood works",
