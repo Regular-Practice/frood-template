@@ -77,14 +77,14 @@
         "logo_RaPFDW"
       ],
       "custom_css": [
-        ".logo-section {padding-block: 24px; gap: 12px; }",
-        ".logo-section-logos {gap: 16px 28px; }",
+        ".logo-section {padding-block: 24px; gap: 12px;}",
+        ".logo-section-logos {gap: 16px 28px;}",
         "@media (max-width: 599px) {.logo-section-logo {flex: 0 0 calc(33.33% - 20px); }}"
       ],
       "name": "Logo section",
       "settings": {
-        "eyebrow": "As featured in",
-        "heading": "",
+        "eyebrow": "",
+        "heading": "As featured in",
         "button_text": "",
         "button_link": ""
       }
