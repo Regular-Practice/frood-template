@@ -12,9 +12,9 @@
     "hero": {
       "type": "hero",
       "settings": {
-        "background_image": "shopify://shop_images/Frood_Dec25_JamesMoyle_LOWRES_-103.jpg",
-        "secondary_image": "shopify://shop_images/Frood_1905_May26_JamesMoyle_LOWRES_-17.jpg",
-        "overlay_opacity": 10,
+        "background_image": "shopify://shop_images/HERO_v2_desktop_left.jpg",
+        "secondary_image": "shopify://shop_images/HERO_v2_desktop_right.jpg",
+        "overlay_opacity": 0,
         "heading": "<p>We prep. You cook. Home-made dinner in 20 minutes.</p>",
         "text": "<p>Frood is a ready-to-cook vegetable and spice blend made from real ingredients and nothing else. Just add your protein for a meal packed with flavour.</p>",
         "button_label": "Get dinner sorted",
