@@ -13,7 +13,8 @@
       "type": "hero",
       "custom_css": [
         ".hero-frood-card,.hero-frood-logo {animation: none; opacity: 1; transform: none;}",
-        ".hero-frood-card, .hero-frood-logo {animation: none; opacity: 1; transform: none; }"
+        ".hero-frood-card,.hero-frood-logo {animation: none; opacity: 1; transform: none;}",
+        ".hero-frood-card-heading {font-size: 32px; line-height: 1.1; }"
       ],
       "settings": {
         "background_image": "shopify://shop_images/Frood_Dec25_JamesMoyle_LOWRES_-103.jpg",
