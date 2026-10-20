@@ -92,8 +92,9 @@
     "featured_collection": {
       "type": "featured-collection",
       "custom_css": [
-        ".product-card-actions {pointer-events: auto; }",
-        ".product-card-actions > * {opacity: 1; transform: none; }"
+        ".product-card-actions {pointer-events: auto;}",
+        ".product-card-actions > * {opacity: 1; transform: none;}",
+        ".product-card-actions > *:first-child:not(:only-child) {display: none; }"
       ],
       "settings": {
         "eyebrow": "",
