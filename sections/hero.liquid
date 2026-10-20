@@ -2,7 +2,7 @@
   Frood Hero — full-bleed image hero with the Frood logo in accent yellow.
   100vh tall, fills page width. Logo is the inline SVG snippet logo-frood (recolorable via currentColor).
   The logo shows on desktop only (>=900px) — below that it clashed with the navbar.
-  Tablet and smaller (<900px): the primary image is the full-bleed background.
+  Tablet and smaller (<900px): the mobile image if set, otherwise the primary image, is the full-bleed background.
   Desktop (>=900px): 50/50 split — primary image left, secondary image right. With no secondary
   image, the primary fills the whole width. Primary defaults to dummy.jpg when unset.
   See CLAUDE.md → "Frood Hero section" for design rules.
@@ -10,25 +10,34 @@
 
 <section class="hero-frood">
   <div class="hero-frood-bg{% unless section.settings.secondary_image != blank %} is-single{% endunless %}">
-    {%- if section.settings.background_image != blank -%}
-      {{ section.settings.background_image | image_url: width: 2400 | image_tag:
-        class: 'hero-frood-image hero-frood-image-primary',
-        loading: 'eager',
-        fetchpriority: 'high',
-        widths: '750, 1100, 1500, 2000, 2400',
-        sizes: '(min-width: 900px) 50vw, 100vw',
-        alt: section.settings.background_image.alt
-      }}
-    {%- else -%}
-      <img
-        class="hero-frood-image hero-frood-image-primary"
-        src="{{ 'dummy.jpg' | asset_url }}"
-        alt=""
-        width="1920"
-        height="1080"
-        fetchpriority="high"
-      >
-    {%- endif -%}
+    <picture class="hero-frood-picture">
+      {%- if section.settings.mobile_image != blank -%}
+        <source
+          media="(max-width: 899px)"
+          srcset="{{ section.settings.mobile_image | image_url: width: 750 }} 750w, {{ section.settings.mobile_image | image_url: width: 1100 }} 1100w, {{ section.settings.mobile_image | image_url: width: 1500 }} 1500w"
+          sizes="100vw"
+        >
+      {%- endif -%}
+      {%- if section.settings.background_image != blank -%}
+        {{ section.settings.background_image | image_url: width: 2400 | image_tag:
+          class: 'hero-frood-image hero-frood-image-primary',
+          loading: 'eager',
+          fetchpriority: 'high',
+          widths: '750, 1100, 1500, 2000, 2400',
+          sizes: '(min-width: 900px) 50vw, 100vw',
+          alt: section.settings.background_image.alt
+        }}
+      {%- else -%}
+        <img
+          class="hero-frood-image hero-frood-image-primary"
+          src="{{ 'dummy.jpg' | asset_url }}"
+          alt=""
+          width="1920"
+          height="1080"
+          fetchpriority="high"
+        >
+      {%- endif -%}
+    </picture>
     {%- if section.settings.secondary_image != blank -%}
       {{ section.settings.secondary_image | image_url: width: 1500 | image_tag:
         class: 'hero-frood-image hero-frood-image-secondary',
@@ -82,6 +91,14 @@
     inset: 0;
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  /* Wraps the primary image so phones can load the mobile image instead. */
+  .hero-frood-picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
   }
 
   .hero-frood-image {
@@ -228,13 +245,19 @@
       "type": "image_picker",
       "id": "background_image",
       "label": "Primary image",
-      "info": "Full-bleed background on tablet and smaller; the left half on desktop."
+      "info": "Full-bleed background on tablet and smaller (unless a mobile image is set); the left half on desktop."
     },
     {
       "type": "image_picker",
       "id": "secondary_image",
       "label": "Secondary image",
       "info": "Right half on desktop (900px and up). Not shown on tablet and smaller. Leave empty to let the primary image fill the width."
+    },
+    {
+      "type": "image_picker",
+      "id": "mobile_image",
+      "label": "Mobile image",
+      "info": "Optional. Replaces the primary image on tablet and smaller (under 900px). Use a tall image, about 9:19.5. Leave empty to use the primary image."
     },
     {
       "type": "range",
