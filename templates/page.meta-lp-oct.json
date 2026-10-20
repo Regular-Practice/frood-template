@@ -17,7 +17,7 @@
         "mobile_image": "shopify://shop_images/HERO_v4_mobile.jpg",
         "overlay_opacity": 0,
         "heading": "<p>Your 20-minute midweek dinner hack</p>",
-        "text": "<p>Frood is a ready-to-cook vegetable and spice blend. Real ingredients and nothing else. Just add your protein for a home-made meal packed with flavour.&nbsp;</p>",
+        "text": "<p>Frood is a ready-to-cook veg & spice blend. Real ingredients and nothing else. Just add your protein for a home-made meal.&nbsp;</p>",
         "button_label": "Get dinner sorted",
         "button_link": "shopify://collections/shop"
       }
@@ -374,8 +374,8 @@
       ],
       "custom_css": [
         ".text-image-split {padding-top: 8px;}",
-        ".text-image-split.yellow-box .text-image-split-content {background-color: var(--color-text); color: var(--color-bg); }",
-        ".text-image-split .button {background-color: var(--color-accent); color: var(--color-text); }"
+        ".text-image-split.yellow-box .text-image-split-content {background-color: var(--color-text); color: var(--color-bg);}",
+        ".text-image-split .button {background-color: var(--color-accent); color: var(--color-text);}"
       ],
       "name": "Text + image split",
       "settings": {
