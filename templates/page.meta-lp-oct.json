@@ -277,10 +277,18 @@
     },
     "social_proof_Jt3Pzz": {
       "type": "social-proof",
+      "custom_css": [
+        ".social-proof {padding-top: 8px; }",
+        ".social-proof-header {margin-bottom: 16px; }",
+        ".social-proof-slide {display: flex; }",
+        ".social-proof-card {flex: 1; }",
+        ".social-proof-card-quote {padding-top: 12px; }",
+        ".social-proof-arrows {margin-top: 8px; }"
+      ],
       "name": "Social proof",
       "settings": {
-        "eyebrow": "Loved by our community",
-        "heading": "What people are saying.",
+        "eyebrow": "",
+        "heading": "Our customers' verdict",
         "verified_label": "Verified"
       }
     },
