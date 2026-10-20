@@ -357,6 +357,36 @@
         "heading": "Everything you need to know",
         "even_spacing": false
       }
+    },
+    "text_image_split_468mhq": {
+      "type": "text-image-split",
+      "blocks": {
+        "media_AjwbLN": {
+          "type": "media",
+          "settings": {
+            "image": "shopify://shop_images/MIXEDBOX_cta_3x2_e13e9a89-94d4-4ff1-baa5-5ee866a687cc.jpg",
+            "caption": ""
+          }
+        }
+      },
+      "block_order": [
+        "media_AjwbLN"
+      ],
+      "custom_css": [
+        ".text-image-split {padding-top: 8px;}"
+      ],
+      "name": "Text + image split",
+      "settings": {
+        "eyebrow": "",
+        "heading": "Try all 4 in the Mixed Box",
+        "text": "<p>Bella Bolognese, Golden Curry, Mexi Fiesta and Swedish Meatball in one box.&nbsp;</p><p><strong>£12 for 4 packs</strong></p>",
+        "button_text": "Shop the Mixed Box",
+        "button_link": "shopify://products/mixed-box",
+        "yellow_box": true,
+        "media_alignment": "left",
+        "media_size": "big",
+        "text_vertical_alignment": "middle"
+      }
     }
   },
   "order": [
@@ -368,6 +398,7 @@
     "benefits_grid_Txjmr8",
     "feature_card",
     "social_proof_Jt3Pzz",
-    "faq_section_H6aeXd"
+    "faq_section_H6aeXd",
+    "text_image_split_468mhq"
   ]
 }
