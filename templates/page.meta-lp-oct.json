@@ -28,7 +28,28 @@
         "logo_xjqT4m": {
           "type": "logo",
           "settings": {
-            "image": "shopify://shop_images/press-1-times.png",
+            "image": "shopify://shop_images/press-5-closer.png",
+            "link": ""
+          }
+        },
+        "logo_EdamRp": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/press-3-hello.png",
+            "link": ""
+          }
+        },
+        "logo_Cxdhxf": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/press-2-womens-health.png",
+            "link": ""
+          }
+        },
+        "logo_ebAH7p": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/press-1-times_1b91adf6-4e20-4daa-9234-7b0745b2203a.png",
             "link": ""
           }
         },
@@ -49,6 +70,9 @@
       },
       "block_order": [
         "logo_xjqT4m",
+        "logo_EdamRp",
+        "logo_Cxdhxf",
+        "logo_ebAH7p",
         "logo_ixCqnU",
         "logo_RaPFDW"
       ],
