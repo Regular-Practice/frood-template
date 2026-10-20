@@ -278,12 +278,12 @@
     "social_proof_Jt3Pzz": {
       "type": "social-proof",
       "custom_css": [
-        ".social-proof {padding-top: 8px; }",
-        ".social-proof-header {margin-bottom: 16px; }",
-        ".social-proof-slide {display: flex; }",
-        ".social-proof-card {flex: 1; }",
-        ".social-proof-card-quote {padding-top: 12px; }",
-        ".social-proof-arrows {margin-top: 8px; }"
+        ".social-proof {padding-top: 8px;}",
+        ".social-proof-header {margin-bottom: 16px;}",
+        ".social-proof-slide {display: flex;}",
+        ".social-proof-card {flex: 1;}",
+        ".social-proof-card-quote {padding-top: 12px;}",
+        ".social-proof-arrows {margin-top: 8px;}"
       ],
       "name": "Social proof",
       "settings": {
@@ -345,6 +345,11 @@
         "question_RJHrei",
         "question_6VQR9y",
         "question_GC8ek4"
+      ],
+      "custom_css": [
+        ".faq-section, .faq-section.even-spacing {padding-top: 8px; padding-bottom: 24px; }",
+        ".faq-section-header {margin-bottom: 16px; }",
+        ".faq-question {padding: 12px 0; }"
       ],
       "name": "FAQ section",
       "settings": {
