@@ -16,10 +16,48 @@
         "secondary_image": "shopify://shop_images/HERO_v2_desktop_right.jpg",
         "mobile_image": "shopify://shop_images/HERO_v4_mobile.jpg",
         "overlay_opacity": 0,
-        "heading": "<p>We prep. You cook. Home-made dinner in 20 minutes.</p>",
-        "text": "<p>Frood is a ready-to-cook vegetable and spice blend made from real ingredients and nothing else. Just add your protein for a meal packed with flavour.</p>",
+        "heading": "<p>Your 20-minute midweek dinner hack</p>",
+        "text": "<p>Frood is a ready-to-cook vegetable and spice blend. Real ingredients and nothing else. Just add your protein for a home-made meal packed with flavour.&nbsp;</p>",
         "button_label": "Get dinner sorted",
         "button_link": "shopify://collections/shop"
+      }
+    },
+    "logo_section_nHTHKM": {
+      "type": "logo-section",
+      "blocks": {
+        "logo_xjqT4m": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/MandS_logo-text-trimmed.png",
+            "link": ""
+          }
+        },
+        "logo_ixCqnU": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/Group_18795-text-trimmed.png",
+            "link": ""
+          }
+        },
+        "logo_RaPFDW": {
+          "type": "logo",
+          "settings": {
+            "image": "shopify://shop_images/Tesco_logo-text.png",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "logo_xjqT4m",
+        "logo_ixCqnU",
+        "logo_RaPFDW"
+      ],
+      "name": "Logo section",
+      "settings": {
+        "eyebrow": "",
+        "heading": "As featured in",
+        "button_text": "",
+        "button_link": ""
       }
     },
     "media_tabs": {
@@ -191,44 +229,6 @@
         "verified_label": "Verified"
       }
     },
-    "logo_section_nHTHKM": {
-      "type": "logo-section",
-      "blocks": {
-        "logo_xjqT4m": {
-          "type": "logo",
-          "settings": {
-            "image": "shopify://shop_images/MandS_logo-text-trimmed.png",
-            "link": ""
-          }
-        },
-        "logo_ixCqnU": {
-          "type": "logo",
-          "settings": {
-            "image": "shopify://shop_images/Group_18795-text-trimmed.png",
-            "link": ""
-          }
-        },
-        "logo_RaPFDW": {
-          "type": "logo",
-          "settings": {
-            "image": "shopify://shop_images/Tesco_logo-text.png",
-            "link": ""
-          }
-        }
-      },
-      "block_order": [
-        "logo_xjqT4m",
-        "logo_ixCqnU",
-        "logo_RaPFDW"
-      ],
-      "name": "Logo section",
-      "settings": {
-        "eyebrow": "",
-        "heading": "In collaboration with",
-        "button_text": "",
-        "button_link": ""
-      }
-    },
     "faq_section_H6aeXd": {
       "type": "faq-section",
       "blocks": {
@@ -293,13 +293,13 @@
   },
   "order": [
     "hero",
+    "logo_section_nHTHKM",
     "media_tabs",
     "featured_collection",
     "text_image_split_BYBfYc",
     "benefits_grid_Txjmr8",
     "feature_card",
     "social_proof_Jt3Pzz",
-    "logo_section_nHTHKM",
     "faq_section_H6aeXd"
   ]
 }
