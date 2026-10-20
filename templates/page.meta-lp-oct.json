@@ -98,7 +98,8 @@
         ".product-card-actions > *:first-child:not(:only-child) {display: none;}",
         ".product-card-actions {pointer-events: auto;}",
         ".product-card-actions > * {opacity: 1; transform: none;}",
-        ".klaviyo-star-rating-widget {display: none;}"
+        ".klaviyo-star-rating-widget {display: none;}",
+        "@media (max-width: 599px) {.product-card-image {aspect-ratio: 1 / 1; } .product-card-actions {padding: 8px; } .product-card-info {padding-top: 8px; } .featured-collection-products-mobile {row-gap: 8px; }}"
       ],
       "settings": {
         "eyebrow": "",
