@@ -76,10 +76,15 @@
         "logo_ixCqnU",
         "logo_RaPFDW"
       ],
+      "custom_css": [
+        ".logo-section {padding-block: 24px; gap: 12px; }",
+        ".logo-section-logos {gap: 16px 28px; }",
+        "@media (max-width: 599px) {.logo-section-logo {flex: 0 0 calc(33.33% - 20px); }}"
+      ],
       "name": "Logo section",
       "settings": {
-        "eyebrow": "",
-        "heading": "As featured in",
+        "eyebrow": "As featured in",
+        "heading": "",
         "button_text": "",
         "button_link": ""
       }
