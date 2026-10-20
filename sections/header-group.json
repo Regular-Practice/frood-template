@@ -16,9 +16,19 @@
       "settings": {
         "menu": "main-menu"
       }
+    },
+    "announcement_bar_g79mNU": {
+      "type": "announcement-bar",
+      "name": "Announcement bar",
+      "settings": {
+        "text": "Subscribe & save 10%",
+        "link": "shopify://products/custom-box",
+        "dismissible": false
+      }
     }
   },
   "order": [
-    "header"
+    "header",
+    "announcement_bar_g79mNU"
   ]
 }
