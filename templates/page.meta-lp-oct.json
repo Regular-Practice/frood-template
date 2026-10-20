@@ -11,6 +11,9 @@
   "sections": {
     "hero": {
       "type": "hero",
+      "custom_css": [
+        ".hero-frood-card, .hero-frood-logo {animation: none; opacity: 1; transform: none; }"
+      ],
       "settings": {
         "background_image": "shopify://shop_images/HERO_v2_desktop_left.jpg",
         "secondary_image": "shopify://shop_images/HERO_v2_desktop_right.jpg",
