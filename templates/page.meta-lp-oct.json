@@ -94,12 +94,15 @@
       "custom_css": [
         ".product-card-actions {pointer-events: auto;}",
         ".product-card-actions > * {opacity: 1; transform: none;}",
-        ".product-card-actions > *:first-child:not(:only-child) {display: none; }"
+        ".product-card-actions > *:first-child:not(:only-child) {display: none;}",
+        ".product-card-actions {pointer-events: auto;}",
+        ".product-card-actions > * {opacity: 1; transform: none;}",
+        ".klaviyo-star-rating-widget {display: none; }"
       ],
       "settings": {
         "eyebrow": "",
         "heading": "Recipes from Frida's kitchen",
-        "button_text": "Shop Our range",
+        "button_text": "",
         "button_link": "shopify://collections/shop",
         "collection": "shop",
         "products_to_show": 5
