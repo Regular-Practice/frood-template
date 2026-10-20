@@ -21,7 +21,7 @@
       "type": "announcement-bar",
       "name": "Announcement bar",
       "settings": {
-        "text": "Subscribe & save 10%",
+        "text": "Free UK delivery over £24 · Subscribe & save 10%",
         "link": "shopify://products/custom-box",
         "dismissible": false
       }
