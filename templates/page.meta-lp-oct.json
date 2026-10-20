@@ -79,7 +79,8 @@
       "custom_css": [
         ".logo-section {padding-block: 24px; gap: 12px;}",
         ".logo-section-logos {gap: 16px 28px;}",
-        "@media (max-width: 599px) {.logo-section-logo {flex: 0 0 calc(33.33% - 20px); }}"
+        "@media (max-width: 599px) {.logo-section-logo {flex: 0 0 calc(33.33% - 20px); }}",
+        ".logo-section {background-color: var(--color-accent-light); }"
       ],
       "name": "Logo section",
       "settings": {
