@@ -89,6 +89,48 @@
         "button_link": ""
       }
     },
+    "featured_collection": {
+      "type": "featured-collection",
+      "custom_css": [
+        ".product-card-actions {pointer-events: auto; }",
+        ".product-card-actions > * {opacity: 1; transform: none; }"
+      ],
+      "settings": {
+        "eyebrow": "",
+        "heading": "Recipes from Frida's kitchen",
+        "button_text": "Shop Our range",
+        "button_link": "shopify://collections/shop",
+        "collection": "shop",
+        "products_to_show": 5
+      }
+    },
+    "text_image_split_BYBfYc": {
+      "type": "text-image-split",
+      "blocks": {
+        "media_thMtgW": {
+          "type": "media",
+          "settings": {
+            "image": "shopify://shop_images/20260929-111912_custom-box-landscape.jpg",
+            "caption": ""
+          }
+        }
+      },
+      "block_order": [
+        "media_thMtgW"
+      ],
+      "name": "Text + image split",
+      "settings": {
+        "eyebrow": "",
+        "heading": "Pick your own box",
+        "text": "<p>Pick exactly which Frood flavours go in your box and how many of each, so your order is always made to your taste.</p>",
+        "button_text": "Make your Box",
+        "button_link": "shopify://products/custom-box",
+        "yellow_box": true,
+        "media_alignment": "left",
+        "media_size": "big",
+        "text_vertical_alignment": "middle"
+      }
+    },
     "media_tabs": {
       "type": "media-tabs",
       "blocks": {
@@ -131,44 +173,6 @@
         "heading": "How Frood works",
         "button_label": "Learn More",
         "button_link": "shopify://pages/about"
-      }
-    },
-    "featured_collection": {
-      "type": "featured-collection",
-      "settings": {
-        "eyebrow": "",
-        "heading": "Recipes from Frida's kitchen",
-        "button_text": "Shop Our range",
-        "button_link": "shopify://collections/shop",
-        "collection": "shop",
-        "products_to_show": 5
-      }
-    },
-    "text_image_split_BYBfYc": {
-      "type": "text-image-split",
-      "blocks": {
-        "media_thMtgW": {
-          "type": "media",
-          "settings": {
-            "image": "shopify://shop_images/20260929-111912_custom-box-landscape.jpg",
-            "caption": ""
-          }
-        }
-      },
-      "block_order": [
-        "media_thMtgW"
-      ],
-      "name": "Text + image split",
-      "settings": {
-        "eyebrow": "",
-        "heading": "Pick your own box",
-        "text": "<p>Pick exactly which Frood flavours go in your box and how many of each, so your order is always made to your taste.</p>",
-        "button_text": "Make your Box",
-        "button_link": "shopify://products/custom-box",
-        "yellow_box": true,
-        "media_alignment": "left",
-        "media_size": "big",
-        "text_vertical_alignment": "middle"
       }
     },
     "benefits_grid_Txjmr8": {
@@ -323,9 +327,9 @@
   "order": [
     "hero",
     "logo_section_nHTHKM",
-    "media_tabs",
     "featured_collection",
     "text_image_split_BYBfYc",
+    "media_tabs",
     "benefits_grid_Txjmr8",
     "feature_card",
     "social_proof_Jt3Pzz",
