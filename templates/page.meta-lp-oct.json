@@ -243,9 +243,14 @@
         "benefit_pRcLLP",
         "benefit_Qmmcn4"
       ],
+      "custom_css": [
+        ".benefits-grid {padding-top: 8px; gap: 16px; }",
+        ".benefits-grid-list {gap: 8px; }",
+        ".benefit {padding: 12px 8px; gap: 6px; }"
+      ],
       "name": "Benefits grid",
       "settings": {
-        "eyebrow": "Benefits",
+        "eyebrow": "",
         "heading": "Wholesome home cooking, made easy.",
         "button_text": "",
         "button_link": ""
