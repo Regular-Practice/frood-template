@@ -373,7 +373,9 @@
         "media_AjwbLN"
       ],
       "custom_css": [
-        ".text-image-split {padding-top: 8px;}"
+        ".text-image-split {padding-top: 8px;}",
+        ".text-image-split.yellow-box .text-image-split-content {background-color: var(--color-text); color: var(--color-bg); }",
+        ".text-image-split .button {background-color: var(--color-accent); color: var(--color-text); }"
       ],
       "name": "Text + image split",
       "settings": {
