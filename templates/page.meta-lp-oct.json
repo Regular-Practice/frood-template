@@ -80,7 +80,7 @@
         ".logo-section {padding-block: 24px; gap: 12px;}",
         ".logo-section-logos {gap: 16px 28px;}",
         "@media (max-width: 599px) {.logo-section-logo {flex: 0 0 calc(33.33% - 20px); }}",
-        ".logo-section {background-color: var(--color-accent-light); }"
+        ".logo-section {background-color: var(--color-accent-light);}"
       ],
       "name": "Logo section",
       "settings": {
@@ -142,7 +142,7 @@
         "tab_ENatHy": {
           "type": "tab",
           "settings": {
-            "description": "<p><strong>Real ingredients, chopped & measured. </strong>Veg, herbs and spices, gently dried and blended for flavour.</p>",
+            "description": "<p><strong>Veg, herbs & spices, chopped & measured</strong></p>",
             "image": "shopify://shop_images/672464872_17918866359335112_7784430358043577824_n.jpg"
           }
         },
