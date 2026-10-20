@@ -124,6 +124,9 @@
       "block_order": [
         "media_thMtgW"
       ],
+      "custom_css": [
+        ".text-image-split {padding-top: 8px; }"
+      ],
       "name": "Text + image split",
       "settings": {
         "eyebrow": "",
