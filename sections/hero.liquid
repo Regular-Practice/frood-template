@@ -8,7 +8,7 @@
   See CLAUDE.md → "Frood Hero section" for design rules.
 {%- endcomment -%}
 
-<section class="hero-frood">
+<section class="hero-frood{% if section.settings.mobile_image != blank %} has-mobile{% endif %}">
   <div class="hero-frood-bg{% unless section.settings.secondary_image != blank %} is-single{% endunless %}">
     <picture class="hero-frood-picture">
       {%- if section.settings.mobile_image != blank -%}
@@ -229,6 +229,28 @@
       animation: none;
     }
   }
+  /* Phones/tablets with a mobile image: hero follows the image height,
+     card sits below the image instead of over it. */
+  @media (max-width: 899px) {
+    .hero-frood.has-mobile {
+      height: auto;
+    }
+    .hero-frood.has-mobile .hero-frood-bg {
+      position: relative;
+      inset: auto;
+    }
+    .hero-frood.has-mobile .hero-frood-image {
+      height: auto;
+    }
+    .hero-frood.has-mobile .hero-frood-card {
+      position: relative;
+      left: auto;
+      right: auto;
+      bottom: auto;
+      margin: var(--spacing-xxs);
+    }
+  }
+
 {% endstylesheet %}
 
 {% schema %}
