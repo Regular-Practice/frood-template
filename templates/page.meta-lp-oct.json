@@ -83,8 +83,8 @@
       ],
       "name": "Logo section",
       "settings": {
-        "eyebrow": "",
-        "heading": "As featured in",
+        "eyebrow": "As featured in",
+        "heading": "",
         "button_text": "",
         "button_link": ""
       }
