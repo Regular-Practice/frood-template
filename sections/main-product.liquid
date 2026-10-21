@@ -46,14 +46,14 @@
       </header>
 
       {%- comment -%}
-        Blurb: the first ~40 words of the description, as plain text. There is
-        no separate "Details" accordion any more, so a description longer than
-        the blurb is only shown truncated here.
+        Description: the product's rich text description exactly as it is
+        formatted in Shopify admin (paragraphs, bold, lists, links), not a
+        plain-text excerpt. `.typeset` supplies the paragraph spacing and link
+        underline; `.text-body` the type.
       {%- endcomment -%}
       {%- assign description_text = product.description | strip_html | strip -%}
-      {%- assign blurb = description_text | truncatewords: 40 -%}
       {%- if description_text != blank -%}
-        <p class="text-body product-blurb">{{ blurb }}</p>
+        <div class="text-body typeset product-blurb">{{ product.description }}</div>
       {%- endif -%}
 
       <div class="product-purchase">
@@ -569,6 +569,8 @@
      (500) body. The font ships only Regular + Medium, so 700 makes the browser
      synthesise a heavier face on top of Medium. Paragraph spacing comes from
      .typeset on each body. */
+  .product-blurb strong,
+  .product-blurb b,
   .product-accordion-content strong,
   .product-accordion-content b {
     font-weight: 700;
