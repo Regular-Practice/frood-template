@@ -85,115 +85,54 @@
         </div>
       </div>
 
-      <accordion-list class="product-accordions">
-        {%- comment -%} How to Frood (instructions metafield) {%- endcomment -%}
-        {%- if product.metafields.custom.instructions != blank -%}
-          <details class="product-accordion">
-            <summary>
-              <span class="text-ui">{{ 'products.product.instructions' | t }}</span>
-              {{ accordion_icon }}
-            </summary>
-            <div class="accordion-content">
-              <div class="accordion-content-inner">
-                <div tabindex="0" class="product-accordion-content typeset">
-                  {{ product.metafields.custom.instructions | metafield_tag }}
-                </div>
-              </div>
-            </div>
-          </details>
-        {%- endif -%}
+      {%- comment -%}
+        Accordions: one row per entry in the product's `custom.pdp_dropdowns`
+        list (metaobject `pdp_dropdown`: title + rich text content), in the order
+        set on the product. The client edits titles, content and order per
+        product in admin — nothing here is template-wide.
 
-        {%- comment -%}
-          Nutrition: the merchant's `custom.nutritional_info` richtext, plus a
-          "View full nutrition" link opening the per-flavour tables in an
-          overlay. The tables live in the dialog rather than inline so the
-          accordion stays short — the mixed box stacks four of them.
-
-          Captured rather than tested via a metafield: whether there's a dialog
-          to offer depends on the flavours' own nutrition fields, and
-          nutrition-modal already owns that logic — re-deriving it here would be
-          two copies to keep in step. Section styles are hoisted at compile
-          time, so the capture holds markup only. The row shows if either half
-          has something.
-        {%- endcomment -%}
-        {%- capture nutrition_modal -%}{% render 'nutrition-modal', product: product %}{%- endcapture -%}
-        {%- assign nutrition_modal = nutrition_modal | strip -%}
-        {%- if nutrition_modal != blank or product.metafields.custom.nutritional_info != blank -%}
-          <details class="product-accordion">
-            <summary>
-              <span class="text-ui">{{ 'products.product.nutritional_info' | t }}</span>
-              {{ accordion_icon }}
-            </summary>
-            <div class="accordion-content">
-              <div class="accordion-content-inner">
-                <div tabindex="0" class="product-accordion-content product-nutrition-body">
-                  {%- if product.metafields.custom.nutritional_info != blank -%}
-                    <div class="typeset">
-                      {{ product.metafields.custom.nutritional_info | metafield_tag }}
+        A row with `show_nutrition_table` ticked also gets the "View full
+        nutrition" link, which opens the per-flavour tables in an overlay. The
+        tables live in the dialog rather than inline so the row stays short —
+        the mixed box stacks four of them. nutrition-modal owns the decision
+        about whether there is anything to show (it depends on the flavours'
+        own nutrition fields), so it is captured rather than re-derived here;
+        section styles are hoisted at compile time, so the capture holds markup
+        only. A row renders if it has content or a nutrition link.
+      {%- endcomment -%}
+      {%- assign pdp_dropdowns = product.metafields.custom.pdp_dropdowns.value -%}
+      {%- if pdp_dropdowns != blank -%}
+        <accordion-list class="product-accordions">
+          {%- for dropdown in pdp_dropdowns -%}
+            {%- assign dropdown_content = dropdown.content -%}
+            {%- assign nutrition_modal = '' -%}
+            {%- if dropdown.show_nutrition_table.value -%}
+              {%- capture nutrition_modal -%}{% render 'nutrition-modal', product: product %}{%- endcapture -%}
+              {%- assign nutrition_modal = nutrition_modal | strip -%}
+            {%- endif -%}
+            {%- if dropdown_content != blank or nutrition_modal != blank -%}
+              <details class="product-accordion">
+                <summary>
+                  <span class="text-ui">{{ dropdown.title }}</span>
+                  {{ accordion_icon }}
+                </summary>
+                <div class="accordion-content">
+                  <div class="accordion-content-inner">
+                    <div tabindex="0" class="product-accordion-content product-dropdown-body">
+                      {%- if dropdown_content != blank -%}
+                        <div class="typeset">
+                          {{ dropdown_content | metafield_tag }}
+                        </div>
+                      {%- endif -%}
+                      {{ nutrition_modal }}
                     </div>
-                  {%- endif -%}
-                  {{ nutrition_modal }}
+                  </div>
                 </div>
-              </div>
-            </div>
-          </details>
-        {%- endif -%}
-
-        {%- comment -%}
-          Benefits / Who is it for / How does the subscription work: one rich
-          text metafield each (custom.benefits, custom.who_is_it_for,
-          custom.how_does_the_subscription_work). Each row only renders when
-          its metafield has content. Order: Instructions, Nutritional info,
-          Benefits, Who is it for, How does the subscription work.
-        {%- endcomment -%}
-        {%- if product.metafields.custom.benefits != blank -%}
-          <details class="product-accordion">
-            <summary>
-              <span class="text-ui">{{ 'products.product.benefits' | t }}</span>
-              {{ accordion_icon }}
-            </summary>
-            <div class="accordion-content">
-              <div class="accordion-content-inner">
-                <div tabindex="0" class="product-accordion-content typeset">
-                  {{ product.metafields.custom.benefits | metafield_tag }}
-                </div>
-              </div>
-            </div>
-          </details>
-        {%- endif -%}
-
-        {%- if product.metafields.custom.who_is_it_for != blank -%}
-          <details class="product-accordion">
-            <summary>
-              <span class="text-ui">{{ 'products.product.who_is_it_for' | t }}</span>
-              {{ accordion_icon }}
-            </summary>
-            <div class="accordion-content">
-              <div class="accordion-content-inner">
-                <div tabindex="0" class="product-accordion-content typeset">
-                  {{ product.metafields.custom.who_is_it_for | metafield_tag }}
-                </div>
-              </div>
-            </div>
-          </details>
-        {%- endif -%}
-
-        {%- if product.metafields.custom.how_does_the_subscription_work != blank -%}
-          <details class="product-accordion">
-            <summary>
-              <span class="text-ui">{{ 'products.product.subscription_how' | t }}</span>
-              {{ accordion_icon }}
-            </summary>
-            <div class="accordion-content">
-              <div class="accordion-content-inner">
-                <div tabindex="0" class="product-accordion-content typeset">
-                  {{ product.metafields.custom.how_does_the_subscription_work | metafield_tag }}
-                </div>
-              </div>
-            </div>
-          </details>
-        {%- endif -%}
-      </accordion-list>
+              </details>
+            {%- endif -%}
+          {%- endfor -%}
+        </accordion-list>
+      {%- endif -%}
     {%- endform -%}
   </product-form>
 
@@ -615,9 +554,9 @@
     padding-bottom: var(--spacing-xs);
   }
 
-  /* Richtext + the "View full nutrition" trigger stack with a consistent gap,
+  /* Richtext + an optional "View full nutrition" trigger stack with a consistent gap,
      and the gap collapses cleanly when the richtext is absent. */
-  .product-nutrition-body {
+  .product-dropdown-body {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xxs);
