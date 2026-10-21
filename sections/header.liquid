@@ -47,11 +47,39 @@
     var ro = new ResizeObserver(measure);
     ro.observe(firstSection);
   })();
+
+  {%- comment -%}
+    Keeps --header-height equal to the fixed header's real height, which
+    #main-content reserves as top padding (base.css §26). The CSS values below
+    are the measured defaults so first paint is already right; this catches
+    anything they can't predict (a longer menu wrapping the bento to a third
+    row, font swap).
+  {%- endcomment -%}
+  (function () {
+    var header = document.querySelector('.header');
+    if (!header) return;
+
+    function measure() {
+      document.documentElement.style.setProperty('--header-height', header.offsetHeight + 'px');
+    }
+
+    measure();
+    new ResizeObserver(measure).observe(header);
+  })();
 </script>
 
 {% stylesheet %}
+  /* Height of the fixed header box: the Menu/Cart pill row on mobile, the
+     two-row bento nav from 600px. Measured defaults — the inline script above
+     keeps it exact at runtime. */
   :root {
-    --header-height: 52px;
+    --header-height: 49px;
+  }
+
+  @media (min-width: 600px) {
+    :root {
+      --header-height: 82px;
+    }
   }
 
   .header {

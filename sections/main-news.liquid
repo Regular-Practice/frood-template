@@ -47,8 +47,8 @@
 </section>
 
 {% stylesheet %}
-  /* Padding system mirrors .recipes-index: tall top inset on mobile (l) that
-     steps up to xl from tablet (≥600px); inline + bottom padding scale
+  /* Padding system mirrors .recipes-index: top inset l at every breakpoint
+     (the layout reserves the fixed header — base.css §26); inline + bottom padding scale
      separately from xs (mobile) to m (desktop). */
   .news-index {
     padding-top: var(--spacing-l);
@@ -56,12 +56,6 @@
     padding-bottom: var(--spacing-m);
     color: var(--color-text);
     background-color: var(--color-bg);
-  }
-
-  @media (min-width: 600px) {
-    .news-index {
-      padding-top: var(--spacing-xl);
-    }
   }
 
   @media (min-width: 900px) {

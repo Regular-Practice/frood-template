@@ -433,6 +433,19 @@
     padding-top: var(--spacing-l);
   }
 
+  /* Leading the page (the bundle product templates), the layout already
+     reserves the fixed header (base.css §26): sit exactly --spacing-l below
+     it like every other top-of-page section, rather than stacking the
+     section padding, this inset and the full-screen padding on top. ID
+     selector so it wins over the full-screen and phone padding rules. */
+  #main-content > .shopify-section:first-child .bundle-v2-builder {
+    padding-top: var(--spacing-l);
+  }
+
+  #main-content > .shopify-section:first-child .bundle-v2-layout {
+    padding-top: 0;
+  }
+
   .bundle-v2-selection {
     display: flex;
     flex-direction: column;

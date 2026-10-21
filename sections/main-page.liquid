@@ -15,14 +15,14 @@
   .page {
     max-width: 720px;
     margin-inline: auto;
-    /* Top padding clears the fixed, transparent header (--header-height) and
-       adds a comfortable gap below the floating nav. */
-    padding: calc(var(--header-height, 52px) + var(--spacing-l)) var(--spacing-s) var(--spacing-l);
+    /* The layout already reserves the fixed header (base.css §26); l is the
+       gap below the floating nav. */
+    padding: var(--spacing-l) var(--spacing-s);
   }
 
   @media (min-width: 900px) {
     .page {
-      padding: calc(var(--header-height, 52px) + var(--spacing-l)) var(--spacing-m) var(--spacing-xl);
+      padding: var(--spacing-l) var(--spacing-m) var(--spacing-xl);
     }
   }
 

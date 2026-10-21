@@ -292,7 +292,9 @@
 
   /* Mobile/tablet: a square slider leads, clearing the fixed header, and the
      text column follows below it. (Visual order only — the DOM keeps the text
-     first.) The stacked column is desktop-only. */
+     first.) The stacked column is desktop-only. The section opts out of the
+     layout's header clearance (`under-header`, base.css §26) for the desktop
+     layout's sake, so the slider clears the header itself here. */
   .product-bg-slider {
     order: -1;
     position: relative;
@@ -656,6 +658,7 @@
 {% schema %}
 {
   "name": "Product information",
+  "class": "under-header",
   "settings": [
     {
       "type": "checkbox",

@@ -1415,3 +1415,24 @@ product-render-video {
   display: block;
   position: relative;
 }
+
+/* ========== 26. Header Clearance ========== */
+/* The header is fixed and transparent, so by default every page reserves its
+   height at the top of <main> and the first section starts just below it.
+   Sections then add their own breathing room (top-of-page sections use
+   --spacing-l) — none of them need to know the header exists.
+
+   Sections designed to sit underneath the header (full-bleed heroes/media,
+   the desktop product layout that flanks the bento nav) opt out by adding
+   `under-header` to their schema "class". It only applies when that section
+   leads the page; further down it has no effect.
+
+   This also covers content that isn't a theme section at all — e.g. the Loop
+   Subscriptions portal, served through an app proxy into this layout. */
+#main-content {
+  padding-top: var(--header-height);
+}
+
+#main-content:has(> .under-header:first-child) {
+  padding-top: 0;
+}

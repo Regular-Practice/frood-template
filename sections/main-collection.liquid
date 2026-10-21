@@ -98,19 +98,13 @@
 
 {% stylesheet %}
   /* Mirrors sections/main-recipes.liquid:
-     – mobile: padding-top l (xl is too much air on a small screen)
-     – tablet+: padding-top steps up to xl
+     – padding-top l at every breakpoint (the layout already reserves the
+       fixed header — base.css §26)
      – desktop+: inline & bottom paddings step from xs → m */
   .collection {
     padding-top: var(--spacing-l);
     padding-inline: var(--spacing-xs);
     padding-bottom: var(--spacing-xs);
-  }
-
-  @media (min-width: 600px) {
-    .collection {
-      padding-top: var(--spacing-xl);
-    }
   }
 
   @media (min-width: 900px) {

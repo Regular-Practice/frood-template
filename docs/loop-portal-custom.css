@@ -1,0 +1,222 @@
+/*
+  Frood — Loop Subscriptions customer portal
+  Paste into: Loop admin → Customer portal → Theme settings → Customize → Custom CSS
+  (replace everything that's there). This file is the source of truth; edit here, then re-paste.
+
+  Hex values rather than theme tokens on purpose: Loop's customiser preview renders
+  the portal outside the theme, where var(--color-*) doesn't exist. Each value is
+  commented with the base.css token it mirrors.
+
+  On frood.com the portal sits inside theme.liquid, which already loads HW Left and
+  clears the fixed header (base.css §26). The @font-face below is only so the
+  customiser preview shows the right font. NB the URLs are tied to the live theme
+  (t/6) — re-point them if a different theme is published.
+*/
+
+@font-face {
+  font-family: 'HW Left';
+  src: url('https://frood.com/cdn/shop/t/6/assets/HW%20Left%20Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'HW Left';
+  src: url('https://frood.com/cdn/shop/t/6/assets/HW%20Left%20Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+:root {
+  /* Type */
+  --loop-font-family: 'HW Left', sans-serif;
+  --loop-base-font-size: 14px;          /* .text-body */
+  --loop-small-font-size: 14px;
+  --loop-extra-small-font-size: 12px;
+  --loop-button-font-size: 12px;        /* .button */
+  --loop-page-title-font-size: 24px;    /* .text-h3 */
+  --loop-modal-title-font-size: 24px;
+  --loop-form-label-font-size: 12px;
+
+  /* Text */
+  --loop-color: #36262B;                /* --color-text */
+  --loop-primary-color: #36262B;
+  --loop-text-primary-color: #36262B;
+  --loop-text-secondary-color: #979193; /* --color-text-accent */
+  --loop-text-offset-color: #979193;
+  --loop-form-label-color: #979193;
+
+  /* Surfaces */
+  --loop-bg-color: #FFFEF9;             /* --color-bg */
+  --loop-container-bg-color: #FFFEF9;
+  --loop-overview-bg-color: #FFFEF9;
+  --loop-card-bg-color: #FFFEF9;
+  --loop-card-color: #36262B;
+  --loop-card-border-color: rgba(54, 38, 43, 0.1);         /* --color-border */
+  --loop-card-header-footer-border-color: rgba(54, 38, 43, 0.1);
+  --loop-card-line-bg-color: #FFFEF9;
+  --loop-card-line-color: #36262B;
+  --loop-card-line-border-color: rgba(54, 38, 43, 0.1);
+  --loop-card-details-container-bg-color: #FFFEF9;
+  --loop-card-label-bg-color: #36262B;
+  --loop-card-label-color: #FFFEF9;
+  --loop-drawer-bg-color: #FFFEF9;
+  --loop-drawer-color: #36262B;
+  --loop-drawer-separator-color: rgba(54, 38, 43, 0.1);
+  --loop-drawer-underline-color: rgba(54, 38, 43, 0.1);
+  --loop-modal-bg-color: #FFFEF9;
+  --loop-modal-color: #36262B;
+  --loop-modal-separator-color: rgba(54, 38, 43, 0.1);
+  --loop-upsell-container-bg-color: #FFFEF9;
+  --loop-upsell-container-color: #36262B;
+  --loop-upsell-card-border-color: rgba(54, 38, 43, 0.1);
+  --loop-schedule-order-card-border-color: rgba(54, 38, 43, 0.1);
+  --loop-completed-order-card-border-color: rgba(54, 38, 43, 0.1);
+  --loop-frequency-order-date-bg-color: #DFDCD4;           /* --color-bg-dark */
+
+  /* Shape — --rad-s 2px / --rad-m 4px, no shadows */
+  --loop-border-radius-md: 2px;
+  --loop-border-radius-lg: 2px;
+  --loop-border-radius-xl: 2px;
+  --loop-card-border-radius: 4px;
+  --loop-label-border-radius-sm: 2px;
+  --loop-label-border-radius-md: 2px;
+  --loop-shadow-xs: none;
+  --loop-shadow-sm: none;
+  --loop-shadow-md: none;
+  --loop-shadow-lg: none;
+
+  /* Buttons — primary = .button (yellow / dark) */
+  --loop-btn-primary-bg-color: #FFE74B;  /* --color-accent */
+  --loop-btn-primary-color: #36262B;
+  --loop-btn-primary-border-color: #FFE74B;
+  --loop-btn-outline-border-color: #DFDCD4;
+  --loop-btn-outline-color: #36262B;
+  --loop-btn-underline-color: #36262B;
+
+  /* Form inputs — brand-locked input bg */
+  --loop-form-input-bg-color: #DFDCD4;   /* --color-input-bg */
+  --loop-form-input-border-color: #DFDCD4;
+
+  /* Choice tiles (frequency, intervals) */
+  --loop-interval-border-color: rgba(54, 38, 43, 0.1);
+  --loop-interval-selected-border-color: #36262B;
+  --loop-frequency-choice-border-color: rgba(54, 38, 43, 0.1);
+  --loop-frequency-choice-selected-border-color: #36262B;
+
+  /* Status labels — pale yellow for active, beige for the rest; error red kept */
+  --loop-label-subscription-active-bg-color: #F7F0C1;  /* --color-accent-light */
+  --loop-label-subscription-active-color: #36262B;
+  --loop-label-subscription-paused-bg-color: #DFDCD4;
+  --loop-label-subscription-paused-color: #36262B;
+  --loop-label-subscription-expired-bg-color: #DFDCD4;
+  --loop-label-subscription-expired-color: #36262B;
+  --loop-label-order-success-bg-color: #F7F0C1;
+  --loop-label-order-success-color: #36262B;
+  --loop-label-order-skipped-bg-color: #DFDCD4;
+  --loop-label-order-skipped-color: #36262B;
+  --loop-label-order-processing-bg-color: #DFDCD4;
+  --loop-label-order-processing-color: #36262B;
+  --loop-label-order-unprocessed-bg-color: #DFDCD4;
+  --loop-label-order-unprocessed-color: #36262B;
+  --loop-label-discount-bg-color: #F7F0C1;
+  --loop-label-discount-color: #36262B;
+  --loop-label-default-bg-color: #DFDCD4;
+  --loop-label-default-color: #36262B;
+  --loop-label-pm-primary-bg-color: #36262B;
+  --loop-label-pm-primary-color: #FFFEF9;
+  --loop-label-pm-expiring-soon-bg-color: #F7F0C1;
+  --loop-label-pm-expiring-soon-color: #36262B;
+  --loop-cp-badge-bg-color-primary: #36262B;
+  --loop-cp-badge-color-primary: #FFFEF9;
+  --loop-image-product-badge-bg-color: #36262B;
+  --loop-image-product-badge-color: #FFFEF9;
+
+  /* Banners & toasts */
+  --loop-banner-bg-color: #36262B;
+  --loop-banner-color: #FFFEF9;
+  --loop-banner-border-color: #36262B;
+  --loop-banner-btn-bg-color: #FFE74B;
+  --loop-banner-btn-color: #36262B;
+  --loop-banner-ribbon-bg-color: #F7F0C1;
+  --loop-banner-ribbon-color: #36262B;
+  --loop-banner-ribbon-btn-color: #36262B;
+  --loop-warning-bg-color: #F7F0C1;
+  --loop-warning-text-color: #36262B;
+  --loop-warning-border-color: #FFE74B;
+  --loop-toast-default-bg-color: #36262B;
+  --loop-toast-success-bg-color: #36262B;
+}
+
+/* Form controls inherit the portal font (browsers don't by default) */
+.loop button,
+.loop input,
+.loop select,
+.loop textarea {
+  font-family: inherit;
+}
+
+/* Buttons — .button typography: 12px / Medium / uppercase / 0.01em */
+.loop .loop-btn-primary,
+.loop .loop-btn-outline {
+  font-size: var(--loop-button-font-size);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Primary hover inverts, like .button */
+.loop .loop-btn-primary:not(:disabled):hover {
+  background: #36262B;
+  border-color: #36262B;
+  color: #FFE74B;
+}
+
+/* Secondary actions (Skip / Reschedule / Delay, View orders…) as beige
+   bento tiles — the same surface as the header nav links. */
+.loop .loop-btn-outline,
+.loop .loop-btn-nav {
+  background: #DFDCD4;                  /* --color-bg-dark */
+  border-color: #DFDCD4;
+}
+.loop .loop-btn-outline:not(:disabled):hover,
+.loop .loop-btn-nav:hover {
+  background: #F7F0C1;                  /* --color-accent-light */
+  border-color: #F7F0C1;
+}
+.loop .loop-btn-nav {
+  border-radius: 2px;
+}
+
+/* "Order now" is an outline button with its own class — keep it primary */
+.loop .loop-order-now-btn {
+  background: #FFE74B;                  /* --color-accent */
+  border-color: #FFE74B;
+}
+.loop .loop-order-now-btn:not(:disabled):hover {
+  background: #36262B;
+  border-color: #36262B;
+  color: #FFE74B;
+}
+
+/* Product thumbnails have a hard-coded 10px radius */
+.loop [class*="loop-image-product"],
+.loop [class*="loop-image-product"] img {
+  border-radius: 2px;
+}
+
+/* Status labels are hard-coded pills in Loop's CSS */
+.loop .loop-label {
+  border-radius: 2px;
+  font-weight: 500;
+}
+
+/* Inputs — beige fill, pale yellow on hover/focus (as .input) */
+.loop .loop-form-input:hover,
+.loop .loop-form-input:focus,
+.loop .loop-form-input-single:hover,
+.loop .loop-form-input-single:focus {
+  background: #F7F0C1;                  /* --color-input-bg-hover */
+  border-color: #F7F0C1;
+}

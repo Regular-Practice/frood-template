@@ -76,14 +76,6 @@
     }
   }
 
-  /* When FAQ leads a page it sits under the fixed, floating header (~52px).
-     Clear it the way main-page / the index pages do — header height plus
-     editorial breathing room. Scoped to :first-child so a mid-page FAQ keeps
-     its normal padding; the ID selector wins over the desktop grid's padding. */
-  #main-content > .faq-section:first-child .faq {
-    padding-top: calc(var(--header-height, 52px) + var(--spacing-l));
-  }
-
   /* Heading caps like the rest of the theme; the desktop column narrows it further. */
   .faq-intro h3 {
     max-width: 36ch;
