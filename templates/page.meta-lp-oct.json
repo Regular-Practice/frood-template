@@ -12,7 +12,7 @@
     "hero": {
       "type": "hero",
       "custom_css": [
-        ".hero-frood-card, .hero-frood-logo {animation: none; opacity: 1; transform: none; }"
+        ".hero-frood-card,.hero-frood-logo {animation: none; opacity: 1; transform: none;}"
       ],
       "settings": {
         "background_image": "shopify://shop_images/HERO_v2_desktop_left.jpg",
@@ -398,8 +398,8 @@
     "hero",
     "logo_section_nHTHKM",
     "featured_collection",
-    "text_image_split_BYBfYc",
     "media_tabs",
+    "text_image_split_BYBfYc",
     "benefits_grid_Txjmr8",
     "feature_card",
     "social_proof_Jt3Pzz",
