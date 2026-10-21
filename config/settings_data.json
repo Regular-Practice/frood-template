@@ -38,6 +38,7 @@
     "custom_css": [
       ".announcement-bar {position: fixed; top: 0; left: 0; right: 0; z-index: 10; height: 32px; padding: 0 40px; background-color: var(--color-text); color: var(--color-bg); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;}",
       ".announcement-bar a {color: inherit;}",
+      ":root {--announcement-height: 32px;}",
       "body {padding-top: 32px;}",
       ".header {top: 32px;}",
       ".cart-drawer-panel {top: 40px;}",

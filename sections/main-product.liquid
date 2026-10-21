@@ -368,12 +368,14 @@
 
     /* Text column sticks to the top for as long as the images scroll past it
        (its grid cell ends with the section). Full viewport height so the
-       accordions stay pinned to the bottom edge. */
+       accordions stay pinned to the bottom edge. It pins below the fixed
+       announcement bar, whose height theme-settings custom CSS sets as
+       --announcement-height (0 when there's no bar). */
     .product-boxes {
       position: sticky;
-      top: var(--spacing-m);
+      top: calc(var(--announcement-height, 0px) + var(--spacing-m));
       align-self: start;
-      height: calc(100vh - var(--spacing-m) * 2);
+      height: calc(100vh - var(--announcement-height, 0px) - var(--spacing-m) * 2);
     }
 
     .product-bg-slider {
