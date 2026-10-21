@@ -130,6 +130,8 @@ class BundleBuilder extends HTMLElement {
     this.subSelect = this.querySelector('[data-sub-select]');
     this.addPriceEl = this.querySelector('.bundle-add-price');
     this.addWasEl = this.querySelector('[data-add-was]');
+    this.subPriceNowEl = this.querySelector('[data-sub-price-now]');
+    this.subPriceWasEl = this.querySelector('[data-sub-price-was]');
     this.boxPriceCents = parseInt(this.dataset.boxPriceCents, 10);
     this.moneyFormat = this.dataset.moneyFormat || '';
 
@@ -495,6 +497,22 @@ class BundleBuilder extends HTMLElement {
 
     if (!isNaN(unitCents)) {
       this.addPriceEl.textContent = formatMoney(unitCents * n, this.moneyFormat);
+    }
+
+    // Inline price on the subscription row: the chosen plan's price × boxes,
+    // shown whichever option is selected (like the pre-made boxes' row).
+    if (this.subPriceNowEl && this.subSelect) {
+      const opt = this.subSelect.selectedOptions[0];
+      if (opt) {
+        const subUnit = parseInt(opt.dataset.priceCents, 10);
+        const subCompare = parseInt(opt.dataset.compareCents, 10);
+        if (!isNaN(subUnit)) this.subPriceNowEl.textContent = formatMoney(subUnit * n, this.moneyFormat);
+        if (this.subPriceWasEl) {
+          const hasDiscount = !isNaN(subCompare) && subCompare > subUnit;
+          this.subPriceWasEl.hidden = !hasDiscount;
+          if (hasDiscount) this.subPriceWasEl.textContent = formatMoney(subCompare * n, this.moneyFormat);
+        }
+      }
     }
 
     if (this.addWasEl) {

@@ -249,6 +249,19 @@
             look is v2's. One-time stays the default selection.
           {%- endcomment -%}
           {%- if box_variant.selling_plan_allocations.size > 0 -%}
+            {%- comment -%}
+              Same label + inline price as the pre-made boxes' subscription row
+              (snippets/product-subscription.liquid): the discount % is read off
+              the first plan allocation (1200 -> 1080 = 10%); a plan with no
+              price discount falls back to the free-shipping wording and the
+              struck-through price stays hidden. bundle-builder.js keeps the
+              prices in step with the number of boxes and the chosen frequency.
+            {%- endcomment -%}
+            {%- assign first_alloc = box_variant.selling_plan_allocations | first -%}
+            {%- assign sub_discount = 0 -%}
+            {%- if first_alloc.compare_at_price > first_alloc.price -%}
+              {%- assign sub_discount = first_alloc.compare_at_price | minus: first_alloc.price | times: 100.0 | divided_by: first_alloc.compare_at_price | round -%}
+            {%- endif -%}
             <div class="bundle-v2-subscription" data-subscription>
               <fieldset class="bundle-v2-sub-options">
                 <legend class="visually-hidden">{{ 'products.product.purchase_options' | t }}</legend>
@@ -256,7 +269,17 @@
                 <label class="bundle-v2-sub-option bundle-sub-option">
                   <input type="radio" name="bundle-purchase-{{ section.id }}" value="subscription" data-sub-mode>
                   <span class="bundle-v2-sub-box" aria-hidden="true"></span>
-                  <span class="bundle-v2-sub-label text-ui">{{ section.settings.subscribe_label }}<span class="bundle-v2-sub-note"> {{ section.settings.subscribe_note }}</span></span>
+                  <span class="bundle-v2-sub-label text-ui">
+                    {%- if sub_discount > 0 -%}
+                      {{ 'products.product.subscribe_save' | t: percent: sub_discount }}
+                    {%- else -%}
+                      {{ 'products.product.subscribe_free_shipping' | t }}
+                    {%- endif -%}
+                  </span>
+                  <span class="bundle-v2-sub-price text-ui">
+                    <s class="bundle-v2-sub-price-was" data-sub-price-was{% unless sub_discount > 0 %} hidden{% endunless %}>{{ first_alloc.compare_at_price | money }}</s>
+                    <span data-sub-price-now>{{ first_alloc.price | money }}</span>
+                  </span>
                 </label>
 
                 <div class="bundle-v2-sub-details" data-sub-frequency hidden>
@@ -850,6 +873,16 @@
 
   .bundle-v2-sub-label {
     flex: 1 1 auto;
+  }
+
+  /* Inline was/now price on the subscription row, as on the pre-made boxes. */
+  .bundle-v2-sub-price {
+    white-space: nowrap;
+  }
+
+  .bundle-v2-sub-price-was {
+    color: var(--color-text-accent);
+    margin-right: var(--spacing-xxs);
   }
 
   /* Frequency + benefits, in a slightly darker yellow well under the option. */
