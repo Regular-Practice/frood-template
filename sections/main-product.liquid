@@ -83,6 +83,21 @@
             {% render 'product-buy-buttons', product: product, show_quantity: false %}
           </div>
         </div>
+
+        {%- comment -%}
+          Shipping banner: optional block, added in the theme editor. Spans the
+          full width of the purchase column, under the qty + Add to cart row, in
+          the lighter yellow, with the Add to cart button's type and padding.
+          Left empty it renders nothing on the storefront (the editor still
+          shows it so it can be found and filled in).
+        {%- endcomment -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'shipping_banner' -%}
+            {%- if block.settings.text != blank or request.design_mode -%}
+              <div class="product-shipping-banner text-h1" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
       </div>
 
       {%- comment -%}
@@ -214,6 +229,22 @@
   .product-blurb {
     margin: 0;
     max-width: 60ch;
+  }
+
+  /* Shipping banner block: same type + padding as the Add to cart button
+     (.button), on --color-accent-light, full width of the purchase column. */
+  .product-shipping-banner {
+    width: 100%;
+    padding: var(--spacing-xxs) var(--spacing-xs) calc(var(--spacing-xxs) - 2px);
+    background-color: var(--color-accent-light);
+    color: var(--color-text);
+    font-weight: 500;
+    text-align: center;
+    border-radius: var(--rad-s);
+  }
+
+  .product-shipping-banner:empty {
+    min-height: 2.4em;
   }
 
   .product-purchase {
@@ -621,6 +652,18 @@
     }
   ],
   "blocks": [
+    {
+      "type": "shipping_banner",
+      "name": "Shipping banner",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text"
+        }
+      ]
+    },
     {
       "type": "@app"
     }
