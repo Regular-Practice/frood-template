@@ -292,9 +292,7 @@
 
   /* Mobile/tablet: a square slider leads, clearing the fixed header, and the
      text column follows below it. (Visual order only — the DOM keeps the text
-     first.) The stacked column is desktop-only. The section opts out of the
-     layout's header clearance (`under-header`, base.css §26) for the desktop
-     layout's sake, so the slider clears the header itself here. */
+     first.) The stacked column is desktop-only. */
   .product-bg-slider {
     order: -1;
     position: relative;
@@ -640,6 +638,17 @@
     flex-direction: column;
     gap: var(--spacing-xxs);
     align-items: flex-start;
+    /* Merchant-owned copy: no height cap or inner scroll — whatever the client
+       writes shows in full and the accordion grows to fit. */
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* Bold from the richtext editor must read as bold (the font has no true bold,
+     so pin it to Medium), and paragraphs keep the normal .typeset spacing. */
+  .product-nutrition-body strong,
+  .product-nutrition-body b {
+    font-weight: 500;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -658,7 +667,6 @@
 {% schema %}
 {
   "name": "Product information",
-  "class": "under-header",
   "settings": [
     {
       "type": "checkbox",
