@@ -141,6 +141,7 @@ class BundleBuilder extends HTMLElement {
     this._onChange = (e) => {
       if (e.target.matches('[data-sub-mode]') || e.target.matches('[data-sub-select]')) {
         this.updateSubscription();
+        this.updateAddPrice();
       }
     };
     this.addEventListener('change', this._onChange);
