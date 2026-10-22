@@ -12,12 +12,12 @@
     "main": {
       "type": "main-collection",
       "custom_css": [
-        "@media (max-width: 599px) {.collection-grid.grid-4 {grid-template-columns: repeat(2, 1fr); gap: 20px 12px; } .product-card-image {aspect-ratio: 1 / 1; }}",
-        ".collection-header {margin-bottom: 16px;}",
-        ".klaviyo-star-rating-widget {display: none;}",
+        "@media (max-width: 599px) {.collection {padding-top: 16px; } .collection-grid.grid-4 {grid-template-columns: 1fr 1fr; gap: 4px 12px; } .product-card-image {aspect-ratio: 1; } .product-card-info {padding-top: 6px; }}",
+        ".collection-header {margin: 0;}",
+        ".collection-toolbar,.klaviyo-star-rating-widget,.product-card-actions > :first-child:not(:only-child) {display: none;}",
+        ".collection-content {gap: 0;}",
         ".product-card-actions {pointer-events: auto;}",
-        ".product-card-actions > * {opacity: 1; transform: none;}",
-        ".product-card-actions > *:first-child:not(:only-child) {display: none;}"
+        ".product-card-actions > * {opacity: 1; transform: none;}"
       ],
       "settings": {
         "eyebrow": "Shop",
