@@ -15,7 +15,7 @@
 {%- assign six_layout = section.settings.six_pack_layout -%}
 {%- if six_layout == 'off' -%}{%- assign six_layout = '' -%}{%- endif -%}
 
-<section class="featured-collection">
+<section class="featured-collection{% if six_layout == 'a' %} six-pack-a{% endif %}">
   <header class="featured-collection-header section-lockup">
     {%- if section.settings.eyebrow != blank -%}
       <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
@@ -293,6 +293,27 @@
     .placeholder-card {
       animation: none;
     }
+  }
+  /* ───── Six-pack layout A spacing ─────
+     Room between the CTA and the cards, a gap between slides, and the carousel
+     held inside the section's side padding instead of bleeding to the screen
+     edges. (Embla gap pattern: each slide pads its left edge by the gap and the
+     container pulls back by the same amount, so slide widths stay exact.) */
+  .six-pack-a .featured-collection-header {
+    margin-bottom: var(--spacing-m);
+  }
+
+  .six-pack-a .featured-collection-viewport {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .six-pack-a .featured-collection-container {
+    margin-left: calc(-1 * var(--spacing-s));
+  }
+
+  .six-pack-a .featured-collection-slide {
+    padding-left: var(--spacing-s);
   }
 {% endstylesheet %}
 
