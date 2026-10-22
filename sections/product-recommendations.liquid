@@ -6,7 +6,7 @@
 {%- endcomment -%}
 
 {%- comment -%}
-  Six-pack card layout (off / a / b / c) — the same toggle as the collection and
+  Six-pack card layout (a / b / c) — the same toggle as the collection and
   featured-collection sections (see snippets/product-card), so the cards match.
   Mixed Box first when on. This is a carousel/grid (not the 2-column mobile
   grid), so the Mixed Box never goes full-width here: `wide_breakpoint: 0` makes
@@ -15,6 +15,17 @@
 {%- assign source_collection = section.settings.collection -%}
 {%- assign six_layout = section.settings.six_pack_layout -%}
 {%- if six_layout == 'off' -%}{%- assign six_layout = '' -%}{%- endif -%}
+{%- if six_layout != blank -%}
+  {%- assign has_six = false -%}
+  {%- for sp_check in source_collection.products limit: 24 -%}
+    {%- assign sp_check_size = sp_check.metafields.custom.pack_size.value | default: '' -%}
+    {%- if sp_check.handle contains '6-pack' or sp_check_size contains '6' -%}
+      {%- assign has_six = true -%}
+      {%- break -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- unless has_six -%}{%- assign six_layout = '' -%}{%- endunless -%}
+{%- endif -%}
 
 <section class="product-recommendations{% if six_layout != blank %} six-pack-on{% endif %}">
   {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
@@ -309,14 +320,13 @@
       "type": "select",
       "id": "six_pack_layout",
       "label": "Six-pack card layout",
-      "info": "Same toggle as the collection and featured collection sections. Only affects six-pack products.",
+      "info": "Same toggle as the collection and featured collection sections. Only affects collections that contain six-pack products.",
       "options": [
-        { "value": "off", "label": "Off (standard cards)" },
-        { "value": "a", "label": "A · Mixed first, same size as the rest" },
-        { "value": "b", "label": "B · Mixed first, hero artwork" },
-        { "value": "c", "label": "C · As B, no background colour" }
+        { "value": "a", "label": "A" },
+        { "value": "b", "label": "B" },
+        { "value": "c", "label": "C" }
       ],
-      "default": "off"
+      "default": "a"
     }
   ],
   "presets": [

@@ -76,6 +76,17 @@
           {%- endcomment -%}
           {%- assign six_layout = section.settings.six_pack_layout -%}
           {%- if six_layout == 'off' -%}{%- assign six_layout = '' -%}{%- endif -%}
+          {%- if six_layout != blank -%}
+            {%- assign has_six = false -%}
+            {%- for sp_check in collection.products limit: 24 -%}
+              {%- assign sp_check_size = sp_check.metafields.custom.pack_size.value | default: '' -%}
+              {%- if sp_check.handle contains '6-pack' or sp_check_size contains '6' -%}
+                {%- assign has_six = true -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- unless has_six -%}{%- assign six_layout = '' -%}{%- endunless -%}
+          {%- endif -%}
           <div class="collection-grid grid grid-{{ section.settings.grid_columns }}{% if six_layout != blank %} six-pack-grid{% endif %}">
             {%- if six_layout != blank -%}
               {%- for product in collection.products -%}
@@ -249,14 +260,13 @@
       "type": "select",
       "id": "six_pack_layout",
       "label": "Six-pack card layout",
-      "info": "Only affects six-pack products. Picks which product image each card uses. On mobile, B and C make the Mixed Box a full-width hero; from 900px all cards are the same size.",
+      "info": "Only affects collections that contain six-pack products. Picks which product image each card uses. On mobile, B and C make the Mixed Box a full-width hero; from 900px all cards are the same size.",
       "options": [
-        { "value": "off", "label": "Off (standard cards)" },
-        { "value": "a", "label": "A · Mixed first, same size as the rest" },
-        { "value": "b", "label": "B · Mixed as a full-width hero card" },
-        { "value": "c", "label": "C · As B, no background colour" }
+        { "value": "a", "label": "A" },
+        { "value": "b", "label": "B" },
+        { "value": "c", "label": "C" }
       ],
-      "default": "off"
+      "default": "a"
     },
     {
       "type": "checkbox",
