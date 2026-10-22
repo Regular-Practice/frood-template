@@ -15,7 +15,7 @@
 {%- assign six_layout = section.settings.six_pack_layout -%}
 {%- if six_layout == 'off' -%}{%- assign six_layout = '' -%}{%- endif -%}
 
-<section class="featured-collection{% if six_layout == 'a' %} six-pack-a{% endif %}">
+<section class="featured-collection{% if six_layout == 'a' %} six-pack-a{% elsif six_layout == 'b' or six_layout == 'c' %} six-pack-hero{% endif %}">
   <header class="featured-collection-header section-lockup">
     {%- if section.settings.eyebrow != blank -%}
       <h1 class="text-h1">{{ section.settings.eyebrow }}</h1>
@@ -314,6 +314,13 @@
 
   .six-pack-a .featured-collection-slide {
     padding-left: var(--spacing-s);
+  }
+  /* Layouts B and C: on mobile the 2-column grid starts straight under the CTA, so
+     give the same room under the button as layout A. */
+  @media (max-width: 599.98px) {
+    .six-pack-hero .featured-collection-header {
+      margin-bottom: var(--spacing-m);
+    }
   }
 {% endstylesheet %}
 
