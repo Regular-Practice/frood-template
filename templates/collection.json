@@ -13,11 +13,11 @@
       "type": "main-collection",
       "custom_css": [
         "@media (max-width: 599px) {.collection-grid.grid-4 {grid-template-columns: repeat(2, 1fr); gap: 20px 12px; } .product-card-image {aspect-ratio: 1 / 1; }}",
-        ".collection-header {margin-bottom: 16px; }",
-        ".klaviyo-star-rating-widget {display: none; }",
-        ".product-card-actions {pointer-events: auto; }",
-        ".product-card-actions > * {opacity: 1; transform: none; }",
-        ".product-card-actions > *:first-child:not(:only-child) {display: none; }"
+        ".collection-header {margin-bottom: 16px;}",
+        ".klaviyo-star-rating-widget {display: none;}",
+        ".product-card-actions {pointer-events: auto;}",
+        ".product-card-actions > * {opacity: 1; transform: none;}",
+        ".product-card-actions > *:first-child:not(:only-child) {display: none;}"
       ],
       "settings": {
         "eyebrow": "Shop",
@@ -27,9 +27,43 @@
         "show_filters": false,
         "show_sorting": false
       }
+    },
+    "text_image_split_EENYgX": {
+      "type": "text-image-split",
+      "blocks": {
+        "media_qBzhHM": {
+          "type": "media",
+          "settings": {
+            "caption": ""
+          }
+        },
+        "media_KbFU9L": {
+          "type": "media",
+          "settings": {
+            "caption": ""
+          }
+        }
+      },
+      "block_order": [
+        "media_qBzhHM",
+        "media_KbFU9L"
+      ],
+      "name": "Text + image split",
+      "settings": {
+        "eyebrow": "",
+        "heading": "Pick your own box",
+        "text": "<p>Pick exactly which Frood flavours go in your box, so your order is always made to your taste.&nbsp;</p><p><strong>Any 4 packs, £12</strong></p>",
+        "button_text": "Make your box",
+        "button_link": "",
+        "yellow_box": true,
+        "media_alignment": "right",
+        "media_size": "small",
+        "text_vertical_alignment": "middle"
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "text_image_split_EENYgX"
   ]
 }
