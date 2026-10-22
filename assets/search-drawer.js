@@ -240,10 +240,13 @@ class SearchDrawer extends HTMLElement {
       ? `<span class="search-drawer-result-price">${this.escapeHtml(product.price)}</span>`
       : '';
 
+    // The "(6 pack)" suffix only distinguishes the product in admin.
+    const displayTitle = String(product.title || '').replace(/\s*\(6 pack\)/i, '').trim();
+
     return `<a href="${this.escapeHtml(product.url)}" class="search-drawer-result-item">
       ${imageHtml}
       <span class="search-drawer-result-info">
-        <span class="search-drawer-result-title">${this.escapeHtml(product.title)}</span>
+        <span class="search-drawer-result-title">${this.escapeHtml(displayTitle)}</span>
         ${priceHtml}
       </span>
     </a>`;
