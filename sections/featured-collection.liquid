@@ -7,6 +7,14 @@
   See CLAUDE.md → "Frood Homepage Sections" for rules.
 {%- endcomment -%}
 
+{%- comment -%}
+  Six-pack card layout (off / a / b / c): see snippets/product-card. When on, the
+  six-pack Mixed Box leads (it is the full-width hero on mobile in b/c) and the
+  products are capped at `products_to_show`.
+{%- endcomment -%}
+{%- assign six_layout = section.settings.six_pack_layout -%}
+{%- if six_layout == 'off' -%}{%- assign six_layout = '' -%}{%- endif -%}
+
 <section class="featured-collection">
   <header class="featured-collection-header section-lockup">
     {%- if section.settings.eyebrow != blank -%}
@@ -29,9 +37,27 @@
 
   <div class="featured-collection-products-mobile">
     {%- if section.settings.collection != blank -%}
-      {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
-        {% render 'product-card', product: product %}
-      {%- endfor -%}
+      {%- if six_layout != blank -%}
+        {%- assign shown = 0 -%}
+        {%- for product in section.settings.collection.products -%}
+          {%- if product.handle contains 'mixed' and product.handle contains '6-pack' and shown < section.settings.products_to_show -%}
+            {% render 'product-card', product: product, six_pack_layout: six_layout, wide_breakpoint: 600 %}
+            {%- assign shown = shown | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- for product in section.settings.collection.products -%}
+          {%- unless product.handle contains 'mixed' and product.handle contains '6-pack' -%}
+            {%- if shown < section.settings.products_to_show -%}
+              {% render 'product-card', product: product, six_pack_layout: six_layout, wide_breakpoint: 600 %}
+              {%- assign shown = shown | plus: 1 -%}
+            {%- endif -%}
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- else -%}
+        {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+          {% render 'product-card', product: product %}
+        {%- endfor -%}
+      {%- endif -%}
     {%- else -%}
       {%- for i in (1..section.settings.products_to_show) -%}
         <div class="placeholder-card" aria-hidden="true"></div>
@@ -43,11 +69,33 @@
     <div class="featured-collection-viewport">
       <div class="featured-collection-container">
         {%- if section.settings.collection != blank -%}
-          {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
-            <div class="featured-collection-slide">
-              {% render 'product-card', product: product %}
-            </div>
-          {%- endfor -%}
+          {%- if six_layout != blank -%}
+            {%- assign shown = 0 -%}
+            {%- for product in section.settings.collection.products -%}
+              {%- if product.handle contains 'mixed' and product.handle contains '6-pack' and shown < section.settings.products_to_show -%}
+                <div class="featured-collection-slide">
+                  {% render 'product-card', product: product, six_pack_layout: six_layout, wide_breakpoint: 600 %}
+                </div>
+                {%- assign shown = shown | plus: 1 -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- for product in section.settings.collection.products -%}
+              {%- unless product.handle contains 'mixed' and product.handle contains '6-pack' -%}
+                {%- if shown < section.settings.products_to_show -%}
+                  <div class="featured-collection-slide">
+                    {% render 'product-card', product: product, six_pack_layout: six_layout, wide_breakpoint: 600 %}
+                  </div>
+                  {%- assign shown = shown | plus: 1 -%}
+                {%- endif -%}
+              {%- endunless -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- for product in section.settings.collection.products limit: section.settings.products_to_show -%}
+              <div class="featured-collection-slide">
+                {% render 'product-card', product: product %}
+              </div>
+            {%- endfor -%}
+          {%- endif -%}
         {%- else -%}
           {%- for i in (1..section.settings.products_to_show) -%}
             <div class="featured-collection-slide">
@@ -291,6 +339,19 @@
       "max": 12,
       "step": 1,
       "default": 8
+    },
+    {
+      "type": "select",
+      "id": "six_pack_layout",
+      "label": "Six-pack card layout",
+      "info": "Only affects six-pack products (e.g. the Shop (6 pack) collection). Picks which product image each card uses. On mobile, B and C make the Mixed Box a full-width hero; from 600px all cards are the same size.",
+      "options": [
+        { "value": "off", "label": "Off (standard cards)" },
+        { "value": "a", "label": "A · Mixed first, same size as the rest" },
+        { "value": "b", "label": "B · Mixed as a full-width hero card" },
+        { "value": "c", "label": "C · As B, no background colour" }
+      ],
+      "default": "off"
     }
   ],
   "presets": [

@@ -19,7 +19,8 @@
   the three.js import map are left in place so it can be re-wired later.)
 
   SIX-PACK LAYOUT (optional param `six_pack_layout`: 'a' | 'b' | 'c', blank = off).
-  Set by the collection section's "Six-pack card layout" toggle. Only six-pack
+  Set by the "Six-pack card layout" toggle on the collection and featured-collection
+  sections (the latter passes `wide_breakpoint: 600`, its mobile-grid width). Only six-pack
   products are affected (pack size contains "6", or a `6-pack` handle); the
   thumbnail is then a specific media item instead of the first, with no hover swap:
 
@@ -87,7 +88,7 @@
         {%- comment -%} Six-pack layout: one chosen image, no hover swap (see header). {%- endcomment -%}
         <picture>
           {%- if sp_desktop_media -%}
-            <source media="(min-width: 900px)" srcset="{{ sp_desktop_media | image_url: width: 800 }}">
+            <source media="(min-width: {{ wide_breakpoint | default: 900 }}px)" srcset="{{ sp_desktop_media | image_url: width: 800 }}">
           {%- endif -%}
           {{
             sp_media
@@ -449,12 +450,27 @@
     object-fit: contain;
   }
 
+  /* The wide Mixed Box hero only exists where the host is a 2-column grid: the
+     collection page grid below 900px, and the featured-collection mobile grid
+     below 600px (`wide_breakpoint`, passed by the host, is where the card swaps to
+     its square image). Elsewhere (carousel slides, desktop grids) every card is
+     the same size. */
   @media (max-width: 899.98px) {
-    .product-card.is-wide {
+    .collection-grid .product-card.is-wide {
       grid-column: 1 / -1;
     }
 
-    .product-card.is-wide .product-card-image {
+    .collection-grid .product-card.is-wide .product-card-image {
+      aspect-ratio: 1008 / 583;
+    }
+  }
+
+  @media (max-width: 599.98px) {
+    .featured-collection-products-mobile .product-card.is-wide {
+      grid-column: 1 / -1;
+    }
+
+    .featured-collection-products-mobile .product-card.is-wide .product-card-image {
       aspect-ratio: 1008 / 583;
     }
   }
