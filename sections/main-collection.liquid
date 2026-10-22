@@ -74,7 +74,7 @@
             When on, the six-pack Mixed Box leads the grid (it is the hero in b/c)
             and the grid is two columns on mobile to match the design.
           {%- endcomment -%}
-          {%- assign six_layout = section.settings.six_pack_layout -%}
+          {%- assign six_layout = settings.six_pack_layout -%}
           {%- if six_layout == 'off' -%}{%- assign six_layout = '' -%}{%- endif -%}
           {%- if six_layout != blank -%}
             {%- assign has_six = false -%}
@@ -255,18 +255,6 @@
         { "value": "4", "label": "4 columns" }
       ],
       "default": "4"
-    },
-    {
-      "type": "select",
-      "id": "six_pack_layout",
-      "label": "Six-pack card layout",
-      "info": "Only affects collections that contain six-pack products. Picks which product image each card uses. On mobile, B and C make the Mixed Box a full-width hero; from 900px all cards are the same size.",
-      "options": [
-        { "value": "a", "label": "A" },
-        { "value": "b", "label": "B" },
-        { "value": "c", "label": "C" }
-      ],
-      "default": "a"
     },
     {
       "type": "checkbox",

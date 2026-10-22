@@ -12,7 +12,7 @@
   six-pack Mixed Box leads (it is the full-width hero on mobile in b/c) and the
   products are capped at `products_to_show`.
 {%- endcomment -%}
-{%- assign six_layout = section.settings.six_pack_layout -%}
+{%- assign six_layout = settings.six_pack_layout -%}
 {%- if six_layout == 'off' -%}{%- assign six_layout = '' -%}{%- endif -%}
 {%- if six_layout != blank -%}
   {%- assign has_six = false -%}
@@ -371,18 +371,6 @@
       "max": 12,
       "step": 1,
       "default": 8
-    },
-    {
-      "type": "select",
-      "id": "six_pack_layout",
-      "label": "Six-pack card layout",
-      "info": "Only affects collections that contain six-pack products (e.g. Shop (6 pack)). Picks which product image each card uses. On mobile, B and C make the Mixed Box a full-width hero; from 600px all cards are the same size.",
-      "options": [
-        { "value": "a", "label": "A" },
-        { "value": "b", "label": "B" },
-        { "value": "c", "label": "C" }
-      ],
-      "default": "a"
     }
   ],
   "presets": [

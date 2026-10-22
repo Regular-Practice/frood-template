@@ -86,6 +86,22 @@
           { "value": "landscape", "label": "Landscape (4:3)" }
         ],
         "default": "portrait"
+      },
+      {
+        "type": "header",
+        "content": "Six-pack cards"
+      },
+      {
+        "type": "select",
+        "id": "six_pack_layout",
+        "label": "Six-pack card layout",
+        "info": "One choice for every place six-pack products show as cards: the collection page, featured collections and product recommendations. It only affects collections that contain six-pack products. Picks which product image each card uses. On mobile, B and C make the Mixed Box a full-width hero; from 900px (600px in featured collections) all cards are the same size.",
+        "options": [
+          { "value": "a", "label": "A" },
+          { "value": "b", "label": "B" },
+          { "value": "c", "label": "C" }
+        ],
+        "default": "a"
       }
     ]
   }

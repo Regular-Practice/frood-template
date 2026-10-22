@@ -6,14 +6,15 @@
 {%- endcomment -%}
 
 {%- comment -%}
-  Six-pack card layout (a / b / c) — the same toggle as the collection and
-  featured-collection sections (see snippets/product-card), so the cards match.
+  Six-pack card layout (a / b / c) — the single theme setting (Theme settings →
+  Products → Six-pack cards) shared with the collection and featured-collection
+  sections (see snippets/product-card), so the cards match.
   Mixed Box first when on. This is a carousel/grid (not the 2-column mobile
   grid), so the Mixed Box never goes full-width here: `wide_breakpoint: 0` makes
   it always use its square image.
 {%- endcomment -%}
 {%- assign source_collection = section.settings.collection -%}
-{%- assign six_layout = section.settings.six_pack_layout -%}
+{%- assign six_layout = settings.six_pack_layout -%}
 {%- if six_layout == 'off' -%}{%- assign six_layout = '' -%}{%- endif -%}
 {%- if six_layout != blank -%}
   {%- assign has_six = false -%}
@@ -315,18 +316,6 @@
         { "value": "4", "label": "4 columns" }
       ],
       "default": "4"
-    },
-    {
-      "type": "select",
-      "id": "six_pack_layout",
-      "label": "Six-pack card layout",
-      "info": "Same toggle as the collection and featured collection sections. Only affects collections that contain six-pack products.",
-      "options": [
-        { "value": "a", "label": "A" },
-        { "value": "b", "label": "B" },
-        { "value": "c", "label": "C" }
-      ],
-      "default": "a"
     }
   ],
   "presets": [

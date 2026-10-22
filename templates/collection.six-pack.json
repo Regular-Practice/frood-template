@@ -16,7 +16,6 @@
         "heading": "Real food, made simple.\nMade for modern home cooks.",
         "products_per_page": 12,
         "grid_columns": "4",
-        "six_pack_layout": "a",
         "show_filters": false,
         "show_sorting": false
       }
