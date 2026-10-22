@@ -17,18 +17,89 @@
 
   (3D / GLB model support was removed for now; assets/product-card-stage.js and
   the three.js import map are left in place so it can be re-wired later.)
+
+  SIX-PACK LAYOUT (optional param `six_pack_layout`: 'a' | 'b' | 'c', blank = off).
+  Set by the collection section's "Six-pack card layout" toggle. Only six-pack
+  products are affected (pack size contains "6", or a `6-pack` handle); the
+  thumbnail is then a specific media item instead of the first, with no hover swap:
+
+    preset boxes   a → media 2   b → media 2   c → media 1
+    mixed box      a → media 4   b → media 2   c → media 1   (the two wide ones)
+
+  The wide mixed-box image is the mobile/tablet (<900px) hero, which spans both
+  columns. From 900px the cards are all one size, so the mixed box swaps to its
+  square media instead: b → media 4 (coloured), c → media 3 (no background).
 {%- endcomment -%}
 
 {%- assign first_media = product.media.first -%}
 {%- assign hover_video_src = nil -%}
+
+{%- liquid
+  assign sp_media = nil
+  assign sp_desktop_media = nil
+  assign is_wide = false
+  if six_pack_layout != blank
+    assign sp_size = product.metafields.custom.pack_size.value | default: ''
+    if sp_size contains '6' or product.handle contains '6-pack'
+      assign sp_mixed = false
+      if product.handle contains 'mixed'
+        assign sp_mixed = true
+      endif
+      if sp_mixed
+        case six_pack_layout
+          when 'a'
+            assign sp_media = product.media[3]
+          when 'b'
+            assign sp_media = product.media[1]
+            assign sp_desktop_media = product.media[3]
+            assign is_wide = true
+          when 'c'
+            assign sp_media = product.media[0]
+            assign sp_desktop_media = product.media[2]
+            assign is_wide = true
+        endcase
+      else
+        if six_pack_layout == 'c'
+          assign sp_media = product.media[0]
+        else
+          assign sp_media = product.media[1]
+        endif
+      endif
+      if sp_media.media_type != 'image'
+        assign sp_media = nil
+        assign sp_desktop_media = nil
+        assign is_wide = false
+      endif
+      if sp_desktop_media.media_type != 'image'
+        assign sp_desktop_media = nil
+      endif
+    endif
+  endif
+-%}
 {%- if first_media.media_type == 'video' -%}
   {%- assign hover_video_src = first_media.sources | where: 'format', 'mp4' | sort: 'width' | first -%}
 {%- endif -%}
 
-<article class="product-card">
+<article class="product-card{% if sp_media %} is-six-pack{% endif %}{% if is_wide %} is-wide{% endif %}">
   <div class="product-card-image aspect-{{ settings.product_card_aspect_ratio }}">
     <a href="{{ product.url }}" class="product-card-image-link" tabindex="-1" aria-hidden="true">
-      {%- if first_media.media_type == 'video' -%}
+      {%- if sp_media -%}
+        {%- comment -%} Six-pack layout: one chosen image, no hover swap (see header). {%- endcomment -%}
+        <picture>
+          {%- if sp_desktop_media -%}
+            <source media="(min-width: 900px)" srcset="{{ sp_desktop_media | image_url: width: 800 }}">
+          {%- endif -%}
+          {{
+            sp_media
+            | image_url: width: 1200
+            | image_tag:
+              loading: 'lazy',
+              sizes: '(min-width: 900px) 25vw, 50vw',
+              width: sp_media.width,
+              height: sp_media.height
+          }}
+        </picture>
+      {%- elsif first_media.media_type == 'video' -%}
         {%- assign video_poster = first_media.preview_image | default: product.featured_image -%}
         {%- if video_poster -%}
           {{
@@ -181,7 +252,7 @@
   load product-card-hover-video.js — pages with no hover videos skip it. The
   browser dedupes the fetch when multiple cards emit the same script tag.
 {%- endcomment -%}
-{%- if hover_video_src -%}
+{%- if hover_video_src and sp_media == blank -%}
   <script type="module" src="{{ 'product-card-hover-video.js' | asset_url }}"></script>
 {%- endif -%}
 
@@ -355,6 +426,54 @@
 
   .product-card-badge.sale {
     background: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  /* ---- Six-pack layout (collection "Six-pack card layout" toggle) ----
+     The artwork is pre-composed at 504x583 (wide: 1008x583), so the box is cut to
+     that ratio and the image contained, never cropped. The wide mixed box takes
+     both columns below 900px; from 900px every card is the same size. */
+  .product-card.is-six-pack .product-card-image {
+    aspect-ratio: 504 / 583;
+  }
+
+  .product-card.is-six-pack .product-card-image picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .product-card.is-six-pack .product-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  @media (max-width: 899.98px) {
+    .product-card.is-wide {
+      grid-column: 1 / -1;
+    }
+
+    .product-card.is-wide .product-card-image {
+      aspect-ratio: 1008 / 583;
+    }
+  }
+
+  /* Six-pack cards: hover (or, on touch, always) shows only the ADD button, dark
+     with yellow text; the VIEW button is dropped. The whole card still links to
+     the product page. */
+  .product-card.is-six-pack .product-card-actions .button.secondary {
+    display: none;
+  }
+
+  .product-card.is-six-pack .product-card-actions .button {
+    background-color: var(--color-text);
+    color: var(--color-accent);
+  }
+
+  .product-card.is-six-pack .product-card-actions .button:hover:not(:disabled),
+  .product-card.is-six-pack .product-card-actions .button:focus-visible {
+    background-color: var(--color-accent);
     color: var(--color-text);
   }
 

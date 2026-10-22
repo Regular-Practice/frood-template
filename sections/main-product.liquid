@@ -208,7 +208,22 @@
       - ≥900px: one column of squares; the text column beside it is sticky,
         so the images scroll past it until the section ends.
   {%- endcomment -%}
-  {%- assign gallery_media = product.media | slice: 1, 100 -%}
+  {%- comment -%}
+    How many leading media are card artwork rather than gallery. Standard: the
+    first (box render / pack shot). Six-pack products carry their collection-card
+    images up front instead: preset boxes use the first two, the Mixed Box the
+    first four (see snippets/product-card). Those are skipped here.
+  {%- endcomment -%}
+  {%- assign gallery_skip = 1 -%}
+  {%- assign pdp_pack_size = product.metafields.custom.pack_size.value | default: '' -%}
+  {%- if pdp_pack_size contains '6' or product.handle contains '6-pack' -%}
+    {%- if product.handle contains 'mixed' -%}
+      {%- assign gallery_skip = 4 -%}
+    {%- else -%}
+      {%- assign gallery_skip = 2 -%}
+    {%- endif -%}
+  {%- endif -%}
+  {%- assign gallery_media = product.media | slice: gallery_skip, 100 -%}
   {%- assign info_images = product.metafields.custom.info_image.value | default: product.metafields.custom.image.value -%}
   {%- comment -%} Works whether the metafield is a single file or a list of files. {%- endcomment -%}
   {%- if info_images.media_type != blank -%}
