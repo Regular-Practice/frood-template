@@ -64,7 +64,7 @@
                 {%- if item.object_type == 'product' -%}
                   {%- comment -%} Tag `hide-from-browse` keeps the single-pack blends out of results. {%- endcomment -%}
                   {%- unless item.tags contains 'hide-from-browse' -%}
-                    {% render 'product-card', product: item %}
+                    {% render 'product-card', product: item, six_pack_layout: settings.six_pack_layout, wide_breakpoint: 0 %}
                   {%- endunless -%}
                 {%- endif -%}
               {%- endfor -%}

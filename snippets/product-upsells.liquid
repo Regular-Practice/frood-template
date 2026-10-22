@@ -11,7 +11,7 @@
     <div class="grid grid-4">
       {%- for upsell in upsell_products -%}
         {%- unless upsell.id == product.id -%}
-          {% render 'product-card', product: upsell %}
+          {% render 'product-card', product: upsell, six_pack_layout: settings.six_pack_layout, wide_breakpoint: 0 %}
         {%- endunless -%}
       {%- endfor -%}
     </div>
