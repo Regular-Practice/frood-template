@@ -16,7 +16,7 @@
 {%- assign six_layout = section.settings.six_pack_layout -%}
 {%- if six_layout == 'off' -%}{%- assign six_layout = '' -%}{%- endif -%}
 
-<section class="product-recommendations{% if six_layout == 'a' %} six-pack-a{% endif %}">
+<section class="product-recommendations{% if six_layout != blank %} six-pack-on{% endif %}">
   {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
     <header class="product-recommendations-header section-lockup">
       {%- if section.settings.eyebrow != blank -%}
@@ -241,20 +241,20 @@
       display: none;
     }
   }
-  /* ───── Six-pack layout A spacing (matches featured-collection) ─────
+  /* ───── Six-pack layout spacing, A/B/C (matches featured-collection) ─────
      Room under the heading, a gap between slides and the carousel held inside the
      section padding. Desktop is the grid, which has its own gap. */
   @media (max-width: 899.98px) {
-    .six-pack-a .product-recommendations-viewport {
+    .six-pack-on .product-recommendations-viewport {
       margin-left: 0;
       margin-right: 0;
     }
 
-    .six-pack-a .product-recommendations-container {
+    .six-pack-on .product-recommendations-container {
       margin-left: calc(-1 * var(--spacing-s));
     }
 
-    .six-pack-a .product-recommendations-slide {
+    .six-pack-on .product-recommendations-slide {
       padding-left: var(--spacing-s);
     }
   }
