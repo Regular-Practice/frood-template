@@ -8,40 +8,44 @@
   success message), pluralised on boxes-needed.
 
   Qualified = ANY line is a subscription (it carries a selling plan, from
-  ReCharge or Loop alike — subscribers get free shipping regardless of box
-  count) OR the box count reaches the threshold. One-off carts below the
-  threshold keep the progress prompt. Mirrors the two automatic free-shipping
-  discounts in Shopify admin (purchase type Subscription; minimum 2 items).
-  Pure Liquid — it reads cart.item_count and is re-rendered
+  ReCharge or Loop alike — subscribers get free shipping regardless of what is
+  in the cart) OR the cart subtotal reaches the minimum spend. One-off carts
+  below it keep the progress prompt. Mirrors the two automatic free-shipping
+  discounts in Shopify admin (purchase type Subscription; minimum purchase
+  amount). Pure Liquid — it reads cart.items_subtotal_price and is re-rendered
   on every cart change because it lives inside the drawer's [data-drawer-body],
   which cart-drawer.js swaps via the Section Rendering API. No client JS.
+
+  Measured in £, not items: the custom box is sold as individual packs (one cart
+  line per flavour), so counting items would count packs, not boxes. A box is
+  six packs at £3 or a pre-made six-pack at £18, so "two boxes" = the minimum
+  spend; the "boxes still needed" copy is that shortfall in box-prices.
 
   IMPORTANT: Shopify does not expose an automatic discount's threshold to Liquid
   (free-shipping discounts are shipping-level, applied at checkout). So
   `threshold` must be mirrored here from the discount config — the two can drift
-  if only one is changed. The matching discount rule is "minimum quantity of
-  items" = the same number.
-
-  Basis: every cart line is a box (a pre-made box, or a "Build Your Box" line
-  whose quantity is the number of identical boxes), so boxes = cart.item_count,
-  which is also what a minimum-quantity discount counts. This holds for the
-  current 4-pack range only: if loose single packs (the per-blend v2 builder)
-  ever land in the cart as their own lines, item_count counts packs, not boxes,
-  and this needs revisiting alongside the discount rule.
+  if only one is changed. The matching discount rule is "minimum purchase amount"
+  = the same number.
 
   Owned by sections/cart-drawer.liquid.
 
   Expects:
-    - threshold: number of boxes that unlocks free shipping (e.g. 2). Bar is
-      hidden when blank or <= 0.
+    - threshold: minimum spend that unlocks free shipping, in the store
+      currency's major unit (e.g. 36). Bar is hidden when blank or <= 0.
+    - box_price: price of one box in the same unit (e.g. 18), used only for the
+      "buy another box" wording.
 
   Usage:
-    {% render 'cart-shipping-progress', threshold: section.settings.free_shipping_boxes %}
+    {% render 'cart-shipping-progress', threshold: section.settings.free_shipping_min_spend, box_price: section.settings.free_shipping_box_price %}
 {%- endcomment -%}
 
 {%- liquid
-  assign boxes_goal = threshold | round
-  assign boxes_in_cart = cart.item_count
+  assign threshold_cents = threshold | times: 100 | round
+  assign box_cents = box_price | times: 100 | round
+  if box_cents < 1
+    assign box_cents = threshold_cents
+  endif
+  assign subtotal_cents = cart.items_subtotal_price
 
   assign has_subscription = false
   for item in cart.items
@@ -54,19 +58,23 @@
   assign qualified = false
   if has_subscription
     assign qualified = true
-  elsif boxes_goal > 0 and boxes_in_cart >= boxes_goal
+  elsif threshold_cents > 0 and subtotal_cents >= threshold_cents
     assign qualified = true
   endif
 
   # Boxes still needed for the "buy another box" / "buy two boxes" copy.
   # Always >= 1 in the unqualified branch.
-  assign boxes_needed = boxes_goal | minus: boxes_in_cart
+  assign remaining_cents = threshold_cents | minus: subtotal_cents
+  assign boxes_needed = remaining_cents | divided_by: box_cents | ceil
+  if boxes_needed < 1
+    assign boxes_needed = 1
+  endif
 
   assign percent = 0
   if qualified
     assign percent = 100
-  elsif boxes_goal > 0
-    assign percent = boxes_in_cart | times: 100.00 | divided_by: boxes_goal
+  elsif threshold_cents > 0
+    assign percent = subtotal_cents | times: 100.00 | divided_by: threshold_cents
     if percent > 100
       assign percent = 100
     endif
@@ -74,7 +82,7 @@
   assign percent_aria = percent | round
 -%}
 
-{%- if boxes_goal > 0 -%}
+{%- if threshold_cents > 0 -%}
   <div class="cart-shipping-progress{% if qualified %} is-qualified{% endif %}">
     <p class="cart-shipping-progress-message text-ui">
       {%- if qualified -%}

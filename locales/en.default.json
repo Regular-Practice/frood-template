@@ -279,7 +279,7 @@
       "caption": "A box of {{ count }} — mix any flavours.",
       "empty_stage": "Add packs to fill your box",
       "empty_custom_box": "Add blends to your custom box!",
-      "add_minimum": "Add {count} more to reach the 6-pack minimum",
+      "add_minimum": "Add {count} more to complete your box of 6",
       "box_property_key": "Part of",
       "box_property_value": "Custom Box",
       "box_pack_count": {

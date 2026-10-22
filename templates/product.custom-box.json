@@ -10,13 +10,13 @@
 {
   "sections": {
     "bundle_builder_gXqyz6": {
-      "type": "bundle-builder",
+      "type": "bundle-v2-builder",
       "name": "Bundle builder",
       "settings": {
-        "box_product": "custom-box",
-        "max_boxes": 4,
+        "box_product": "custom-6-pack-box",
         "eyebrow": "Build your box",
         "heading": "Create and customise your box from the Frood selection.",
+        "panel_subtitle": "Boxes of 6: mix any blends to fill each box",
         "full_screen": true
       }
     },
@@ -24,7 +24,6 @@
       "type": "main-product",
       "disabled": true,
       "settings": {
-        "pack_label": "4 PACK",
         "show_quantity": true,
         "subscription_info_link": ""
       }

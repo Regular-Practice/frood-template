@@ -30,8 +30,8 @@
 
     <div class="cart-drawer-main" data-drawer-body>
       {%- if cart.item_count > 0 -%}
-        {%- if section.settings.free_shipping_enabled and section.settings.free_shipping_boxes > 0 -%}
-          {% render 'cart-shipping-progress', threshold: section.settings.free_shipping_boxes %}
+        {%- if section.settings.free_shipping_enabled and section.settings.free_shipping_min_spend > 0 -%}
+          {% render 'cart-shipping-progress', threshold: section.settings.free_shipping_min_spend, box_price: section.settings.free_shipping_box_price %}
         {%- endif -%}
 
         <cart-items
@@ -472,10 +472,17 @@
     },
     {
       "type": "number",
-      "id": "free_shipping_boxes",
-      "label": "Boxes needed for free shipping",
-      "info": "Number of boxes in the cart that unlocks free shipping (e.g. 2). Match this to your free-shipping automatic discount's minimum quantity of items — Shopify can't share that value with the theme, so keep them in sync. Set to 0 to hide the bar.",
-      "default": 2
+      "id": "free_shipping_min_spend",
+      "label": "Minimum spend for free shipping (£)",
+      "info": "Cart subtotal that unlocks free shipping. Match this to your free-shipping automatic discount's minimum purchase amount — Shopify can't share that value with the theme, so keep them in sync. Set to 0 to hide the bar.",
+      "default": 36
+    },
+    {
+      "type": "number",
+      "id": "free_shipping_box_price",
+      "label": "Price of one box (£)",
+      "info": "Only used for the \"buy another box\" wording: the remaining spend is shown in boxes of this price.",
+      "default": 18
     }
   ]
 }

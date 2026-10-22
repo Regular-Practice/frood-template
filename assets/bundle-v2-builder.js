@@ -214,15 +214,18 @@ class BundleV2Builder extends HTMLElement {
     return this.packs.length;
   }
 
-  // Packs still needed to reach the order minimum (0 once it's met).
+  // Packs still needed to complete the box: up to the 6-pack minimum, then up to
+  // the next multiple of 6 (0 when the draft is a whole number of boxes).
   get shortfall() {
-    return Math.max(0, this.minPacks - this.total);
+    if (this.total < this.minPacks) return this.minPacks - this.total;
+    return (this.minPacks - (this.total % this.minPacks)) % this.minPacks;
   }
 
-  // Packs are priced and sold INDIVIDUALLY — there is no box quantum. The only
-  // constraint is the order minimum, so any total at or above it is valid.
+  // Packs are sold individually but ordered in BOXES OF 6: at least 6, then 12,
+  // 18, 24 … (`minPacks` is both the minimum and the step). Anything else is a
+  // half-built box and stays blocked.
   get isValid() {
-    return this.shortfall === 0;
+    return this.total >= this.minPacks && this.shortfall === 0;
   }
 
   countsFor(packs) {
@@ -394,9 +397,8 @@ class BundleV2Builder extends HTMLElement {
     if (this.addButton) this.addButton.disabled = !this.isValid || !this.hasVariants;
     if (this.addLabel) this.addLabel.textContent = this.dataset.i18nAdd || 'Add to cart';
 
-    // Hint counts the shopper up to the order minimum, then goes quiet — above
-    // it any quantity is addable, so there is nothing left to nudge toward. It
-    // also stays quiet on an empty draft: the panel subtitle already states the
+    // Hint counts the shopper up to the next full box of 6 and goes quiet once the
+    // box is complete. It also stays quiet on an empty draft: the panel subtitle already states the
     // minimum, so repeating it would just be noise.
     if (this.hintEl) {
       if (this.total > 0 && this.shortfall > 0) {
@@ -535,6 +537,16 @@ class BundleV2Builder extends HTMLElement {
       const unit = priceOf(id);
       if (typeof unit !== 'number') return null;
       cents += unit * qty;
+    }
+    // A part-built box holds at the price of the box it is heading for instead of
+    // creeping up a pack at a time: the shortfall to the next multiple of 6 is
+    // priced at the cheapest blend, the same basis as the empty-draft preview.
+    // A whole number of boxes is the real sum, i.e. what the cart will charge.
+    if (this.shortfall > 0) {
+      const prices = Object.keys(this.flavours)
+        .map(priceOf)
+        .filter((c) => typeof c === 'number');
+      if (prices.length) cents += Math.min(...prices) * this.shortfall;
     }
     return cents;
   }

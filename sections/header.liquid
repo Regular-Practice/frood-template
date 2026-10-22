@@ -16,14 +16,31 @@
     {%- endfor -%}
   </nav>
 
+  {%- liquid
+    # Header count is in BOXES. Every v2 custom-box line (hidden _custom_box
+    # property) is one flavour of the same box, so those packs count together:
+    # one box per 6 packs. Everything else counts per unit as before.
+    assign cart_boxes = 0
+    assign custom_packs = 0
+    for item in cart.items
+      if item.properties['_custom_box'] != blank
+        assign custom_packs = custom_packs | plus: item.quantity
+      else
+        assign cart_boxes = cart_boxes | plus: item.quantity
+      endif
+    endfor
+    assign custom_boxes = custom_packs | divided_by: 6.0 | ceil
+    assign cart_boxes = cart_boxes | plus: custom_boxes
+  -%}
+
   <div class="header-right">
     <cart-icon data-aria-template="{{ 'accessibility.cart_count' | t: count: '__COUNT__' }}">
       <a
         href="{{ routes.cart_url }}"
         class="header-cart text-ui"
-        aria-label="{{ 'accessibility.cart_count' | t: count: cart.item_count }}"
+        aria-label="{{ 'accessibility.cart_count' | t: count: cart_boxes }}"
       >
-        {{ 'header.cart' | t }} (<span class="cart-count">{{ cart.item_count }}</span>)
+        {{ 'header.cart' | t }} (<span class="cart-count">{{ cart_boxes }}</span>)
       </a>
     </cart-icon>
   </div>

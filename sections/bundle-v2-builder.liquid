@@ -315,6 +315,18 @@
           blend's plan list, so planFor() finds nothing and the order is added as a
           plain one-time purchase. Real plans always win over the placeholder.
         {%- endcomment -%}
+        {%- comment -%}
+          Label like the pre-made boxes' subscription row: the discount % read off
+          the first plan allocation (e.g. 1200 -> 1080 = 10%); no price discount
+          falls back to the free-shipping wording.
+        {%- endcomment -%}
+        {%- assign sub_discount = 0 -%}
+        {%- if plan_source != blank -%}
+          {%- assign first_alloc = plan_source.selling_plan_allocations | first -%}
+          {%- if first_alloc.compare_at_price > first_alloc.price -%}
+            {%- assign sub_discount = first_alloc.compare_at_price | minus: first_alloc.price | times: 100.0 | divided_by: first_alloc.compare_at_price | round -%}
+          {%- endif -%}
+        {%- endif -%}
         {%- assign is_placeholder = false -%}
         {%- if plan_source == blank and section.settings.preview_subscription -%}
           {%- assign is_placeholder = true -%}
@@ -334,7 +346,15 @@
               <label class="bundle-v2-sub-option is-selected">
                 <input type="radio" name="bundle-v2-purchase-{{ section.id }}" value="subscription" checked data-sub-mode>
                 <span class="bundle-v2-sub-box" aria-hidden="true"></span>
-                <span class="bundle-v2-sub-label text-ui">{{ section.settings.subscribe_label }}<span class="bundle-v2-sub-note"> {{ section.settings.subscribe_note }}</span></span>
+                <span class="bundle-v2-sub-label text-ui">
+                  {%- if is_placeholder -%}
+                    {{ section.settings.subscribe_label }}
+                  {%- elsif sub_discount > 0 -%}
+                    {{ 'products.product.subscribe_save' | t: percent: sub_discount }}
+                  {%- else -%}
+                    {{ 'products.product.subscribe_free_shipping' | t }}
+                  {%- endif -%}
+                </span>
                 {%- comment -%} Filled by bundle-v2-builder.js updateAddPrice(): original total struck through, then the subscription total. {%- endcomment -%}
                 <span class="bundle-v2-sub-price text-ui">
                   <s data-sub-was hidden></s>
@@ -1086,7 +1106,7 @@
       "type": "textarea",
       "id": "panel_subtitle",
       "label": "Subtitle",
-      "default": "Start with a minimum of 6 blends to build your box"
+      "default": "Boxes of 6: mix any blends to fill each box"
     },
     {
       "type": "header",

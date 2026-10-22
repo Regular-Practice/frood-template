@@ -97,8 +97,19 @@ class CartItems extends HTMLElement {
       if (!response.ok) throw new Error(errorGeneric);
 
       const data = await response.json();
-      this.renderFromSections(data.sections);
-      document.dispatchEvent(new CustomEvent('cart:updated', { bubbles: true, detail: { cart: data } }));
+
+      // Same contract as updateItem(): hand the bundled section HTML to every
+      // listener. Without `sections` the drawer ignored the event and the removed
+      // box stayed on screen. Self-render only on the cart page — inside the
+      // drawer, cart-drawer's handler replaces this element (and it also covers
+      // the cart going empty, which has no <cart-items> to swap into).
+      document.dispatchEvent(new CustomEvent('cart:updated', {
+        bubbles: true,
+        detail: { cart: data, sections: data.sections }
+      }));
+      if (!this.insideDrawer) {
+        this.renderFromSections(data.sections);
+      }
     } catch {
       document.dispatchEvent(
         new CustomEvent('toast:show', { bubbles: true, detail: { message: errorGeneric, variant: 'error' } })

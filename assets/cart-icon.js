@@ -5,8 +5,12 @@
  * by sections/header.liquid as `{{ cart.item_count }}`; this component keeps
  * it in sync by listening on `document`:
  *
- *   'cart:updated'      detail.cart.item_count → updateCount
- *   'cart:item-added'   fetch /cart.js → updateCount
+ *   'cart:updated'      detail.cart → boxCount → updateCount
+ *   'cart:item-added'   fetch /cart.js → boxCount → updateCount
+ *
+ * The count is in BOXES, not units: every line carrying the hidden
+ * `_custom_box` property (the v2 builder's per-blend lines) is a pack of a
+ * custom box; those packs count together, one box per 6. Mirrors the Liquid in header.liquid.
  *
  * When body[data-cart-type="drawer"], clicking the link opens the
  * <cart-drawer> instead of navigating to /cart. When body[data-cart-type
@@ -18,7 +22,7 @@
  * Expected markup:
  *   <cart-icon data-aria-template="{{ 'accessibility.cart_count' | t: count: '__COUNT__' }}">
  *     <a href="{{ routes.cart_url }}" class="header-cart" aria-label="…">
- *       Cart (<span class="cart-count">{{ cart.item_count }}</span>)
+ *       Cart (<span class="cart-count">{{ cart_boxes }}</span>)
  *     </a>
  *   </cart-icon>
  */
@@ -40,8 +44,8 @@ class CartIcon extends HTMLElement {
     }
 
     this._onCartUpdated = (e) => {
-      const count = e.detail?.cart?.item_count;
-      if (typeof count === 'number') this.updateCount(count);
+      const cart = e.detail?.cart;
+      if (cart) this.updateCount(this.boxCount(cart));
     };
     this._onItemAdded = () => this.fetchCount();
 
@@ -59,10 +63,21 @@ class CartIcon extends HTMLElement {
       const response = await fetch('/cart.js');
       if (!response.ok) return;
       const cart = await response.json();
-      this.updateCount(cart.item_count);
+      this.updateCount(this.boxCount(cart));
     } catch {
       /* network blip — leave the count stale */
     }
+  }
+
+  boxCount(cart) {
+    if (!Array.isArray(cart.items)) return cart.item_count;
+    let boxes = 0;
+    let customPacks = 0;
+    for (const item of cart.items) {
+      if (item.properties && item.properties._custom_box) customPacks += item.quantity;
+      else boxes += item.quantity;
+    }
+    return boxes + Math.ceil(customPacks / 6);
   }
 
   updateCount(count) {
