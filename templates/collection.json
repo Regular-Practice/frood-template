@@ -34,19 +34,13 @@
         "media_qBzhHM": {
           "type": "media",
           "settings": {
-            "caption": ""
-          }
-        },
-        "media_KbFU9L": {
-          "type": "media",
-          "settings": {
+            "image": "shopify://shop_images/20260929-111912_custom-box-landscape.jpg",
             "caption": ""
           }
         }
       },
       "block_order": [
-        "media_qBzhHM",
-        "media_KbFU9L"
+        "media_qBzhHM"
       ],
       "name": "Text + image split",
       "settings": {
