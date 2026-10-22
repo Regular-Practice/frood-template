@@ -234,7 +234,14 @@
   </div>
 
   <a href="{{ product.url }}" class="product-card-info">
-    <h3 class="product-card-title text-ui">{{ product.title }}</h3>
+    {%- comment -%}
+      The "(6 pack)" suffix is only there to tell the six-pack products apart in
+      admin; the cards (and the pack-size line below) already say it, so drop it
+      from the displayed title. Liquid's replace is case-sensitive, hence the
+      three spellings.
+    {%- endcomment -%}
+    {%- assign card_title = product.title | replace: '(6 pack)', '' | replace: '(6 Pack)', '' | replace: '(6 PACK)', '' | strip -%}
+    <h3 class="product-card-title text-ui">{{ card_title }}</h3>
 
     <div class="product-card-meta text-ui">
       {% render 'product-price', product: product %}
