@@ -5,9 +5,18 @@
   rendered at request time. Carousel on mobile + tablet, grid on desktop.
 {%- endcomment -%}
 
+{%- comment -%}
+  Six-pack card layout (off / a / b / c) — the same toggle as the collection and
+  featured-collection sections (see snippets/product-card), so the cards match.
+  Mixed Box first when on. This is a carousel/grid (not the 2-column mobile
+  grid), so the Mixed Box never goes full-width here: `wide_breakpoint: 0` makes
+  it always use its square image.
+{%- endcomment -%}
 {%- assign source_collection = section.settings.collection -%}
+{%- assign six_layout = section.settings.six_pack_layout -%}
+{%- if six_layout == 'off' -%}{%- assign six_layout = '' -%}{%- endif -%}
 
-<section class="product-recommendations">
+<section class="product-recommendations{% if six_layout == 'a' %} six-pack-a{% endif %}">
   {%- if section.settings.eyebrow != blank or section.settings.heading != blank -%}
     <header class="product-recommendations-header section-lockup">
       {%- if section.settings.eyebrow != blank -%}
@@ -35,18 +44,39 @@
       <div class="product-recommendations-viewport">
         <div class="product-recommendations-container grid-{{ section.settings.grid_columns }}">
           {%- assign shown = 0 -%}
-          {%- for p in source_collection.products -%}
-            {%- if product != blank and p.id == product.id -%}
-              {%- continue -%}
-            {%- endif -%}
-            {%- if shown >= section.settings.products_to_show -%}
-              {%- break -%}
-            {%- endif -%}
-            <div class="product-recommendations-slide">
-              {% render 'product-card', product: p %}
-            </div>
-            {%- assign shown = shown | plus: 1 -%}
-          {%- endfor -%}
+          {%- if six_layout != blank -%}
+            {%- for p in source_collection.products -%}
+              {%- if p.handle contains 'mixed' and p.handle contains '6-pack' and p.id != product.id and shown < section.settings.products_to_show -%}
+                <div class="product-recommendations-slide">
+                  {% render 'product-card', product: p, six_pack_layout: six_layout, wide_breakpoint: 0 %}
+                </div>
+                {%- assign shown = shown | plus: 1 -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- for p in source_collection.products -%}
+              {%- unless p.handle contains 'mixed' and p.handle contains '6-pack' -%}
+                {%- if p.id != product.id and shown < section.settings.products_to_show -%}
+                  <div class="product-recommendations-slide">
+                    {% render 'product-card', product: p, six_pack_layout: six_layout, wide_breakpoint: 0 %}
+                  </div>
+                  {%- assign shown = shown | plus: 1 -%}
+                {%- endif -%}
+              {%- endunless -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- for p in source_collection.products -%}
+              {%- if product != blank and p.id == product.id -%}
+                {%- continue -%}
+              {%- endif -%}
+              {%- if shown >= section.settings.products_to_show -%}
+                {%- break -%}
+              {%- endif -%}
+              <div class="product-recommendations-slide">
+                {% render 'product-card', product: p %}
+              </div>
+              {%- assign shown = shown | plus: 1 -%}
+            {%- endfor -%}
+          {%- endif -%}
         </div>
       </div>
       <button
@@ -211,6 +241,23 @@
       display: none;
     }
   }
+  /* ───── Six-pack layout A spacing (matches featured-collection) ─────
+     Room under the heading, a gap between slides and the carousel held inside the
+     section padding. Desktop is the grid, which has its own gap. */
+  @media (max-width: 899.98px) {
+    .six-pack-a .product-recommendations-viewport {
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    .six-pack-a .product-recommendations-container {
+      margin-left: calc(-1 * var(--spacing-s));
+    }
+
+    .six-pack-a .product-recommendations-slide {
+      padding-left: var(--spacing-s);
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -257,6 +304,19 @@
         { "value": "4", "label": "4 columns" }
       ],
       "default": "4"
+    },
+    {
+      "type": "select",
+      "id": "six_pack_layout",
+      "label": "Six-pack card layout",
+      "info": "Same toggle as the collection and featured collection sections. Only affects six-pack products.",
+      "options": [
+        { "value": "off", "label": "Off (standard cards)" },
+        { "value": "a", "label": "A · Mixed first, same size as the rest" },
+        { "value": "b", "label": "B · Mixed first, hero artwork" },
+        { "value": "c", "label": "C · As B, no background colour" }
+      ],
+      "default": "off"
     }
   ],
   "presets": [
