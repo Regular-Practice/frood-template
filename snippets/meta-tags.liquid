@@ -13,11 +13,25 @@
 {%- comment -%}
   Tag `hide-from-browse` marks the single-pack blends, which exist only to feed
   the custom box builder. They have no designed PDP, so anyone landing on one
-  (old link, search engine) is sent to the custom box instead. Skipped in the
-  theme editor so the page stays previewable. JS first, meta refresh for no-JS.
+  (old link, search engine) is sent to the Build a Box page (the Custom 6-Pack
+  Box product). The retired four-pack `custom-box` product page is sent there
+  too. The Build a Box product itself carries the tag (to stay out of
+  collections and search) but must not redirect to itself. Skipped in the theme
+  editor so the page stays previewable. JS first, meta refresh for no-JS.
 {%- endcomment -%}
-{%- if template.name == 'product' and product.tags contains 'hide-from-browse' and request.design_mode == false -%}
-  {%- assign hidden_redirect_url = all_products['custom-box'].url | default: routes.root_url -%}
+{%- assign builder_handle = 'custom-6-pack-box' -%}
+{%- liquid
+  assign redirect_to_builder = false
+  if template.name == 'product' and request.design_mode == false
+    if product.handle == 'custom-box'
+      assign redirect_to_builder = true
+    elsif product.handle != builder_handle and product.tags contains 'hide-from-browse'
+      assign redirect_to_builder = true
+    endif
+  endif
+-%}
+{%- if redirect_to_builder -%}
+  {%- assign hidden_redirect_url = all_products[builder_handle].url | default: routes.root_url -%}
   <script>window.location.replace({{ hidden_redirect_url | json }});</script>
   <noscript><meta http-equiv="refresh" content="0; url={{ hidden_redirect_url }}"></noscript>
 {%- endif -%}

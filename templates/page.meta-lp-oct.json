@@ -136,7 +136,7 @@
         "heading": "Pick your own box",
         "text": "<p>Pick exactly which Frood flavours go in your box, so your order is always made to your taste.&nbsp;</p><p><strong>Any 4 packs, £12</strong></p>",
         "button_text": "Make your  custom Box",
-        "button_link": "shopify://products/custom-box",
+        "button_link": "shopify://products/custom-6-pack-box",
         "yellow_box": true,
         "media_alignment": "left",
         "media_size": "big",

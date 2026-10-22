@@ -22,7 +22,7 @@
       "name": "Announcement bar",
       "settings": {
         "text": "Free UK delivery over £24 · Subscribe & save 10%",
-        "link": "shopify://products/custom-box",
+        "link": "shopify://products/custom-6-pack-box",
         "dismissible": false
       }
     }
