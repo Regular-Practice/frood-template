@@ -58,7 +58,8 @@
 
   <div class="cart-drawer-item-info">
     <div class="cart-drawer-item-text">
-      <a href="{{ item.url }}" class="cart-drawer-item-title text-ui">{{ item.product.title }}</a>
+      {%- assign line_title = item.product.title | replace: '(6 pack)', '' | replace: '(6 Pack)', '' | replace: '(6 PACK)', '' | strip -%}
+      <a href="{{ item.url }}" class="cart-drawer-item-title text-ui">{{ line_title }}</a>
       {%- if subtitle != blank -%}
         <p class="cart-drawer-item-subtitle">{{ subtitle }}</p>
       {%- endif -%}

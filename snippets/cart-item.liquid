@@ -32,8 +32,9 @@
   {%- endunless -%}
 
   <div class="cart-item-details">
+    {%- assign line_title = item.product.title | replace: '(6 pack)', '' | replace: '(6 Pack)', '' | replace: '(6 PACK)', '' | strip -%}
     <a href="{{ item.url }}" class="cart-item-title">
-      {{ item.product.title }}
+      {{ line_title }}
     </a>
 
     {%- if item.variant.title != 'Default Title' -%}
@@ -93,7 +94,7 @@
         type="button"
         class="cart-item-remove button"
         data-remove="{{ item.key }}"
-        aria-label="{{ 'cart.general.remove_item' | t: title: item.product.title }}"
+        aria-label="{{ 'cart.general.remove_item' | t: title: item.product.title | replace: '(6 pack)', '' | replace: '(6 Pack)', '' | replace: '(6 PACK)', '' | strip }}"
       >
         {{ 'cart.general.remove' | t }}
       </button>
