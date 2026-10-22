@@ -12,6 +12,12 @@
     "main": {
       "type": "main-product",
       "blocks": {
+        "shipping_banner_3Ybcmk": {
+          "type": "shipping_banner",
+          "settings": {
+            "text": "Free delivery on orders over £24"
+          }
+        },
         "recharge_subscriptions_subscription_widget_v2_fmVdA4": {
           "type": "shopify://apps/recharge-subscriptions/blocks/subscription-widget-v2/371eed76-0b44-4869-9813-730372ea378e",
           "settings": {}
@@ -30,6 +36,7 @@
         }
       },
       "block_order": [
+        "shipping_banner_3Ybcmk",
         "recharge_subscriptions_subscription_widget_v2_fmVdA4",
         "klaviyo_reviews_average_rating_Ypxb9E",
         "klaviyo_reviews_average_rating_7LaGQc"
